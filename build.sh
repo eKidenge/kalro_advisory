@@ -61,7 +61,6 @@ else:
         user.save()
         print(f'✅ Superuser created: {username}')
     else:
-        # Make sure flags are set even if user already existed
         changed = False
         if not user.is_staff:
             user.is_staff = True; changed = True
@@ -75,5 +74,11 @@ else:
         else:
             print(f'ℹ️  Superuser {username} already exists — no changes.')
 PYEOF
+
+# ------------------------------------------------------------------
+# 5. Seed initial data (idempotent — safe on every deploy)
+# ------------------------------------------------------------------
+echo "🌱 Seeding initial data..."
+python load_data.py || echo "⚠️  Seeding skipped (data may already exist)"
 
 echo "✅ Build completed successfully."
