@@ -13,7 +13,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -27,16 +27,20 @@
             --kalro-gold-700: #c99d16;
             --kalro-gold-100: #fdf4d4;
             --kalro-red: #bb1e10;
+            --kalro-red-100: #fbe4e1;
             --ink-900: #0f1a14;
             --ink-800: #1c2a22;
             --ink-700: #2d3d34;
             --ink-600: #4a5b51;
             --ink-500: #6b7a70;
+            --ink-400: #98a49c;
             --ink-300: #c4cbc6;
             --ink-200: #e0e5e1;
             --ink-100: #f0f3f1;
-            --font-serif: 'Source Serif 4', Georgia, serif;
-            --font-sans: 'Inter', sans-serif;
+            --ink-50: #f8faf9;
+            --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
         }
         * { box-sizing: border-box; }
         body {
@@ -44,6 +48,7 @@
             font-family: var(--font-sans);
             color: var(--ink-800);
             background: #fff;
+            -webkit-font-smoothing: antialiased;
         }
         h1, h2, h3, h4 {
             font-family: var(--font-serif);
@@ -51,9 +56,7 @@
             letter-spacing: -0.015em;
         }
 
-        /* ============================================================ */
-        /* TOP NAV                                                       */
-        /* ============================================================ */
+        /* TOP NAV */
         .top-nav {
             position: sticky; top: 0; z-index: 1030;
             background: rgba(255,255,255,.96);
@@ -63,14 +66,11 @@
         .top-nav .wrap {
             max-width: 1280px; margin: 0 auto; padding: 0 24px;
             height: 72px;
-            display: flex;
-            align-items: center;
-            gap: 40px;
+            display: flex; align-items: center; gap: 40px;
         }
         .brand {
             display: flex; align-items: center; gap: 12px;
-            text-decoration: none; color: inherit;
-            flex-shrink: 0;
+            text-decoration: none; color: inherit; flex-shrink: 0;
         }
         .brand:hover { text-decoration: none; }
         .brand-logo {
@@ -79,111 +79,71 @@
         }
         .brand-crest {
             width: 44px; height: 44px;
-            background: var(--kalro-green);
-            border-radius: 7px;
+            background: var(--kalro-green); border-radius: 7px;
             display: grid; place-items: center;
             color: var(--kalro-gold);
-            font-family: var(--font-serif);
-            font-weight: 700; font-size: 22px;
-            border: 2px solid var(--kalro-gold);
-            flex-shrink: 0;
+            font-family: var(--font-serif); font-weight: 700; font-size: 22px;
+            border: 2px solid var(--kalro-gold); flex-shrink: 0;
         }
         .brand-text { line-height: 1.1; }
         .brand-title {
-            font-family: var(--font-serif);
-            font-weight: 700; font-size: 16.5px;
-            letter-spacing: 0.02em;
-            text-transform: uppercase;
-            color: var(--ink-900);
-            white-space: nowrap;
+            font-family: var(--font-serif); font-weight: 700; font-size: 16.5px;
+            letter-spacing: 0.02em; text-transform: uppercase;
+            color: var(--ink-900); white-space: nowrap;
         }
         .brand-sub {
             font-size: 10px; color: var(--ink-500);
-            text-transform: uppercase; letter-spacing: 0.1em;
-            white-space: nowrap;
+            text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;
         }
-
-        /* Desktop nav links */
-        .top-nav .nav-links {
-            display: flex; gap: 30px;
-            margin-left: auto;
-        }
+        .top-nav .nav-links { display: flex; gap: 32px; margin-left: auto; }
         .top-nav .nav-links a {
-            font-size: 12px; font-weight: 600;
+            font-family: var(--font-serif); font-size: 13.5px; font-weight: 600;
             color: var(--ink-700); text-decoration: none;
-            text-transform: uppercase; letter-spacing: 0.1em;
-            padding: 6px 0;
-            border-bottom: 2px solid transparent;
-            transition: all .15s;
+            text-transform: uppercase; letter-spacing: 0.09em;
+            padding: 6px 0; border-bottom: 2px solid transparent; transition: all .15s;
         }
         .top-nav .nav-links a:hover {
-            color: var(--kalro-green);
-            border-bottom-color: var(--kalro-green);
+            color: var(--kalro-green); border-bottom-color: var(--kalro-green);
         }
-
-        /* Desktop CTA */
-        .top-nav .nav-cta {
-            display: flex; gap: 10px;
-            flex-shrink: 0;
-        }
-
-        /* Mobile hamburger */
+        .top-nav .nav-cta { display: flex; gap: 10px; flex-shrink: 0; }
         .nav-toggle {
-            display: none;
-            margin-left: auto;
+            display: none; margin-left: auto;
             width: 44px; height: 44px;
-            border: 1px solid var(--ink-200);
-            background: #fff;
-            border-radius: 7px;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            color: var(--ink-800);
-            cursor: pointer;
+            border: 1px solid var(--ink-200); background: #fff; border-radius: 7px;
+            align-items: center; justify-content: center;
+            font-size: 20px; color: var(--ink-800); cursor: pointer;
         }
-
-        /* Mobile drawer */
         .mobile-drawer {
-            display: none;
-            position: fixed;
+            display: none; position: fixed;
             top: 72px; left: 0; right: 0; bottom: 0;
-            background: #fff;
-            z-index: 1025;
-            padding: 24px;
-            border-top: 1px solid var(--ink-200);
-            overflow-y: auto;
+            background: #fff; z-index: 1025; padding: 24px;
+            border-top: 1px solid var(--ink-200); overflow-y: auto;
         }
         .mobile-drawer.open { display: block; }
         .mobile-drawer a {
             display: flex; align-items: center; gap: 12px;
             padding: 14px 4px;
-            font-size: 13px; font-weight: 600;
+            font-family: var(--font-serif); font-size: 14px; font-weight: 600;
             color: var(--ink-800); text-decoration: none;
             text-transform: uppercase; letter-spacing: 0.08em;
             border-bottom: 1px solid var(--ink-100);
         }
         .mobile-drawer a:hover { color: var(--kalro-green); }
         .mobile-drawer .mobile-cta {
-            display: flex; flex-direction: column; gap: 10px;
-            margin-top: 24px;
+            display: flex; flex-direction: column; gap: 10px; margin-top: 24px;
         }
 
-        /* Buttons */
         .btn {
-            font-family: var(--font-sans);
-            font-weight: 500; font-size: 13px;
-            padding: 9px 18px;
-            border-radius: 6px; border: 1px solid transparent;
+            font-family: var(--font-sans); font-weight: 500; font-size: 13px;
+            padding: 9px 18px; border-radius: 6px; border: 1px solid transparent;
             display: inline-flex; align-items: center; gap: 7px;
-            text-decoration: none; cursor: pointer;
-            transition: all .12s; white-space: nowrap;
-            text-transform: uppercase; letter-spacing: 0.06em;
+            text-decoration: none; cursor: pointer; transition: all .12s;
+            white-space: nowrap; text-transform: uppercase; letter-spacing: 0.06em;
         }
         .btn-primary { background: var(--kalro-green); color: #fff; }
         .btn-primary:hover { background: var(--kalro-green-700); color: #fff; }
         .btn-outline {
-            background: transparent; color: var(--ink-700);
-            border-color: var(--ink-300);
+            background: transparent; color: var(--ink-700); border-color: var(--ink-300);
         }
         .btn-outline:hover { border-color: var(--kalro-green); color: var(--kalro-green); }
         .btn-gold { background: var(--kalro-gold); color: var(--ink-900); }
@@ -191,17 +151,54 @@
         .btn-lg { padding: 13px 26px; font-size: 14px; }
 
         /* ============================================================ */
-        /* HERO — CENTRED                                                */
+        /* HERO WITH BACKGROUND SLIDESHOW                                */
         /* ============================================================ */
         .hero {
-            background: linear-gradient(160deg, var(--kalro-green) 0%, var(--kalro-green-700) 60%, var(--kalro-green-600) 100%);
+            position: relative;
             color: #fff;
             padding: 96px 0 108px;
-            position: relative;
             overflow: hidden;
             text-align: center;
+            background: var(--kalro-green);
+            isolation: isolate;
         }
-        .hero::before {
+        .hero-slideshow {
+            position: absolute; inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .hero-slide {
+            position: absolute; inset: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0;
+            animation: heroFade 32s infinite;
+        }
+        .hero-slide.s1 { animation-delay: 0s;  }
+        .hero-slide.s2 { animation-delay: 8s;  }
+        .hero-slide.s3 { animation-delay: 16s; }
+        .hero-slide.s4 { animation-delay: 24s; }
+        @keyframes heroFade {
+            0%   { opacity: 0; }
+            4%   { opacity: 1; }
+            25%  { opacity: 1; }
+            29%  { opacity: 0; }
+            100% { opacity: 0; }
+        }
+        .hero-overlay {
+            position: absolute; inset: 0;
+            z-index: 1;
+            background:
+                linear-gradient(
+                    180deg,
+                    rgba(11,61,46,.78) 0%,
+                    rgba(11,61,46,.68) 45%,
+                    rgba(11,61,46,.85) 100%
+                );
+            pointer-events: none;
+        }
+        .hero-overlay::after {
             content: '';
             position: absolute; inset: 0;
             background:
@@ -219,42 +216,38 @@
             font-size: 12px; font-weight: 600;
             color: var(--kalro-gold);
             text-transform: uppercase; letter-spacing: 0.12em;
-            background: rgba(244,196,48,.12);
+            background: rgba(244,196,48,.14);
             padding: 6px 14px; border-radius: 20px;
-            border: 1px solid rgba(244,196,48,.35);
+            border: 1px solid rgba(244,196,48,.4);
             margin-bottom: 28px;
+            backdrop-filter: blur(6px);
         }
         .hero h1 {
             font-size: 54px; line-height: 1.08;
             color: #fff; margin: 0 auto 24px;
-            max-width: 880px;
-            font-weight: 700;
+            max-width: 880px; font-weight: 700;
+            text-shadow: 0 2px 24px rgba(0,0,0,.35);
         }
         .hero h1 .accent { color: var(--kalro-gold); font-style: italic; }
         .hero p.lead {
             font-size: 18px; line-height: 1.6;
-            color: rgba(255,255,255,.85);
-            max-width: 680px; margin: 0 auto 40px;
+            color: rgba(255,255,255,.92);
+            max-width: 680px; margin: 0 auto;
+            text-shadow: 0 1px 12px rgba(0,0,0,.4);
         }
-        .hero-cta {
-            display: flex; gap: 14px; flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 72px;
-        }
-
-        /* HERO STATS — centred grid */
         .hero-stats {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 0;
-            border-top: 1px solid rgba(255,255,255,.18);
+            border-top: 1px solid rgba(255,255,255,.22);
             padding-top: 40px;
-            width: 100%;
-            max-width: 980px;
+            margin-top: 56px;
+            width: 100%; max-width: 980px;
+            backdrop-filter: blur(2px);
         }
         .hero-stat {
             padding: 0 20px;
-            border-right: 1px solid rgba(255,255,255,.14);
+            border-right: 1px solid rgba(255,255,255,.18);
             text-align: center;
         }
         .hero-stat:last-child { border-right: 0; }
@@ -263,190 +256,340 @@
             font-size: 34px; font-weight: 700;
             color: var(--kalro-gold);
             line-height: 1; margin-bottom: 8px;
+            text-shadow: 0 2px 16px rgba(0,0,0,.5);
         }
         .hero-stat .lbl {
-            font-size: 11.5px; color: rgba(255,255,255,.75);
-            text-transform: uppercase; letter-spacing: 0.08em;
-            line-height: 1.4;
+            font-size: 11.5px; color: rgba(255,255,255,.85);
+            text-transform: uppercase; letter-spacing: 0.08em; line-height: 1.4;
         }
 
-        /* SECTION */
-        section { padding: 88px 0; }
-        section .wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+        /* DASHBOARD PREVIEWS */
+        .dashboards-section { background: var(--ink-50); padding: 96px 0; }
+        .dashboards-section .wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
         .section-head {
-            text-align: center;
-            max-width: 720px; margin: 0 auto 56px;
+            text-align: center; max-width: 720px; margin: 0 auto 56px;
         }
         .section-head .eyebrow {
-            font-size: 12px; font-weight: 700;
-            color: var(--kalro-green);
-            text-transform: uppercase; letter-spacing: 0.14em;
-            margin-bottom: 14px;
+            font-size: 12px; font-weight: 700; color: var(--kalro-green);
+            text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 14px;
         }
-        .section-head h2 {
-            font-size: 38px; line-height: 1.15;
-            margin: 0 0 16px;
-        }
+        .section-head h2 { font-size: 38px; line-height: 1.15; margin: 0 0 16px; }
         .section-head p {
-            font-size: 16px; line-height: 1.6;
-            color: var(--ink-600); margin: 0;
+            font-size: 16px; line-height: 1.6; color: var(--ink-600); margin: 0;
         }
 
+        .dashboards-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+        }
+        .dash-preview {
+            background: #fff; border: 1px solid var(--ink-200);
+            border-radius: 12px; overflow: hidden;
+            display: flex; flex-direction: column; transition: all .25s;
+        }
+        .dash-preview:hover {
+            border-color: var(--kalro-green);
+            box-shadow: 0 16px 40px rgba(11,61,46,.10);
+            transform: translateY(-3px);
+        }
+        .dash-preview-head {
+            padding: 16px 20px; border-bottom: 1px solid var(--ink-100);
+            display: flex; align-items: center; gap: 12px; background: var(--ink-50);
+        }
+        .dash-preview-icon {
+            width: 38px; height: 38px; border-radius: 9px;
+            display: grid; place-items: center; font-size: 18px; flex-shrink: 0;
+        }
+        .dash-preview-icon.dpi-farmer { background: var(--kalro-green-100); color: var(--kalro-green); }
+        .dash-preview-icon.dpi-ext    { background: var(--kalro-gold-100);  color: var(--kalro-gold-700); }
+        .dash-preview-icon.dpi-res    { background: #ede9fe; color: #5b21b6; }
+        .dash-preview-title {
+            font-family: var(--font-serif); font-size: 15px; font-weight: 700;
+            color: var(--ink-900); line-height: 1.2;
+        }
+        .dash-preview-role {
+            font-size: 10.5px; text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--ink-500); margin-top: 2px;
+        }
+        .dash-preview-body {
+            padding: 18px 20px; flex: 1;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .mini-stats {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+        }
+        .mini-stat {
+            background: var(--ink-50); border-left: 3px solid var(--kalro-green);
+            border-radius: 6px; padding: 10px 12px;
+        }
+        .mini-stat.gold { border-left-color: var(--kalro-gold); }
+        .mini-stat.red  { border-left-color: var(--kalro-red); }
+        .mini-stat-value {
+            font-family: var(--font-serif); font-size: 20px; font-weight: 700;
+            color: var(--ink-900); line-height: 1; margin-bottom: 4px;
+        }
+        .mini-stat-label {
+            font-size: 10px; color: var(--ink-500);
+            text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
+        }
+        .mini-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 0; border-bottom: 1px solid var(--ink-100);
+            font-size: 12.5px;
+        }
+        .mini-row:last-child { border-bottom: 0; }
+        .mini-row-icon {
+            width: 28px; height: 28px; border-radius: 7px;
+            background: var(--kalro-green-100); color: var(--kalro-green);
+            display: grid; place-items: center; font-size: 13px; flex-shrink: 0;
+        }
+        .mini-row-icon.gold { background: var(--kalro-gold-100); color: var(--kalro-gold-700); }
+        .mini-row-icon.blue { background: #dbeafe; color: #1e40af; }
+        .mini-row-body { flex: 1; min-width: 0; }
+        .mini-row-title {
+            font-size: 12.5px; font-weight: 600; color: var(--ink-900);
+            line-height: 1.25; overflow: hidden;
+            text-overflow: ellipsis; white-space: nowrap;
+        }
+        .mini-row-meta { font-size: 10.5px; color: var(--ink-500); margin-top: 1px; }
+        .mini-pill {
+            display: inline-block; padding: 1px 7px; border-radius: 10px;
+            font-size: 9.5px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.6;
+        }
+        .mini-pill.green { background: var(--kalro-green-100); color: var(--kalro-green); }
+        .mini-pill.gold  { background: var(--kalro-gold-100);  color: var(--kalro-gold-700); }
+        .mini-pill.red   { background: var(--kalro-red-100);   color: var(--kalro-red); }
+        .mini-pill.grey  { background: var(--ink-100);         color: var(--ink-600); }
+        .dash-preview-foot {
+            padding: 12px 20px; border-top: 1px solid var(--ink-100);
+            background: var(--ink-50); font-size: 12px; color: var(--ink-500);
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        }
+        .dash-preview-foot .link {
+            font-family: var(--font-serif); font-weight: 600;
+            color: var(--kalro-green); text-transform: uppercase;
+            font-size: 11px; letter-spacing: 0.08em;
+        }
+        .dash-preview-foot .link:hover { text-decoration: underline; }
+
         /* FEATURES */
+        section { padding: 88px 0; }
+        section .wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
         .features {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
         }
         .feature-card {
-            background: #fff;
-            border: 1px solid var(--ink-200);
-            border-radius: 10px;
-            padding: 32px 28px;
-            transition: all .2s;
-            position: relative;
+            background: #fff; border: 1px solid var(--ink-200);
+            border-radius: 10px; padding: 32px 28px;
+            transition: all .2s; position: relative;
         }
         .feature-card::before {
-            content: '';
-            position: absolute; top: 0; left: 0; right: 0;
-            height: 3px;
-            background: var(--kalro-green);
-            border-radius: 10px 10px 0 0;
-            opacity: 0; transition: opacity .2s;
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 3px; background: var(--kalro-green);
+            border-radius: 10px 10px 0 0; opacity: 0; transition: opacity .2s;
         }
         .feature-card:hover {
-            border-color: var(--kalro-green);
-            transform: translateY(-2px);
+            border-color: var(--kalro-green); transform: translateY(-2px);
             box-shadow: 0 12px 32px rgba(11,61,46,.10);
         }
         .feature-card:hover::before { opacity: 1; }
         .feature-icon {
-            width: 52px; height: 52px;
-            background: var(--kalro-green-100);
-            color: var(--kalro-green);
-            border-radius: 10px;
-            display: grid; place-items: center;
-            font-size: 24px;
-            margin-bottom: 20px;
+            width: 52px; height: 52px; background: var(--kalro-green-100);
+            color: var(--kalro-green); border-radius: 10px;
+            display: grid; place-items: center; font-size: 24px; margin-bottom: 20px;
         }
-        .feature-card h3 {
-            font-size: 20px; margin: 0 0 12px;
-            font-family: var(--font-serif);
-        }
-        .feature-card p {
-            font-size: 14px; line-height: 1.6;
-            color: var(--ink-600); margin: 0;
-        }
+        .feature-card h3 { font-size: 20px; margin: 0 0 12px; font-family: var(--font-serif); }
+        .feature-card p { font-size: 14px; line-height: 1.6; color: var(--ink-600); margin: 0; }
 
         /* HOW IT WORKS */
         .how-section { background: var(--kalro-green-50); }
-        .steps {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 32px;
-        }
+        .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
         .step { text-align: center; padding: 0 16px; }
         .step-num {
-            width: 56px; height: 56px;
-            background: var(--kalro-green);
-            color: var(--kalro-gold);
-            border-radius: 50%;
+            width: 56px; height: 56px; background: var(--kalro-green);
+            color: var(--kalro-gold); border-radius: 50%;
             display: grid; place-items: center;
-            font-family: var(--font-serif);
-            font-size: 24px; font-weight: 700;
-            margin: 0 auto 22px;
-            border: 3px solid var(--kalro-green-100);
+            font-family: var(--font-serif); font-size: 24px; font-weight: 700;
+            margin: 0 auto 22px; border: 3px solid var(--kalro-green-100);
         }
-        .step h4 {
-            font-size: 18px; margin: 0 0 10px;
-            font-family: var(--font-serif);
-        }
-        .step p {
-            font-size: 14px; line-height: 1.65;
-            color: var(--ink-600); margin: 0;
-        }
+        .step h4 { font-size: 18px; margin: 0 0 10px; font-family: var(--font-serif); }
+        .step p { font-size: 14px; line-height: 1.65; color: var(--ink-600); margin: 0; }
 
         /* INTEGRATIONS */
         .integrations { background: var(--ink-900); color: #fff; }
-        .integrations h2 { color: #fff; }
+        .integrations .section-head h2 { color: #fff; }
         .integrations .section-head p { color: rgba(255,255,255,.65); }
-        .integration-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-        }
+        .integration-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
         .integration-card {
             background: rgba(255,255,255,.04);
             border: 1px solid rgba(255,255,255,.10);
-            border-radius: 10px;
-            padding: 28px 22px;
-            text-align: center;
+            border-radius: 10px; padding: 28px 22px; text-align: center;
         }
         .integration-card i {
-            font-size: 32px; color: var(--kalro-gold);
-            margin-bottom: 14px; display: block;
+            font-size: 32px; color: var(--kalro-gold); margin-bottom: 14px; display: block;
         }
         .integration-card .name {
-            font-family: var(--font-serif);
-            font-size: 17px; font-weight: 600; margin-bottom: 6px;
+            font-family: var(--font-serif); font-size: 17px; font-weight: 600; margin-bottom: 6px;
         }
         .integration-card .desc {
-            font-size: 12.5px; line-height: 1.55;
-            color: rgba(255,255,255,.55);
+            font-size: 12.5px; line-height: 1.55; color: rgba(255,255,255,.55);
         }
 
         /* CTA */
         .cta-section {
             background: linear-gradient(135deg, var(--kalro-green) 0%, var(--kalro-green-700) 100%);
-            text-align: center; color: #fff;
+            text-align: center; color: #fff; padding: 88px 0;
         }
-        .cta-section h2 {
-            color: #fff; font-size: 36px; margin: 0 0 16px;
-        }
+        .cta-section h2 { color: #fff; font-size: 36px; margin: 0 0 16px; }
         .cta-section p {
             font-size: 17px; color: rgba(255,255,255,.8);
             max-width: 600px; margin: 0 auto 32px;
         }
-        .cta-buttons {
-            display: flex; gap: 14px;
-            justify-content: center; flex-wrap: wrap;
-        }
+        .cta-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 
-        /* FOOTER */
-        footer {
-            background: var(--ink-900);
-            color: var(--ink-300);
-            padding: 48px 0 24px;
-            border-top: 3px solid var(--kalro-gold);
-            font-size: 13px;
+        /* FOOTER — COMPLEX */
+        .site-footer {
+            background: var(--ink-900); color: rgba(255,255,255,.7);
+            font-size: 13px; border-top: 3px solid var(--kalro-gold);
         }
-        footer .wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
-        footer .footer-grid {
+        .footer-cta {
+            background: linear-gradient(135deg, rgba(244,196,48,.08) 0%, rgba(11,61,46,.4) 100%);
+            border-bottom: 1px solid rgba(255,255,255,.08); padding: 40px 0;
+        }
+        .footer-cta-inner {
+            max-width: 1280px; margin: 0 auto; padding: 0 24px;
+            display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
+        }
+        .footer-cta-crest {
+            width: 64px; height: 64px; background: var(--kalro-green);
+            border: 2px solid var(--kalro-gold); border-radius: 12px;
+            display: grid; place-items: center;
+            color: var(--kalro-gold);
+            font-family: var(--font-serif); font-weight: 700; font-size: 30px;
+            flex-shrink: 0;
+        }
+        .footer-cta-body { flex: 1; min-width: 240px; }
+        .footer-cta-title {
+            font-family: var(--font-serif); font-size: 22px; font-weight: 700;
+            color: #fff; margin-bottom: 6px; line-height: 1.2;
+        }
+        .footer-cta-desc {
+            font-size: 13.5px; color: rgba(255,255,255,.7);
+            line-height: 1.55; max-width: 620px;
+        }
+        .footer-cta-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .footer-main {
+            max-width: 1280px; margin: 0 auto; padding: 56px 24px 40px;
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 40px; margin-bottom: 40px;
+            grid-template-columns: 2.5fr 1fr 1fr 1fr 1fr;
+            gap: 40px;
         }
-        footer h6 {
-            color: #fff; font-size: 11.5px;
+        .footer-brand .brand-lockup {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 18px;
+        }
+        .footer-brand .brand-crest-sm {
+            width: 42px; height: 42px; background: var(--kalro-green);
+            border: 2px solid var(--kalro-gold); border-radius: 8px;
+            display: grid; place-items: center;
+            color: var(--kalro-gold);
+            font-family: var(--font-serif); font-weight: 700; font-size: 20px;
+            flex-shrink: 0;
+        }
+        .footer-brand .brand-title-sm {
+            font-family: var(--font-serif); font-weight: 700; font-size: 15px;
+            color: #fff; letter-spacing: 0.02em; line-height: 1.15;
+        }
+        .footer-brand .brand-sub-sm {
+            font-size: 10px; color: rgba(255,255,255,.55);
+            text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px;
+        }
+        .footer-brand p {
+            font-size: 13px; line-height: 1.65;
+            color: rgba(255,255,255,.55); margin: 0 0 18px; max-width: 320px;
+        }
+        .footer-newsletter {
+            display: flex; gap: 6px; max-width: 320px; margin-bottom: 16px;
+        }
+        .footer-newsletter input {
+            flex: 1; padding: 9px 12px; border-radius: 6px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(255,255,255,.06);
+            color: #fff; font-size: 12.5px;
+            font-family: var(--font-sans); outline: none; transition: all .15s;
+        }
+        .footer-newsletter input::placeholder { color: rgba(255,255,255,.4); }
+        .footer-newsletter input:focus {
+            border-color: var(--kalro-gold); background: rgba(255,255,255,.09);
+        }
+        .footer-newsletter button {
+            padding: 9px 14px; border-radius: 6px; border: 0;
+            background: var(--kalro-gold); color: var(--ink-900);
+            font-weight: 600; font-size: 12px; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 0.06em; transition: background .15s;
+        }
+        .footer-newsletter button:hover { background: var(--kalro-gold-700); }
+        .footer-social { display: flex; gap: 8px; flex-wrap: wrap; }
+        .footer-social a {
+            width: 36px; height: 36px; border-radius: 8px;
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.10);
+            display: grid; place-items: center;
+            color: rgba(255,255,255,.75); font-size: 15px;
+            text-decoration: none; transition: all .15s;
+        }
+        .footer-social a:hover {
+            background: var(--kalro-gold); color: var(--ink-900);
+            border-color: var(--kalro-gold); transform: translateY(-2px);
+        }
+        .footer-col h6 {
+            color: #fff; font-family: var(--font-sans);
+            font-size: 11.5px; font-weight: 700;
             text-transform: uppercase; letter-spacing: 0.1em;
-            margin: 0 0 16px; font-family: var(--font-sans);
+            margin: 0 0 18px; padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
         }
-        footer a { color: var(--ink-300); text-decoration: none; }
-        footer a:hover { color: var(--kalro-gold); }
-        footer ul { list-style: none; padding: 0; margin: 0; }
-        footer li { margin-bottom: 8px; }
-        footer .footer-bottom {
-            border-top: 1px solid rgba(255,255,255,.12);
-            padding-top: 20px;
-            display: flex; justify-content: space-between;
-            gap: 20px; flex-wrap: wrap;
-            font-size: 12px; color: var(--ink-500);
+        .footer-col ul { list-style: none; padding: 0; margin: 0; }
+        .footer-col li { margin-bottom: 9px; }
+        .footer-col a {
+            color: rgba(255,255,255,.65); text-decoration: none;
+            font-size: 13px; transition: color .12s;
+            display: inline-flex; align-items: center; gap: 6px;
         }
+        .footer-col a:hover { color: var(--kalro-gold); }
+        .footer-col a i { font-size: 11px; color: rgba(255,255,255,.35); }
 
-        /* Responsive */
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,.08); background: rgba(0,0,0,.15); }
+        .footer-bottom-inner {
+            max-width: 1280px; margin: 0 auto; padding: 20px 24px;
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 20px; flex-wrap: wrap; font-size: 12px; color: rgba(255,255,255,.45);
+        }
+        .footer-bottom-links { display: flex; gap: 20px; flex-wrap: wrap; }
+        .footer-bottom-links a {
+            color: rgba(255,255,255,.5); text-decoration: none; font-size: 12px;
+        }
+        .footer-bottom-links a:hover { color: var(--kalro-gold); }
+        .footer-badges {
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 14px;
+        }
+        .footer-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 5px 10px; background: rgba(255,255,255,.05);
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 6px; font-size: 10.5px;
+            color: rgba(255,255,255,.6);
+            text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
+        }
+        .footer-badge i { color: var(--kalro-gold); font-size: 12px; }
+
+        /* RESPONSIVE */
         @media (max-width: 1100px) {
             .top-nav .nav-links { gap: 20px; }
-            .top-nav .nav-links a { font-size: 11px; }
+            .top-nav .nav-links a { font-size: 12px; }
+            .dashboards-grid { grid-template-columns: 1fr 1fr; }
+            .footer-main { grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
+            .footer-brand { grid-column: 1 / -1; }
         }
         @media (max-width: 991.98px) {
             .top-nav .wrap { gap: 16px; height: 64px; padding: 0 18px; }
@@ -461,41 +604,40 @@
             .hero { padding: 68px 0 80px; }
             .hero h1 { font-size: 36px; }
             .hero p.lead { font-size: 15px; }
-            .hero-cta { margin-bottom: 48px; }
 
-            .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 24px 0; }
+            .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 24px 0; margin-top: 40px; }
             .hero-stat { padding: 0 10px; }
             .hero-stat:nth-child(2) { border-right: 0; }
-            .hero-stat:nth-child(3),
-            .hero-stat:nth-child(4) { border-top: 0; }
-            .hero-stat:nth-child(odd) { border-right: 1px solid rgba(255,255,255,.14); }
+            .hero-stat:nth-child(3), .hero-stat:nth-child(4) { border-top: 0; }
+            .hero-stat:nth-child(odd) { border-right: 1px solid rgba(255,255,255,.18); }
             .hero-stat:nth-child(even) { border-right: 0; }
 
             section { padding: 60px 0; }
             .section-head h2 { font-size: 28px; }
             .features, .steps { grid-template-columns: 1fr; }
             .integration-grid { grid-template-columns: repeat(2, 1fr); }
-            .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+            .dashboards-grid { grid-template-columns: 1fr; }
+            .footer-main { grid-template-columns: 1fr 1fr; gap: 28px; }
         }
-        @media (max-width: 480px) {
+        @media (max-width: 640px) {
             .hero h1 { font-size: 28px; }
             .hero-stats { grid-template-columns: 1fr; }
             .hero-stat { border-right: 0 !important; padding: 12px 0; }
+            .footer-main { grid-template-columns: 1fr; gap: 28px; }
+            .footer-cta-inner { flex-direction: column; text-align: center; }
+            .footer-cta-actions { justify-content: center; width: 100%; }
+            .footer-bottom-inner { flex-direction: column; text-align: center; }
         }
 
-        /* Hide empty stat blocks gracefully */
-        .hero-stat.empty { opacity: .4; }
+        .hero-stat.empty { opacity: .5; }
     </style>
 </head>
 <body>
 
-<!-- ============================================================ -->
-<!-- TOP NAV                                                       -->
-<!-- ============================================================ -->
+<!-- TOP NAV -->
 <nav class="top-nav">
     <div class="wrap">
 
-        <!-- BRAND -->
         <a href="/" class="brand">
             <img src="{% static 'img/kalro-logo.png' %}"
                  alt="KALRO"
@@ -509,14 +651,12 @@
             </div>
         </a>
 
-        <!-- DESKTOP NAV LINKS -->
         <div class="nav-links">
             <a href="{% url 'features' %}">Features</a>
             <a href="{% url 'how_it_works' %}">How it works</a>
             <a href="{% url 'integrations:integrationconfig_list' %}">Integrations</a>
         </div>
 
-        <!-- DESKTOP CTA -->
         <div class="nav-cta">
             <a href="{% url 'accounts:login' %}" class="btn btn-outline">
                 <i class="bi bi-box-arrow-in-right"></i> Sign In
@@ -526,7 +666,6 @@
             </a>
         </div>
 
-        <!-- HAMBURGER (mobile) -->
         <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
             <i class="bi bi-list" id="navToggleIcon"></i>
         </button>
@@ -534,13 +673,11 @@
     </div>
 </nav>
 
-<!-- ============================================================ -->
-<!-- MOBILE DRAWER                                                 -->
-<!-- ============================================================ -->
+<!-- MOBILE DRAWER -->
 <div class="mobile-drawer" id="mobileDrawer">
     <a href="{% url 'features' %}"><i class="bi bi-star"></i> Features</a>
     <a href="{% url 'how_it_works' %}"><i class="bi bi-diagram-3"></i> How it works</a>
-    <a href="{% url 'integrations:integrationconfig_list' %}"><i class="bi bi-plug"></i> Integration
+    <a href="{% url 'integrations:integrationconfig_list' %}"><i class="bi bi-plug"></i> Integrations</a>
 
     <div class="mobile-cta">
         <a href="{% url 'accounts:login' %}" class="btn btn-outline">
@@ -552,10 +689,20 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- HERO — CENTRED                                                -->
-<!-- ============================================================ -->
+<!-- HERO WITH SLIDESHOW -->
 <section class="hero">
+
+    <!-- Background slideshow -->
+    <div class="hero-slideshow" aria-hidden="true">
+        <div class="hero-slide s1" style="background-image: url('{% static "img/hero/slide-1.jpg" %}');"></div>
+        <div class="hero-slide s2" style="background-image: url('{% static "img/hero/slide-2.jpg" %}');"></div>
+        <div class="hero-slide s3" style="background-image: url('{% static "img/hero/slide-3.jpg" %}');"></div>
+        <div class="hero-slide s4" style="background-image: url('{% static "img/hero/slide-4.jpg" %}');"></div>
+    </div>
+
+    <!-- Dark overlay -->
+    <div class="hero-overlay" aria-hidden="true"></div>
+
     <div class="wrap">
         <div class="eyebrow">
             <i class="bi bi-broadcast"></i> Physics-Informed AI · Powered by KALRO
@@ -570,18 +717,6 @@
             accurate, explainable, and physically consistent.
         </p>
 
-        <div class="hero-cta">
-            <a href="{% url 'accounts:register' %}" class="btn btn-gold btn-lg">
-                <i class="bi bi-person-plus"></i> Create Account
-            </a>
-            <a href="{% url 'accounts:login' %}" class="btn btn-outline btn-lg" style="border-color: rgba(255,255,255,.4); color: #fff;">
-                <i class="bi bi-box-arrow-in-right"></i> Sign In to Portal
-            </a>
-        </div>
-
-        <!-- ============================================================ -->
-        <!-- HERO STATS — live from database                                -->
-        <!-- ============================================================ -->
         <div class="hero-stats">
             <div class="hero-stat {% if not stats.counties %}empty{% endif %}">
                 <div class="num">{{ stats.counties|default:"—" }}</div>
@@ -599,6 +734,171 @@
                 <div class="num">{{ stats.advisories|default:"—" }}</div>
                 <div class="lbl">Advisories Issued</div>
             </div>
+        </div>
+    </div>
+</section>
+
+<!-- DASHBOARD PREVIEWS -->
+<section class="dashboards-section">
+    <div class="wrap">
+        <div class="section-head">
+            <div class="eyebrow">Role-based workspaces</div>
+            <h2>One platform, three ways to work.</h2>
+            <p>Farmers, extension officers, and researchers each get a dashboard shaped around what they do every day.</p>
+        </div>
+
+        <div class="dashboards-grid">
+
+            <div class="dash-preview">
+                <div class="dash-preview-head">
+                    <div class="dash-preview-icon dpi-farmer"><i class="bi bi-tree"></i></div>
+                    <div>
+                        <div class="dash-preview-title">Farmer Dashboard</div>
+                        <div class="dash-preview-role">Personal advisories</div>
+                    </div>
+                </div>
+                <div class="dash-preview-body">
+                    <div class="mini-stats">
+                        <div class="mini-stat">
+                            <div class="mini-stat-value">{{ stats.farmers|default:"—" }}</div>
+                            <div class="mini-stat-label">My Advisories</div>
+                        </div>
+                        <div class="mini-stat gold">
+                            <div class="mini-stat-value">{{ stats.advisories|default:"—" }}</div>
+                            <div class="mini-stat-label">New Today</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="mini-row">
+                            <div class="mini-row-icon"><i class="bi bi-droplet"></i></div>
+                            <div class="mini-row-body">
+                                <div class="mini-row-title">Fertilizer recommendation</div>
+                                <div class="mini-row-meta">Maize · 2 days ago</div>
+                            </div>
+                            <span class="mini-pill green">New</span>
+                        </div>
+                        <div class="mini-row">
+                            <div class="mini-row-icon gold"><i class="bi bi-cloud-sun"></i></div>
+                            <div class="mini-row-body">
+                                <div class="mini-row-title">Rain expected this week</div>
+                                <div class="mini-row-meta">Weather · 3 days ago</div>
+                            </div>
+                            <span class="mini-pill gold">High</span>
+                        </div>
+                        <div class="mini-row">
+                            <div class="mini-row-icon"><i class="bi bi-flower1"></i></div>
+                            <div class="mini-row-body">
+                                <div class="mini-row-title">Planting window opens</div>
+                                <div class="mini-row-meta">Beans · 5 days ago</div>
+                            </div>
+                            <span class="mini-pill grey">Read</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="dash-preview-foot">
+                    <span>Personal advisories by SMS &amp; web</span>
+                    <a href="{% url 'accounts:register' %}" class="link">Join →</a>
+                </div>
+            </div>
+
+            <div class="dash-preview">
+                <div class="dash-preview-head">
+                    <div class="dash-preview-icon dpi-ext"><i class="bi bi-clipboard-check"></i></div>
+                    <div>
+                        <div class="dash-preview-title">Extension Dashboard</div>
+                        <div class="dash-preview-role">County operations</div>
+                    </div>
+                </div>
+                <div class="dash-preview-body">
+                    <div class="mini-stats">
+                        <div class="mini-stat">
+                            <div class="mini-stat-value">{{ stats.farmers|default:"—" }}</div>
+                            <div class="mini-stat-label">Farmers</div>
+                        </div>
+                        <div class="mini-stat gold">
+                            <div class="mini-stat-value">{{ stats.counties|default:"—" }}</div>
+                            <div class="mini-stat-label">Counties</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="mini-row">
+                            <div class="mini-row-icon"><i class="bi bi-people"></i></div>
+                            <div class="mini-row-body">
+                                <div class="mini-row-title">Register new farmers</div>
+                                <div class="mini-row-meta">Field data collection</div>
+                            </div>
+                        </div>
+                        <div class="mini-row">
+                            <div class="mini-row-icon gold"><i class="bi bi-droplet-half"></i></div>
+                            <div class="mini-row-body">
+                                <div class="mini-row-title">Soil tests in your county</div>
+                                <div class="mini-row-meta">Sample tracking</div>
+                            </div>
+                        </div>
+                        <div class="mini-row">
+                            <div class="mini-row-icon blue"><i class="bi bi-map"></i></div>
+                            <div class="mini-row-body">
+                                <div class="mini-row-title">Farms on the map</div>
+                                <div class="mini-row-meta">GPS-mapped farms</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dash-preview-foot">
+                    <span>County-scoped field operations</span>
+                    <a href="{% url 'features' %}" class="link">Learn →</a>
+                </div>
+            </div>
+
+            <div class="dash-preview">
+                <div class="dash-preview-head">
+                    <div class="dash-preview-icon dpi-res"><i class="bi bi-mortarboard"></i></div>
+                    <div>
+                        <div class="dash-preview-title">Researcher Dashboard</div>
+                        <div class="dash-preview-role">Analytics &amp; models</div>
+                    </div>
+                </div>
+                <div class="dash-preview-body">
+                    <div class="mini-stats">
+                        <div class="mini-stat">
+                            <div class="mini-stat-value">{{ stats.trials|default:"—" }}</div>
+                            <div class="mini-stat-label">Trials</div>
+                        </div>
+                        <div class="mini-stat gold">
+                            <div class="mini-stat-value">{{ stats.advisories|default:"—" }}</div>
+                            <div class="mini-stat-label">Advisories</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="mini-row">
+                            <div class="mini-row-icon blue"><i class="bi bi-cpu"></i></div>
+                            <div class="mini-row-body">
+                                <div class="mini-row-title">PINN model training</div>
+                                <div class="mini-row-meta">Physics-informed AI</div>
+                            </div>
+                        </div>
+                        <div class="mini-row">
+                            <div class="mini-row-icon gold"><i class="bi bi-graph-up-arrow"></i></div>
+                            <div class="mini-row-body">
+                                <div class="mini-row-title">Trial analytics</div>
+                                <div class="mini-row-meta">Yield &amp; nitrogen use efficiency</div>
+                            </div>
+                        </div>
+                        <div class="mini-row">
+                            <div class="mini-row-icon"><i class="bi bi-sliders"></i></div>
+                            <div class="mini-row-body">
+                                <div class="mini-row-title">Physics constraints</div>
+                                <div class="mini-row-meta">Water, nutrients, energy</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dash-preview-foot">
+                    <span>Model training &amp; analytics</span>
+                    <a href="{% url 'features' %}" class="link">Explore →</a>
+                </div>
+            </div>
+
         </div>
     </div>
 </section>
@@ -726,53 +1026,125 @@
 </section>
 
 <!-- FOOTER -->
-<footer>
-    <div class="wrap">
-        <div class="footer-grid">
-            <div>
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                    <img src="{% static 'img/kalro-logo.png' %}" alt="KALRO" style="height: 38px; width: auto;"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
-                    <div class="brand-crest" style="width: 38px; height: 38px; font-size: 18px; display:none;">K</div>
-                    <div>
-                        <div style="color: #fff; font-family: var(--font-serif); font-weight: 700; font-size: 14px; letter-spacing: 0.02em;">KALRO ADVISORY</div>
-                        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-500);">Climate-Resilient Agriculture</div>
-                    </div>
+<footer class="site-footer">
+
+    <div class="footer-cta">
+        <div class="footer-cta-inner">
+            <div class="footer-cta-crest">K</div>
+            <div class="footer-cta-body">
+                <div class="footer-cta-title">Get advisory updates from KALRO.</div>
+                <div class="footer-cta-desc">
+                    Climate-smart advisories, research bulletins, and product updates —
+                    delivered to farmers, extension officers, and researchers.
                 </div>
-                <p style="max-width: 340px; line-height: 1.6; color: var(--ink-500);">
-                    A physics-informed AI advisory platform. Powered by KALRO research, delivered to every farmer in Kenya.
-                </p>
             </div>
-            <div>
-                <h6>Platform</h6>
-                <ul>
-                    <li><a href="{% url 'accounts:login' %}">Sign In</a></li>
-                    <li><a href="{% url 'accounts:register' %}">Register</a></li>
-                    <li><a href="{% url 'admin:index' %}">Admin Console</a></li>
-                </ul>
+            <div class="footer-cta-actions">
+                <a href="{% url 'accounts:register' %}" class="btn btn-gold">
+                    <i class="bi bi-person-plus"></i> Register
+                </a>
+                <a href="{% url 'accounts:login' %}" class="btn btn-outline" style="border-color: rgba(255,255,255,.3); color: #fff;">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In
+                </a>
             </div>
-            <div>
-                <h6>About</h6>
-                <ul>
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#how">How it works</a></li>
-                    <li><a href="#integrations">Integrations</a></li>
-                </ul>
-            </div>
-            <div>
-                <h6>Contact</h6>
-                <ul>
-                    <li><a href="#">KALRO Headquarters</a></li>
-                    <li><a href="#">Report an Issue</a></li>
-                    <li><a href="#">Data Policy</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div>© {% now "Y" %} Kenya Agricultural and Livestock Research Organization. All rights reserved.</div>
-            <div>Privacy · Terms · Data Policy</div>
         </div>
     </div>
+
+    <div class="footer-main">
+
+        <div class="footer-col footer-brand">
+            <div class="brand-lockup">
+                <div class="brand-crest-sm">K</div>
+                <div>
+                    <div class="brand-title-sm">KALRO ADVISORY</div>
+                    <div class="brand-sub-sm">Climate-Resilient Agriculture</div>
+                </div>
+            </div>
+            <p>
+                A physics-informed AI advisory platform. Powered by KALRO research and
+                delivered to every farmer in Kenya — by web and SMS.
+            </p>
+
+            <form class="footer-newsletter" method="post" action="{% url 'accounts:register' %}">
+                {% csrf_token %}
+                <input type="email" name="email" placeholder="your@email.com" aria-label="Email for updates">
+                <button type="submit">Subscribe</button>
+            </form>
+
+            <div class="footer-social">
+                <a href="#" title="Twitter / X" aria-label="Twitter / X"><i class="bi bi-twitter-x"></i></a>
+                <a href="#" title="Facebook" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                <a href="#" title="LinkedIn" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                <a href="#" title="YouTube" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                <a href="#" title="RSS" aria-label="RSS"><i class="bi bi-rss"></i></a>
+            </div>
+
+            <div class="footer-badges">
+                <span class="footer-badge"><i class="bi bi-shield-check"></i> Official System</span>
+                <span class="footer-badge"><i class="bi bi-globe2"></i> Republic of Kenya</span>
+            </div>
+        </div>
+
+        <div class="footer-col">
+            <h6>Platform</h6>
+            <ul>
+                <li><a href="{% url 'advisories:advisory_dashboard' %}"><i class="bi bi-chevron-right"></i> Dashboard</a></li>
+                <li><a href="{% url 'advisories:advisory_list' %}"><i class="bi bi-chevron-right"></i> Advisories</a></li>
+                <li><a href="{% url 'farmers:farmer_list' %}"><i class="bi bi-chevron-right"></i> Farmers</a></li>
+                <li><a href="{% url 'climate:weatherrecord_list' %}"><i class="bi bi-chevron-right"></i> Climate</a></li>
+                <li><a href="{% url 'crops:crop_list' %}"><i class="bi bi-chevron-right"></i> Crops</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h6>Research</h6>
+            <ul>
+                <li><a href="{% url 'trials:trial_list' %}"><i class="bi bi-chevron-right"></i> Field Trials</a></li>
+                <li><a href="{% url 'trials:trial_analytics' %}"><i class="bi bi-chevron-right"></i> Analytics</a></li>
+                <li><a href="{% url 'pinn_engine:model_list' %}"><i class="bi bi-chevron-right"></i> PINN Models</a></li>
+                <li><a href="{% url 'pinn_engine:metrics_dashboard' %}"><i class="bi bi-chevron-right"></i> Metrics</a></li>
+                <li><a href="{% url 'pinn_engine:physics_constraint_list' %}"><i class="bi bi-chevron-right"></i> Physics</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h6>Integrations</h6>
+            <ul>
+                <li><a href="{% url 'integrations:kaop_dashboard' %}"><i class="bi bi-chevron-right"></i> KAOP</a></li>
+                <li><a href="{% url 'integrations:agdata_dashboard' %}"><i class="bi bi-chevron-right"></i> AgData Hub</a></li>
+                <li><a href="{% url 'integrations:selector_dashboard' %}"><i class="bi bi-chevron-right"></i> Selector</a></li>
+                <li><a href="{% url 'integrations:ishamba_dashboard' %}"><i class="bi bi-chevron-right"></i> iShamba SMS</a></li>
+                <li><a href="{% url 'integrations:synclog_list' %}"><i class="bi bi-chevron-right"></i> Sync Logs</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h6>Support</h6>
+            <ul>
+                <li><a href="{% url 'features' %}"><i class="bi bi-chevron-right"></i> Features</a></li>
+                <li><a href="{% url 'how_it_works' %}"><i class="bi bi-chevron-right"></i> How it works</a></li>
+                <li><a href="#"><i class="bi bi-chevron-right"></i> Documentation</a></li>
+                <li><a href="#"><i class="bi bi-chevron-right"></i> Report an Issue</a></li>
+                <li><a href="{% url 'admin:index' %}"><i class="bi bi-chevron-right"></i> Admin Console</a></li>
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        <div class="footer-bottom-inner">
+            <div>
+                © {% now "Y" %} Kenya Agricultural and Livestock Research Organization. All rights reserved.
+            </div>
+            <div class="footer-bottom-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Use</a>
+                <a href="#">Data Policy</a>
+                <a href="#">Accessibility</a>
+                <a href="#">Sitemap</a>
+            </div>
+        </div>
+    </div>
+
 </footer>
 
 <script>
@@ -788,15 +1160,6 @@
                 const open = mobileDrawer.classList.toggle('open');
                 navToggleIcon.className = open ? 'bi bi-x-lg' : 'bi bi-list';
                 document.body.style.overflow = open ? 'hidden' : '';
-            });
-
-            // Close drawer on link click
-            document.querySelectorAll('.drawer-close-link').forEach(a => {
-                a.addEventListener('click', () => {
-                    mobileDrawer.classList.remove('open');
-                    navToggleIcon.className = 'bi bi-list';
-                    document.body.style.overflow = '';
-                });
             });
         }
     })();
