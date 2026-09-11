@@ -1,0 +1,103 @@
+{% extends "integrations/base_integrations.html" %}
+{% load static %}
+
+{% block title %}KAOP — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>KAOP Dashboard</h1>
+        <div class="page-header-sub">Kenya Agricultural Observatory Platform — weather &amp; forecasts</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'integrations:trigger_sync' %}" class="btn btn-primary"><i class="bi bi-arrow-repeat"></i> Trigger Sync</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card"><div class="stat-label">Active Stations</div><div class="stat-value">{{ station_count|default:0 }}</div></div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card stat-gold"><div class="stat-label">Weather Records</div><div class="stat-value">{{ record_count|default:0 }}</div></div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-label">Config Status</div>
+            <div class="stat-value">{% if config and config.is_active %}Active{% else %}Off{% endif %}</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card stat-ink">
+            <div class="stat-label">Last OK</div>
+            <div class="stat-value" style="font-size:18px;">{% if config.last_ok_at %}{{ config.last_ok_at|date:"d M H:i" }}{% else %}—{% endif %}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-plug me-2"></i> Configuration</h5></div>
+            <div class="card-body p-0">
+                {% if config %}
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Provider</td><td>{{ config.get_provider_display }}</td></tr>
+                        <tr><td class="lbl">Base URL</td><td><span class="font-mono fs-12">{{ config.base_url|default:"—" }}</span></td></tr>
+                        <tr><td class="lbl">Auth</td><td>{{ config.get_auth_type_display }}</td></tr>
+                        <tr><td class="lbl">Active</td><td>{% if config.is_active %}<span class="pill pill-green">Yes</span>{% else %}<span class="pill pill-grey">No</span>{% endif %}</td></tr>
+                        <tr><td class="lbl">Sandbox</td><td>{% if config.is_sandbox %}<span class="pill pill-gold">Yes</span>{% else %}No{% endif %}</td></tr>
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;">
+                    <i class="bi bi-plug"></i>
+                    <p style="margin: 0;">KAOP not configured</p>
+                    <a href="{% url 'integrations:integrationconfig_create' %}" class="btn btn-primary btn-sm" style="margin-top: 12px;">Add KAOP Config</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-clock-history me-2"></i> Recent KAOP Syncs</h5></div>
+            <div class="card-body p-0">
+                {% if recent_syncs %}
+                <table class="table-kalro">
+                    <thead><tr><th>When</th><th>Status</th><th>Fetched</th><th>Created</th><th>Updated</th></tr></thead>
+                    <tbody>
+                        {% for s in recent_syncs %}
+                        <tr>
+                            <td><span class="font-mono fs-12">{{ s.started_at|date:"d M H:i" }}</span></td>
+                            <td>
+                                {% if s.status == 'SUCCESS' %}<span class="pill pill-green">Success</span>
+                                {% elif s.status == 'PARTIAL' %}<span class="pill pill-gold">Partial</span>
+                                {% elif s.status == 'FAILED' %}<span class="pill pill-red">Failed</span>
+                                {% else %}<span class="pill pill-grey">{{ s.get_status_display }}</span>{% endif %}
+                            </td>
+                            <td>{{ s.records_fetched }}</td>
+                            <td>{{ s.records_created }}</td>
+                            <td>{{ s.records_updated }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-arrow-repeat"></i><p style="margin: 0;">No syncs recorded yet</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .lbl { color: var(--ink-500); font-weight: 500; width: 42%; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+</style>
+
+{% endblock %}

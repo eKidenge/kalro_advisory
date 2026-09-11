@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ profile_user.get_full_name|default:profile_user.username }} — Profile{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================ -->
+<!-- PAGE HEADER                                                   -->
+<!-- ============================================================ -->
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>
+            {% if is_admin_view and profile_user != request.user %}
+                User Profile
+            {% else %}
+                My Profile
+            {% endif %}
+        </h1>
+        <div class="page-header-sub">
+            {% if is_admin_view and profile_user != request.user %}
+                Viewing account details for <strong>{{ profile_user.username }}</strong>
+            {% else %}
+                Your account details and recent activity
+            {% endif %}
+        </div>
+    </div>
+    <div class="page-header-actions">
+        {% if is_admin_view and profile_user != request.user %}
+            <a href="{% url 'accounts:user_list' %}" class="btn btn-outline">
+                <i class="bi bi-arrow-left"></i> Back to Users
+            </a>
+            {% if profile_user.is_kalro_staff %}
+            <a href="{% url 'accounts:user_admin_update' profile_user.pk %}" class="btn btn-primary">
+                <i class="bi bi-pencil"></i> Edit User
+            </a>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'accounts:password_change' %}" class="btn btn-outline">
+                <i class="bi bi-key"></i> Change Password
+            </a>
+            <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">
+                <i class="bi bi-pencil"></i> Edit Profile
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PROFILE HERO                                                  -->
+<!-- ============================================================ -->
+<div class="profile-hero">
+
+    <div class="profile-hero-avatar">
+        {{ profile_user.get_full_name|default:profile_user.username|slice:":1"|upper }}
+    </div>
+
+    <div class="profile-hero-body">
+        <div class="profile-hero-name">
+            {{ profile_user.get_full_name|default:profile_user.username }}
+        </div>
+        <div class="profile-hero-meta">
+            <span class="pill
+                {% if profile_user.is_kalro_staff %}pill-green
+                {% elif profile_user.is_researcher %}pill-gold
+                {% elif profile_user.is_field_agent %}pill-gold
+                {% else %}pill-grey{% endif %}">
+                <i class="bi bi-person-badge"></i>
+                {{ profile_user.get_role_display }}
+            </span>
+
+            {% if profile_user.is_verified %}
+                <span class="pill pill-green">
+                    <i class="bi bi-patch-check"></i> Verified
+                </span>
+            {% else %}
+                <span class="pill pill-gold">
+                    <i class="bi bi-hourglass-split"></i> Pending Verification
+                </span>
+            {% endif %}
+
+            {% if profile_user.is_active %}
+                <span class="pill pill-outline">
+                    <i class="bi bi-circle-fill" style="font-size:7px;"></i> Active
+                </span>
+            {% else %}
+                <span class="pill pill-red">
+                    <i class="bi bi-slash-circle"></i> Inactive
+                </span>
+            {% endif %}
+        </div>
+        <div class="profile-hero-contact">
+            <span><i class="bi bi-envelope"></i> {{ profile_user.email|default:"—" }}</span>
+            <span><i class="bi bi-telephone"></i> {{ profile_user.phone_number|default:"—" }}</span>
+            <span><i class="bi bi-geo-alt"></i>
+                {% if profile_user.county %}
+                    {{ profile_user.county }}{% if profile_user.sub_county %}, {{ profile_user.sub_county }}{% endif %}
+                {% else %}—{% endif %}
+            </span>
+            <span><i class="bi bi-translate"></i> {{ profile_user.get_preferred_language_display|default:"English" }}</span>
+        </div>
+    </div>
+
+    {% if is_admin_view and profile_user != request.user %}
+    <div class="profile-hero-actions">
+        {% if not profile_user.is_verified %}
+            <form method="post" action="{% url 'accounts:user_verify' profile_user.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-patch-check"></i> Verify User
+                </button>
+            </form>
+        {% else %}
+            <form method="post" action="{% url 'accounts:user_unverify' profile_user.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline btn-sm"
+                        data-confirm="Unverify this user? They will lose access.">
+                    <i class="bi bi-x-circle"></i> Unverify
+                </button>
+            </form>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- ============================================================ -->
+<!-- GRID                                                          -->
+<!-- ============================================================ -->
+<div class="row g-3">
+
+    <!-- LEFT — ACCOUNT DETAILS -->
+    <div class="col-lg-7">
+
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-person-vcard me-2"></i> Account Details</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr>
+                            <td style="width: 38%; color: var(--ink-500); font-weight: 500;">Username</td>
+                            <td><strong>{{ profile_user.username }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--ink-500); font-weight: 500;">Full name</td>
+                            <td>{{ profile_user.get_full_name|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--ink-500); font-weight: 500;">Email</td>
+                            <td>
+                                {% if profile_user.email %}
+                                    <a href="mailto:{{ profile_user.email }}">{{ profile_user.email }}</a>
+                                {% else %}—{% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--ink-500); font-weight: 500;">Phone</td>
+                            <td>{{ profile_user.phone_number|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--ink-500); font-weight: 500;">Role</td>
+                            <td>
+                                <span class="pill pill-grey">{{ profile_user.get_role_display }}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--ink-500); font-weight: 500;">Preferred language</td>
+                            <td>{{ profile_user.get_preferred_language_display|default:"English" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-geo-alt me-2"></i> Location</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr>
+                            <td style="width: 38%; color: var(--ink-500); font-weight: 500;">County</td>
+                            <td>{{ profile_user.county|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--ink-500); font-weight: 500;">Sub-county</td>
+                            <td>{{ profile_user.sub_county|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--ink-500); font-weight: 500;">Ward</td>
+                            <td>{{ profile_user.ward|default:"—" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RIGHT — ACTIVITY -->
+    <div class="col-lg-5">
+
+        <!-- Stat card: account age -->
+        <div class="stat-card mb-3">
+            <div class="stat-label">Member Since</div>
+            <div class="stat-value">{{ profile_user.date_joined|date:"M Y" }}</div>
+            <div class="stat-delta up">
+                <i class="bi bi-calendar-check"></i>
+                {{ profile_user.date_joined|timesince }} ago
+            </div>
+        </div>
+
+        <!-- Stat card: last login -->
+        <div class="stat-card stat-gold mb-3">
+            <div class="stat-label">Last Login</div>
+            <div class="stat-value">
+                {% if profile_user.last_login %}
+                    {{ profile_user.last_login|date:"d M" }}
+                {% else %}
+                    Never
+                {% endif %}
+            </div>
+            <div class="stat-delta">
+                <i class="bi bi-clock-history"></i>
+                {% if profile_user.last_login %}
+                    {{ profile_user.last_login|timesince }} ago
+                {% else %}
+                    No activity yet
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent login audits -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-shield-check me-2"></i> Recent Sign-Ins</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if audits %}
+                    {% for audit in audits %}
+                    <div class="audit-row">
+                        <div class="audit-icon {% if audit.successful %}audit-ok{% else %}audit-fail{% endif %}">
+                            <i class="bi {% if audit.successful %}bi-check-lg{% else %}bi-x-lg{% endif %}"></i>
+                        </div>
+                        <div class="audit-body">
+                            <div class="audit-title">
+                                {% if audit.successful %}Successful sign-in{% else %}Failed attempt{% endif %}
+                            </div>
+                            <div class="audit-meta">
+                                {{ audit.timestamp|date:"d M Y · H:i" }}
+                                {% if audit.ip_address %}· {{ audit.ip_address }}{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state" style="padding: 32px 20px;">
+                        <i class="bi bi-clock-history"></i>
+                        <p style="margin: 0;">No sign-in activity recorded</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .profile-hero {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 24px 26px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 22px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .profile-hero-avatar {
+        width: 80px; height: 80px;
+        border-radius: 50%;
+        background: var(--kalro-green);
+        color: var(--kalro-gold);
+        display: grid; place-items: center;
+        font-family: var(--font-serif);
+        font-size: 34px;
+        font-weight: 700;
+        flex-shrink: 0;
+        border: 3px solid var(--kalro-green-100);
+    }
+    .profile-hero-body { flex: 1; min-width: 220px; }
+    .profile-hero-name {
+        font-family: var(--font-serif);
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--ink-900);
+        margin-bottom: 8px;
+        line-height: 1.2;
+    }
+    .profile-hero-meta {
+        display: flex; gap: 8px; flex-wrap: wrap;
+        margin-bottom: 12px;
+    }
+    .profile-hero-contact {
+        display: flex; gap: 22px; flex-wrap: wrap;
+        font-size: 13px;
+        color: var(--ink-600);
+    }
+    .profile-hero-contact span {
+        display: inline-flex; align-items: center; gap: 6px;
+    }
+    .profile-hero-contact i { color: var(--ink-400); }
+
+    .audit-row {
+        display: flex; gap: 12px; align-items: flex-start;
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--border);
+    }
+    .audit-row:last-child { border-bottom: 0; }
+    .audit-icon {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        display: grid; place-items: center;
+        flex-shrink: 0;
+        font-size: 13px;
+    }
+    .audit-ok {
+        background: var(--kalro-green-100);
+        color: var(--kalro-green);
+    }
+    .audit-fail {
+        background: var(--kalro-red-100);
+        color: var(--kalro-red);
+    }
+    .audit-body { flex: 1; }
+    .audit-title {
+        font-size: 13px; font-weight: 600;
+        color: var(--ink-800);
+        margin-bottom: 2px;
+    }
+    .audit-meta {
+        font-size: 11.5px;
+        color: var(--ink-500);
+    }
+</style>
+
+{% endblock %}

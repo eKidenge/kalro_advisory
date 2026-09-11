@@ -1,0 +1,90 @@
+{% extends "soil/base_soil.html" %}
+{% load static %}
+
+{% block title %}{% if object %}Edit {{ object.sample_id }}{% else %}Add Soil Test{% endif %} — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{% if object %}Edit Soil Test{% else %}Add Soil Test{% endif %}</h1>
+        <div class="page-header-sub">{% if object %}Update soil test results{% else %}Record a new soil sample{% endif %}</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% if object %}{% url 'soil:soiltest_detail' object.pk %}{% else %}{% url 'soil:soiltest_list' %}{% endif %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Cancel</a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-10">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert-kalro alert-danger"><i class="bi bi-exclamation-octagon"></i><div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div></div>{% endif %}
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-info-circle me-2"></i> Sample Info</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Farm <span class="req">*</span></label>{{ form.farm }}{% if form.farm.errors %}<div class="field-error">{{ form.farm.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Sample ID <span class="req">*</span></label>{{ form.sample_id }}{% if form.sample_id.errors %}<div class="field-error">{{ form.sample_id.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Sampled on <span class="req">*</span></label>{{ form.sampled_on }}{% if form.sampled_on.errors %}<div class="field-error">{{ form.sampled_on.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Lab</label>{{ form.lab }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-droplet-half me-2"></i> Macronutrients</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4"><label class="form-label">pH</label>{{ form.ph }}</div>
+                        <div class="col-md-4"><label class="form-label">Organic carbon (%)</label>{{ form.organic_carbon_pct }}</div>
+                        <div class="col-md-4"><label class="form-label">Nitrogen (%)</label>{{ form.nitrogen_pct }}</div>
+                        <div class="col-md-4"><label class="form-label">Phosphorus (ppm)</label>{{ form.phosphorus_ppm }}</div>
+                        <div class="col-md-4"><label class="form-label">Potassium (ppm)</label>{{ form.potassium_ppm }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-minecart me-2"></i> Secondary &amp; Micronutrients</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4"><label class="form-label">Calcium (ppm)</label>{{ form.calcium_ppm }}</div>
+                        <div class="col-md-4"><label class="form-label">Magnesium (ppm)</label>{{ form.magnesium_ppm }}</div>
+                        <div class="col-md-4"><label class="form-label">Sulfur (ppm)</label>{{ form.sulfur_ppm }}</div>
+                        <div class="col-md-4"><label class="form-label">Zinc (ppm)</label>{{ form.zinc_ppm }}</div>
+                        <div class="col-md-4"><label class="form-label">Boron (ppm)</label>{{ form.boron_ppm }}</div>
+                        <div class="col-md-4"><label class="form-label">Iron (ppm)</label>{{ form.iron_ppm }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-layers me-2"></i> Physical Properties</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Texture</label>{{ form.texture }}</div>
+                        <div class="col-md-6"><label class="form-label">Bulk density</label>{{ form.bulk_density }}</div>
+                        <div class="col-md-6"><label class="form-label">Moisture (%)</label>{{ form.moisture_pct }}</div>
+                        <div class="col-md-6"><label class="form-label">CEC (meq/100g)</label>{{ form.cec_meq }}</div>
+                        <div class="col-md-12"><label class="form-label">Notes</label>{{ form.notes }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions-bar">
+                <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check2"></i> Save</button>
+                <a href="{% if object %}{% url 'soil:soiltest_detail' object.pk %}{% else %}{% url 'soil:soiltest_list' %}{% endif %}" class="btn btn-outline btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error { font-size: 12px; color: var(--kalro-red); margin-top: 6px; }
+    .form-actions-bar { display: flex; gap: 10px; padding: 20px 0 8px; flex-wrap: wrap; }
+</style>
+
+{% endblock %}

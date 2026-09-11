@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block subheader_actions %}
+    <a href="{% url 'climate:weatherrecord_list' %}"
+       class="btn btn-sm {% if 'weatherrecord' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-cloud-sun"></i> Weather
+    </a>
+    <a href="{% url 'climate:forecast_list' %}"
+       class="btn btn-sm {% if request.resolver_match.url_name == 'forecast_list' %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-cloud-drizzle"></i> Forecasts
+    </a>
+    <a href="{% url 'climate:drought_alert_list' %}"
+       class="btn btn-sm {% if 'drought' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-sun"></i> Drought
+    </a>
+    <a href="{% url 'climate:flood_alert_list' %}"
+       class="btn btn-sm {% if 'flood' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-water"></i> Flood
+    </a>
+    <a href="{% url 'climate:rainfall_chart' %}"
+       class="btn btn-sm {% if request.resolver_match.url_name == 'rainfall_chart' %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-bar-chart"></i> Chart
+    </a>
+    {% if request.user.is_kalro_staff %}
+    <a href="{% url 'climate:sync_kaop' %}"
+       class="btn btn-sm btn-outline">
+        <i class="bi bi-arrow-repeat"></i> Sync
+    </a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}{% endblock %}

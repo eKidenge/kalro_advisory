@@ -1,0 +1,2135 @@
+{% extends "advisories/base_advisories.html" %}
+{% load static %}
+
+{% block title %}Admin Control Center — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================ -->
+<!-- WELCOME HEADER                                                -->
+<!-- ============================================================ -->
+<div class="admin-hero">
+    <div class="admin-hero-inner">
+        <div class="admin-hero-badge"><i class="bi bi-shield-lock"></i></div>
+        <div class="admin-hero-text">
+            <div class="admin-hero-eyebrow"><i class="bi bi-star-fill"></i> System Administrator</div>
+            <h1 class="admin-hero-name">Control Center</h1>
+            <div class="admin-hero-meta">
+                <span><i class="bi bi-person-badge"></i> {{ user.get_full_name|default:user.username }}</span>
+                <span><i class="bi bi-clock"></i> {% now "D, d M Y · H:i" %}</span>
+                <span><i class="bi bi-shield-check"></i> Full access</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- KPI STRIP                                                     -->
+<!-- ============================================================ -->
+<div class="kpi-strip">
+    <div class="kpi">
+        <div class="kpi-icon kpi-icon-green"><i class="bi bi-people-fill"></i></div>
+        <div class="kpi-body">
+            <div class="kpi-value">{{ kpi.total_users|default:"0" }}</div>
+            <div class="kpi-label">Total Users</div>
+        </div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-icon kpi-icon-gold"><i class="bi bi-person-check"></i></div>
+        <div class="kpi-body">
+            <div class="kpi-value">{{ kpi.pending_users|default:"0" }}</div>
+            <div class="kpi-label">Pending Verification</div>
+        </div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-icon kpi-icon-blue"><i class="bi bi-box-arrow-in-right"></i></div>
+        <div class="kpi-body">
+            <div class="kpi-value">{{ kpi.logins_today|default:"0" }}</div>
+            <div class="kpi-label">Logins Today</div>
+        </div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-icon kpi-icon-purple"><i class="bi bi-person-plus"></i></div>
+        <div class="kpi-body">
+            <div class="kpi-value">{{ kpi.registrations_week|default:"0" }}</div>
+            <div class="kpi-label">New This Week</div>
+        </div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-icon kpi-icon-red"><i class="bi bi-x-octagon"></i></div>
+        <div class="kpi-body">
+            <div class="kpi-value">{{ kpi.failed_logins_today|default:"0" }}</div>
+            <div class="kpi-label">Failed Logins</div>
+        </div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-icon kpi-icon-green"><i class="bi bi-megaphone"></i></div>
+        <div class="kpi-body">
+            <div class="kpi-value">{{ stats.total|default:"0" }}</div>
+            <div class="kpi-label">Advisories</div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB BAR                                                       -->
+<!-- ============================================================ -->
+<div class="admin-tabs">
+    <button class="admin-tab active" data-tab="tab-users">
+        <i class="bi bi-people-fill"></i> Users <span class="tab-count">{{ kpi.total_users|default:"0" }}</span>
+    </button>
+    <button class="admin-tab" data-tab="tab-farmers">
+        <i class="bi bi-tree"></i> Farmers <span class="tab-count">{{ kpi.total_farmers|default:"0" }}</span>
+    </button>
+    <button class="admin-tab" data-tab="tab-farms">
+        <i class="bi bi-geo-alt"></i> Farms <span class="tab-count">{{ kpi.total_farms|default:"0" }}</span>
+    </button>
+    <button class="admin-tab" data-tab="tab-advisories">
+        <i class="bi bi-megaphone"></i> Advisories <span class="tab-count">{{ stats.total|default:"0" }}</span>
+    </button>
+    <button class="admin-tab" data-tab="tab-trials">
+        <i class="bi bi-clipboard-data"></i> Trials <span class="tab-count">{{ kpi.total_trials|default:"0" }}</span>
+    </button>
+    <button class="admin-tab" data-tab="tab-pinn">
+        <i class="bi bi-cpu"></i> PINN <span class="tab-count">{{ kpi.total_models|default:"0" }}</span>
+    </button>
+    <button class="admin-tab" data-tab="tab-weather">
+        <i class="bi bi-cloud-sun"></i> Weather <span class="tab-count">{{ kpi.total_weather|default:"0" }}</span>
+    </button>
+    <button class="admin-tab" data-tab="tab-soil">
+        <i class="bi bi-droplet-half"></i> Soil <span class="tab-count">{{ kpi.total_soil|default:"0" }}</span>
+    </button>
+    <button class="admin-tab" data-tab="tab-crops">
+        <i class="bi bi-flower1"></i> Crops <span class="tab-count">{{ kpi.total_crops|default:"0" }}</span>
+    </button>
+    <button class="admin-tab" data-tab="tab-integrations">
+        <i class="bi bi-plug"></i> Integrations <span class="tab-count">{{ kpi.total_integrations|default:"0" }}</span>
+    </button>
+    <button class="admin-tab" data-tab="tab-activity">
+        <i class="bi bi-shield-check"></i> Activity
+    </button>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 1 — USERS                                                 -->
+<!-- ============================================================ -->
+<div class="admin-tab-panel active" id="tab-users">
+
+    <div class="panel-head">
+        <div>
+            <h2>Users</h2>
+            <p>Create, edit, delete, verify users of any role — inline.</p>
+        </div>
+        <button class="btn btn-primary" data-modal-open="modal-user-create">
+            <i class="bi bi-person-plus"></i> Add User
+        </button>
+    </div>
+
+    <div class="panel-body">
+        {% if all_users %}
+        <div class="data-table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in all_users %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar">{{ u.get_full_name|default:u.username|slice:":1"|upper }}</div>
+                                <div>
+                                    <div class="user-name">{{ u.get_full_name|default:u.username }}</div>
+                                    <div class="user-meta">{{ u.email|default:u.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="pill pill-grey">{{ u.get_role_display }}</span></td>
+                        <td>{{ u.county|default:"—" }}</td>
+                        <td>
+                            {% if not u.is_active %}
+                                <span class="pill pill-red">Inactive</span>
+                            {% elif u.is_verified %}
+                                <span class="pill pill-green">Verified</span>
+                            {% else %}
+                                <span class="pill pill-gold">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="text-muted fs-12">{{ u.date_joined|date:"d M Y" }}</span></td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <button class="row-action" title="Edit"
+                                        data-modal-open="modal-user-edit-{{ u.pk }}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+
+                                {% if u.is_verified %}
+                                <form method="post" action="{% url 'advisories:admin_user_unverify' u.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="row-action row-action-warn" title="Unverify">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </form>
+                                {% else %}
+                                <form method="post" action="{% url 'advisories:admin_user_verify' u.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="row-action row-action-ok" title="Verify">
+                                        <i class="bi bi-patch-check"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                {% if u != request.user %}
+                                <button class="row-action row-action-del" title="Delete"
+                                        data-confirm-delete="{% url 'advisories:admin_user_delete' u.pk %}"
+                                        data-confirm-text="Delete user {{ u.username }}? This cannot be undone.">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-people"></i>
+            <h5>No users yet</h5>
+            <p>Click "Add User" to create the first one.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ============ MODALS: USER CREATE / EDIT ============ -->
+    <div class="modal-shell" id="modal-user-create" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head">
+                <h3><i class="bi bi-person-plus"></i> Add User</h3>
+                <button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button>
+            </div>
+            <form method="post" action="{% url 'advisories:admin_user_create' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Username <span class="req">*</span></label>
+                            <input type="text" name="username" class="form-control" required>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Email <span class="req">*</span></label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">First name</label>
+                            <input type="text" name="first_name" class="form-control">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Last name</label>
+                            <input type="text" name="last_name" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Phone</label>
+                            <input type="text" name="phone_number" class="form-control">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Role <span class="req">*</span></label>
+                            <select name="role" class="form-select" required>
+                                <option value="FARMER">Farmer</option>
+                                <option value="EXT_OFFICER">Extension Officer</option>
+                                <option value="RESEARCHER">Researcher</option>
+                                <option value="KALRO_ADMIN">KALRO Admin</option>
+                                <option value="SYS_ADMIN">System Administrator</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">County</label>
+                            <input type="text" name="county" class="form-control">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Sub-county</label>
+                            <input type="text" name="sub_county" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Ward</label>
+                            <input type="text" name="ward" class="form-control">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Language</label>
+                            <select name="preferred_language" class="form-select">
+                                <option value="en">English</option>
+                                <option value="sw">Kiswahili</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Password <span class="req">*</span></label>
+                            <input type="password" name="password1" class="form-control" required>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Confirm password <span class="req">*</span></label>
+                            <input type="password" name="password2" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-foot">
+                    <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% for u in all_users %}
+    <div class="modal-shell" id="modal-user-edit-{{ u.pk }}" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head">
+                <h3><i class="bi bi-pencil"></i> Edit {{ u.username }}</h3>
+                <button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button>
+            </div>
+            <form method="post" action="{% url 'advisories:admin_user_update' u.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control" value="{{ u.username }}">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ u.email }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">First name</label>
+                            <input type="text" name="first_name" class="form-control" value="{{ u.first_name }}">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Last name</label>
+                            <input type="text" name="last_name" class="form-control" value="{{ u.last_name }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Phone</label>
+                            <input type="text" name="phone_number" class="form-control" value="{{ u.phone_number }}">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Role</label>
+                            <select name="role" class="form-select">
+                                <option value="FARMER" {% if u.role == 'FARMER' %}selected{% endif %}>Farmer</option>
+                                <option value="EXT_OFFICER" {% if u.role == 'EXT_OFFICER' %}selected{% endif %}>Extension Officer</option>
+                                <option value="RESEARCHER" {% if u.role == 'RESEARCHER' %}selected{% endif %}>Researcher</option>
+                                <option value="KALRO_ADMIN" {% if u.role == 'KALRO_ADMIN' %}selected{% endif %}>KALRO Admin</option>
+                                <option value="SYS_ADMIN" {% if u.role == 'SYS_ADMIN' %}selected{% endif %}>System Administrator</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">County</label>
+                            <input type="text" name="county" class="form-control" value="{{ u.county }}">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Sub-county</label>
+                            <input type="text" name="sub_county" class="form-control" value="{{ u.sub_county }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Ward</label>
+                            <input type="text" name="ward" class="form-control" value="{{ u.ward }}">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Language</label>
+                            <select name="preferred_language" class="form-select">
+                                <option value="en" {% if u.preferred_language == 'en' %}selected{% endif %}>English</option>
+                                <option value="sw" {% if u.preferred_language == 'sw' %}selected{% endif %}>Kiswahili</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="switch-row">
+                                <input type="checkbox" name="is_verified" {% if u.is_verified %}checked{% endif %}>
+                                <span>Verified</span>
+                            </label>
+                        </div>
+                        <div class="form-col">
+                            <label class="switch-row">
+                                <input type="checkbox" name="is_active" {% if u.is_active %}checked{% endif %}>
+                                <span>Active</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-foot">
+                    <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 2 — FARMERS                                               -->
+<!-- ============================================================ -->
+<div class="admin-tab-panel" id="tab-farmers">
+
+    <div class="panel-head">
+        <div>
+            <h2>Farmers</h2>
+            <p>Create, edit, delete farmer records — inline.</p>
+        </div>
+        <button class="btn btn-primary" data-modal-open="modal-farmer-create">
+            <i class="bi bi-person-plus"></i> Add Farmer
+        </button>
+    </div>
+
+    <div class="panel-body">
+        {% if all_farmers %}
+        <div class="data-table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Farmer</th>
+                        <th>National ID</th>
+                        <th>Phone</th>
+                        <th>County</th>
+                        <th>Enterprise</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in all_farmers %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar">{{ f.full_name|slice:":1"|upper }}</div>
+                                <div>
+                                    <div class="user-name">{{ f.full_name }}</div>
+                                    <div class="user-meta">{{ f.email|default:"" }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="font-mono fs-12">{{ f.national_id }}</span></td>
+                        <td><span class="font-mono fs-12">{{ f.phone_number }}</span></td>
+                        <td>{{ f.county.name|default:"—" }}</td>
+                        <td>{{ f.primary_enterprise|default:"—" }}</td>
+                        <td>
+                            {% if f.is_active %}
+                                <span class="pill pill-green">Active</span>
+                            {% else %}
+                                <span class="pill pill-red">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <button class="row-action" title="Edit"
+                                        data-modal-open="modal-farmer-edit-{{ f.pk }}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="row-action row-action-del" title="Delete"
+                                        data-confirm-delete="{% url 'advisories:admin_farmer_delete' f.pk %}"
+                                        data-confirm-text="Delete farmer {{ f.full_name }}? This cannot be undone.">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-tree"></i>
+            <h5>No farmers yet</h5>
+            <p>Click "Add Farmer" to create the first one.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="modal-shell" id="modal-farmer-create" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head">
+                <h3><i class="bi bi-person-plus"></i> Add Farmer</h3>
+                <button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button>
+            </div>
+            <form method="post" action="{% url 'advisories:admin_farmer_create' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">National ID <span class="req">*</span></label>
+                            <input type="text" name="national_id" class="form-control" required>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Full name <span class="req">*</span></label>
+                            <input type="text" name="full_name" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Phone <span class="req">*</span></label>
+                            <input type="text" name="phone_number" class="form-control" required>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Gender</label>
+                            <select name="gender" class="form-select">
+                                <option value="">—</option>
+                                <option value="M">Male</option>
+                                <option value="F">Female</option>
+                                <option value="O">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Date of birth</label>
+                            <input type="date" name="date_of_birth" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">County</label>
+                            <select name="county" class="form-select">
+                                <option value="">—</option>
+                                {% for c in all_counties %}
+                                <option value="{{ c.pk }}">{{ c.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Sub-county</label>
+                            <input type="text" name="sub_county" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Ward</label>
+                            <input type="text" name="ward" class="form-control">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Village</label>
+                            <input type="text" name="village" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Land size</label>
+                            <input type="number" step="0.01" name="total_land_size" class="form-control">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Unit</label>
+                            <select name="land_size_unit" class="form-select">
+                                <option value="ACRE">Acres</option>
+                                <option value="HA">Hectares</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Primary enterprise</label>
+                            <input type="text" name="primary_enterprise" class="form-control" placeholder="e.g. Maize, Dairy">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Registration source</label>
+                            <input type="text" name="registration_source" class="form-control" value="ADMIN_DASHBOARD">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="switch-row">
+                                <input type="checkbox" name="is_active" checked>
+                                <span>Active</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col" style="grid-column: 1 / -1;">
+                            <label class="form-label">Notes</label>
+                            <textarea name="notes" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-foot">
+                    <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Create Farmer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% for f in all_farmers %}
+    <div class="modal-shell" id="modal-farmer-edit-{{ f.pk }}" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head">
+                <h3><i class="bi bi-pencil"></i> Edit {{ f.full_name }}</h3>
+                <button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button>
+            </div>
+            <form method="post" action="{% url 'advisories:admin_farmer_update' f.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">National ID</label>
+                            <input type="text" name="national_id" class="form-control" value="{{ f.national_id }}" readonly>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Full name</label>
+                            <input type="text" name="full_name" class="form-control" value="{{ f.full_name }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Phone</label>
+                            <input type="text" name="phone_number" class="form-control" value="{{ f.phone_number }}">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ f.email }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Gender</label>
+                            <select name="gender" class="form-select">
+                                <option value="">—</option>
+                                <option value="M" {% if f.gender == 'M' %}selected{% endif %}>Male</option>
+                                <option value="F" {% if f.gender == 'F' %}selected{% endif %}>Female</option>
+                                <option value="O" {% if f.gender == 'O' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Date of birth</label>
+                            <input type="date" name="date_of_birth" class="form-control" value="{{ f.date_of_birth|date:'Y-m-d' }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">County</label>
+                            <select name="county" class="form-select">
+                                <option value="">—</option>
+                                {% for c in all_counties %}
+                                <option value="{{ c.pk }}" {% if f.county_id == c.pk %}selected{% endif %}>{{ c.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Sub-county</label>
+                            <input type="text" name="sub_county" class="form-control" value="{{ f.sub_county }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Ward</label>
+                            <input type="text" name="ward" class="form-control" value="{{ f.ward }}">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Village</label>
+                            <input type="text" name="village" class="form-control" value="{{ f.village }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Land size</label>
+                            <input type="number" step="0.01" name="total_land_size" class="form-control" value="{{ f.total_land_size|default_if_none:'' }}">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Unit</label>
+                            <select name="land_size_unit" class="form-select">
+                                <option value="ACRE" {% if f.land_size_unit == 'ACRE' %}selected{% endif %}>Acres</option>
+                                <option value="HA" {% if f.land_size_unit == 'HA' %}selected{% endif %}>Hectares</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Primary enterprise</label>
+                            <input type="text" name="primary_enterprise" class="form-control" value="{{ f.primary_enterprise }}">
+                        </div>
+                        <div class="form-col">
+                            <label class="switch-row" style="margin-top: 24px;">
+                                <input type="checkbox" name="is_active" {% if f.is_active %}checked{% endif %}>
+                                <span>Active</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-foot">
+                    <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 3 — FARMS                                                 -->
+<!-- ============================================================ -->
+<div class="admin-tab-panel" id="tab-farms">
+
+    <div class="panel-head">
+        <div>
+            <h2>Farms</h2>
+            <p>Create, edit, delete farm records — inline.</p>
+        </div>
+        <button class="btn btn-primary" data-modal-open="modal-farm-create">
+            <i class="bi bi-plus-circle"></i> Add Farm
+        </button>
+    </div>
+
+    <div class="panel-body">
+        {% if all_farms %}
+        <div class="data-table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Farm</th>
+                        <th>Farmer</th>
+                        <th>County</th>
+                        <th>Size</th>
+                        <th>Irrigation</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fm in all_farms %}
+                    <tr>
+                        <td>
+                            <div class="user-name">{{ fm.name }}</div>
+                            {% if fm.is_agripark_demo %}<span class="pill pill-gold" style="font-size:10px;">AgriPark</span>{% endif %}
+                        </td>
+                        <td>{{ fm.farmer.full_name|default:"—" }}</td>
+                        <td>{{ fm.county.name|default:"—" }}</td>
+                        <td>{{ fm.size|default:"—" }} {{ fm.get_size_unit_display|default:"" }}</td>
+                        <td><span class="pill pill-grey">{{ fm.get_irrigation_type_display|default:"—" }}</span></td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <button class="row-action" title="Edit"
+                                        data-modal-open="modal-farm-edit-{{ fm.pk }}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="row-action row-action-del" title="Delete"
+                                        data-confirm-delete="{% url 'advisories:admin_farm_delete' fm.pk %}"
+                                        data-confirm-text="Delete farm {{ fm.name }}? This cannot be undone.">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-geo-alt"></i>
+            <h5>No farms yet</h5>
+            <p>Click "Add Farm" to create the first one.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Create Farm modal -->
+    <div class="modal-shell" id="modal-farm-create" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head">
+                <h3><i class="bi bi-plus-circle"></i> Add Farm</h3>
+                <button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button>
+            </div>
+            <form method="post" action="{% url 'advisories:admin_farm_create' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Farmer <span class="req">*</span></label>
+                            <select name="farmer" class="form-select" required>
+                                <option value="">—</option>
+                                {% for f in all_farmers %}
+                                <option value="{{ f.pk }}">{{ f.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Farm name <span class="req">*</span></label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Size</label>
+                            <input type="number" step="0.01" name="size" class="form-control">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Unit</label>
+                            <select name="size_unit" class="form-select">
+                                <option value="ACRE">Acres</option>
+                                <option value="HA">Hectares</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">County</label>
+                            <select name="county" class="form-select">
+                                <option value="">—</option>
+                                {% for c in all_counties %}
+                                <option value="{{ c.pk }}">{{ c.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Sub-county</label>
+                            <input type="text" name="sub_county" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Ward</label>
+                            <input type="text" name="ward" class="form-control">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Soil type</label>
+                            <input type="text" name="soil_type" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Latitude</label>
+                            <input type="text" name="gps_latitude" class="form-control">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Longitude</label>
+                            <input type="text" name="gps_longitude" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Irrigation</label>
+                            <select name="irrigation_type" class="form-select">
+                                <option value="RAIN">Rain-fed</option>
+                                <option value="DRIP">Drip</option>
+                                <option value="SPRINK">Sprinkler</option>
+                                <option value="FURROW">Furrow</option>
+                                <option value="MIXED">Mixed</option>
+                                <option value="NONE">None</option>
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Altitude (m)</label>
+                            <input type="number" name="altitude_m" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="switch-row">
+                                <input type="checkbox" name="is_agripark_demo">
+                                <span>AgriPark demo site</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-foot">
+                    <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Create Farm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% for fm in all_farms %}
+    <div class="modal-shell" id="modal-farm-edit-{{ fm.pk }}" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head">
+                <h3><i class="bi bi-pencil"></i> Edit {{ fm.name }}</h3>
+                <button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button>
+            </div>
+            <form method="post" action="{% url 'advisories:admin_farm_update' fm.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Farmer</label>
+                            <select name="farmer" class="form-select">
+                                {% for f in all_farmers %}
+                                <option value="{{ f.pk }}" {% if fm.farmer_id == f.pk %}selected{% endif %}>{{ f.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Farm name</label>
+                            <input type="text" name="name" class="form-control" value="{{ fm.name }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Size</label>
+                            <input type="number" step="0.01" name="size" class="form-control" value="{{ fm.size }}">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Unit</label>
+                            <select name="size_unit" class="form-select">
+                                <option value="ACRE" {% if fm.size_unit == 'ACRE' %}selected{% endif %}>Acres</option>
+                                <option value="HA" {% if fm.size_unit == 'HA' %}selected{% endif %}>Hectares</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">County</label>
+                            <select name="county" class="form-select">
+                                <option value="">—</option>
+                                {% for c in all_counties %}
+                                <option value="{{ c.pk }}" {% if fm.county_id == c.pk %}selected{% endif %}>{{ c.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Sub-county</label>
+                            <input type="text" name="sub_county" class="form-control" value="{{ fm.sub_county }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Ward</label>
+                            <input type="text" name="ward" class="form-control" value="{{ fm.ward }}">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Soil type</label>
+                            <input type="text" name="soil_type" class="form-control" value="{{ fm.soil_type }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Latitude</label>
+                            <input type="text" name="gps_latitude" class="form-control" value="{{ fm.gps_latitude|default_if_none:'' }}">
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Longitude</label>
+                            <input type="text" name="gps_longitude" class="form-control" value="{{ fm.gps_longitude|default_if_none:'' }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Irrigation</label>
+                            <select name="irrigation_type" class="form-select">
+                                <option value="RAIN" {% if fm.irrigation_type == 'RAIN' %}selected{% endif %}>Rain-fed</option>
+                                <option value="DRIP" {% if fm.irrigation_type == 'DRIP' %}selected{% endif %}>Drip</option>
+                                <option value="SPRINK" {% if fm.irrigation_type == 'SPRINK' %}selected{% endif %}>Sprinkler</option>
+                                <option value="FURROW" {% if fm.irrigation_type == 'FURROW' %}selected{% endif %}>Furrow</option>
+                                <option value="MIXED" {% if fm.irrigation_type == 'MIXED' %}selected{% endif %}>Mixed</option>
+                                <option value="NONE" {% if fm.irrigation_type == 'NONE' %}selected{% endif %}>None</option>
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Altitude (m)</label>
+                            <input type="number" name="altitude_m" class="form-control" value="{{ fm.altitude_m|default_if_none:'' }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="switch-row">
+                                <input type="checkbox" name="is_agripark_demo" {% if fm.is_agripark_demo %}checked{% endif %}>
+                                <span>AgriPark demo site</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-foot">
+                    <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 4 — ADVISORIES                                            -->
+<!-- ============================================================ -->
+<div class="admin-tab-panel" id="tab-advisories">
+
+    <div class="panel-head">
+        <div>
+            <h2>Advisories</h2>
+            <p>Create, edit, approve, dispatch, delete — inline.</p>
+        </div>
+        <button class="btn btn-primary" data-modal-open="modal-advisory-create">
+            <i class="bi bi-plus-circle"></i> Add Advisory
+        </button>
+    </div>
+
+    <div class="panel-body">
+        {% if all_advisories %}
+        <div class="data-table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Farmer</th>
+                        <th>Type</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for adv in all_advisories %}
+                    <tr>
+                        <td>
+                            <div class="adv-row-title">{{ adv.title|truncatechars:50 }}</div>
+                            <div class="adv-row-meta">{{ adv.short_message|default:adv.body|truncatechars:60 }}</div>
+                        </td>
+                        <td>{% if adv.farmer %}{{ adv.farmer.full_name }}{% else %}—{% endif %}</td>
+                        <td><span class="pill pill-grey">{{ adv.get_kind_display }}</span></td>
+                        <td>
+                            {% if adv.priority == 'URGENT' %}<span class="pill pill-priority-urgent">Urgent</span>
+                            {% elif adv.priority == 'HIGH' %}<span class="pill pill-priority-high">High</span>
+                            {% else %}<span class="pill pill-priority-normal">Normal</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if adv.status == 'DRAFT' %}<span class="pill pill-gold">Draft</span>
+                            {% elif adv.status == 'APPROVED' %}<span class="pill pill-gold">Approved</span>
+                            {% elif adv.status == 'SENT' %}<span class="pill pill-green">Sent</span>
+                            {% elif adv.status == 'FAILED' %}<span class="pill pill-red">Failed</span>
+                            {% else %}<span class="pill pill-grey">{{ adv.get_status_display }}</span>{% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <button class="row-action" title="Edit"
+                                        data-modal-open="modal-advisory-edit-{{ adv.pk }}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                {% if adv.status == 'DRAFT' %}
+                                <form method="post" action="{% url 'advisories:admin_advisory_approve' adv.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="row-action row-action-ok" title="Approve">
+                                        <i class="bi bi-check2-circle"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                {% if adv.status == 'APPROVED' %}
+                                <form method="post" action="{% url 'advisories:admin_advisory_dispatch' adv.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="row-action" title="Dispatch">
+                                        <i class="bi bi-send"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <button class="row-action row-action-del" title="Delete"
+                                        data-confirm-delete="{% url 'advisories:admin_advisory_delete' adv.pk %}"
+                                        data-confirm-text="Delete advisory #{{ adv.pk }}? This cannot be undone.">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-megaphone"></i>
+            <h5>No advisories yet</h5>
+            <p>Click "Add Advisory" to create one.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="modal-shell" id="modal-advisory-create" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head">
+                <h3><i class="bi bi-plus-circle"></i> Add Advisory</h3>
+                <button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button>
+            </div>
+            <form method="post" action="{% url 'advisories:admin_advisory_create' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Farmer</label>
+                            <select name="farmer" class="form-select">
+                                <option value="">—</option>
+                                {% for f in all_farmers %}
+                                <option value="{{ f.pk }}">{{ f.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Farm</label>
+                            <select name="farm" class="form-select">
+                                <option value="">—</option>
+                                {% for fm in all_farms %}
+                                <option value="{{ fm.pk }}">{{ fm.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Crop</label>
+                            <select name="crop" class="form-select">
+                                <option value="">—</option>
+                                {% for c in all_crops %}
+                                <option value="{{ c.pk }}">{{ c.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Type <span class="req">*</span></label>
+                            <select name="kind" class="form-select" required>
+                                <option value="PLANTING">Planting</option>
+                                <option value="FERT">Fertilizer</option>
+                                <option value="IRRIG">Irrigation</option>
+                                <option value="PEST">Pest</option>
+                                <option value="DISEASE">Disease</option>
+                                <option value="WEATHER">Weather</option>
+                                <option value="HARVEST">Harvest</option>
+                                <option value="MARKET">Market</option>
+                                <option value="GEN">General</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Priority</label>
+                            <select name="priority" class="form-select">
+                                <option value="LOW">Low</option>
+                                <option value="NORMAL" selected>Normal</option>
+                                <option value="HIGH">High</option>
+                                <option value="URGENT">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="DRAFT" selected>Draft</option>
+                                <option value="APPROVED">Approved</option>
+                                <option value="SENT">Sent</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col" style="grid-column: 1 / -1;">
+                            <label class="form-label">Title <span class="req">*</span></label>
+                            <input type="text" name="title" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col" style="grid-column: 1 / -1;">
+                            <label class="form-label">Body <span class="req">*</span></label>
+                            <textarea name="body" class="form-control" rows="4" required></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col" style="grid-column: 1 / -1;">
+                            <label class="form-label">Short message (SMS)</label>
+                            <input type="text" name="short_message" class="form-control" maxlength="320">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-foot">
+                    <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Create Advisory</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% for adv in all_advisories %}
+    <div class="modal-shell" id="modal-advisory-edit-{{ adv.pk }}" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head">
+                <h3><i class="bi bi-pencil"></i> Edit Advisory #{{ adv.pk }}</h3>
+                <button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button>
+            </div>
+            <form method="post" action="{% url 'advisories:admin_advisory_update' adv.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col" style="grid-column: 1 / -1;">
+                            <label class="form-label">Title</label>
+                            <input type="text" name="title" class="form-control" value="{{ adv.title }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="form-label">Type</label>
+                            <select name="kind" class="form-select">
+                                <option value="PLANTING" {% if adv.kind == 'PLANTING' %}selected{% endif %}>Planting</option>
+                                <option value="FERT" {% if adv.kind == 'FERT' %}selected{% endif %}>Fertilizer</option>
+                                <option value="IRRIG" {% if adv.kind == 'IRRIG' %}selected{% endif %}>Irrigation</option>
+                                <option value="PEST" {% if adv.kind == 'PEST' %}selected{% endif %}>Pest</option>
+                                <option value="DISEASE" {% if adv.kind == 'DISEASE' %}selected{% endif %}>Disease</option>
+                                <option value="WEATHER" {% if adv.kind == 'WEATHER' %}selected{% endif %}>Weather</option>
+                                <option value="HARVEST" {% if adv.kind == 'HARVEST' %}selected{% endif %}>Harvest</option>
+                                <option value="MARKET" {% if adv.kind == 'MARKET' %}selected{% endif %}>Market</option>
+                                <option value="GEN" {% if adv.kind == 'GEN' %}selected{% endif %}>General</option>
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label class="form-label">Priority</label>
+                            <select name="priority" class="form-select">
+                                <option value="LOW" {% if adv.priority == 'LOW' %}selected{% endif %}>Low</option>
+                                <option value="NORMAL" {% if adv.priority == 'NORMAL' %}selected{% endif %}>Normal</option>
+                                <option value="HIGH" {% if adv.priority == 'HIGH' %}selected{% endif %}>High</option>
+                                <option value="URGENT" {% if adv.priority == 'URGENT' %}selected{% endif %}>Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col" style="grid-column: 1 / -1;">
+                            <label class="form-label">Body</label>
+                            <textarea name="body" class="form-control" rows="5">{{ adv.body }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-foot">
+                    <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 5 — TRIALS                                                -->
+<!-- ============================================================ -->
+<div class="admin-tab-panel" id="tab-trials">
+    <div class="panel-head">
+        <div><h2>Field Trials</h2><p>Create, edit, delete trials — inline.</p></div>
+        <button class="btn btn-primary" data-modal-open="modal-trial-create">
+            <i class="bi bi-plus-circle"></i> Add Trial
+        </button>
+    </div>
+    <div class="panel-body">
+        {% if all_trials %}
+        <div class="data-table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr><th>Code</th><th>Title</th><th>Crop</th><th>County</th><th>Status</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for t in all_trials %}
+                    <tr>
+                        <td><span class="font-mono fs-12">{{ t.code }}</span></td>
+                        <td>{{ t.title|truncatechars:50 }}</td>
+                        <td>{{ t.crop.name|default:"—" }}</td>
+                        <td>{{ t.county.name|default:"—" }}</td>
+                        <td><span class="pill pill-grey">{{ t.get_status_display }}</span></td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <button class="row-action" title="Edit" data-modal-open="modal-trial-edit-{{ t.pk }}"><i class="bi bi-pencil"></i></button>
+                                <button class="row-action row-action-del" title="Delete"
+                                        data-confirm-delete="{% url 'advisories:admin_trial_delete' t.pk %}"
+                                        data-confirm-text="Delete trial {{ t.code }}?"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-clipboard-data"></i><h5>No trials yet</h5><p>Click "Add Trial" to create one.</p></div>
+        {% endif %}
+    </div>
+
+    <div class="modal-shell" id="modal-trial-create" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head"><h3><i class="bi bi-plus-circle"></i> Add Trial</h3><button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button></div>
+            <form method="post" action="{% url 'advisories:admin_trial_create' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Code <span class="req">*</span></label><input type="text" name="code" class="form-control" required></div>
+                        <div class="form-col"><label class="form-label">Crop</label>
+                            <select name="crop" class="form-select"><option value="">—</option>{% for c in all_crops %}<option value="{{ c.pk }}">{{ c.name }}</option>{% endfor %}</select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col" style="grid-column: 1 / -1;"><label class="form-label">Title <span class="req">*</span></label><input type="text" name="title" class="form-control" required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">County</label>
+                            <select name="county" class="form-select"><option value="">—</option>{% for c in all_counties %}<option value="{{ c.pk }}">{{ c.name }}</option>{% endfor %}</select>
+                        </div>
+                        <div class="form-col"><label class="form-label">Season</label><input type="text" name="season" class="form-control"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Status</label>
+                            <select name="status" class="form-select"><option value="PLANNED">Planned</option><option value="ONGOING">Ongoing</option><option value="DONE">Completed</option></select>
+                        </div>
+                        <div class="form-col"><label class="form-label">Design</label>
+                            <select name="design" class="form-select"><option value="RCBD">RCBD</option><option value="CRD">CRD</option><option value="SPLIT">Split-plot</option><option value="FACT">Factorial</option><option value="DEMO">Demo</option></select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Started on</label><input type="date" name="started_on" class="form-control"></div>
+                        <div class="form-col"><label class="form-label">Ended on</label><input type="date" name="ended_on" class="form-control"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="switch-row"><input type="checkbox" name="is_published"><span>Published</span></label></div>
+                    </div>
+                </div>
+                <div class="modal-foot"><button type="button" class="btn btn-outline" data-modal-close>Cancel</button><button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Create Trial</button></div>
+            </form>
+        </div>
+    </div>
+
+    {% for t in all_trials %}
+    <div class="modal-shell" id="modal-trial-edit-{{ t.pk }}" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head"><h3><i class="bi bi-pencil"></i> Edit {{ t.code }}</h3><button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button></div>
+            <form method="post" action="{% url 'advisories:admin_trial_update' t.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Code</label><input type="text" name="code" class="form-control" value="{{ t.code }}"></div>
+                        <div class="form-col"><label class="form-label">Crop</label>
+                            <select name="crop" class="form-select"><option value="">—</option>{% for c in all_crops %}<option value="{{ c.pk }}" {% if t.crop_id == c.pk %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select>
+                        </div>
+                    </div>
+                    <div class="form-row"><div class="form-col" style="grid-column: 1 / -1;"><label class="form-label">Title</label><input type="text" name="title" class="form-control" value="{{ t.title }}"></div></div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="PLANNED" {% if t.status == 'PLANNED' %}selected{% endif %}>Planned</option>
+                                <option value="ONGOING" {% if t.status == 'ONGOING' %}selected{% endif %}>Ongoing</option>
+                                <option value="DONE" {% if t.status == 'DONE' %}selected{% endif %}>Completed</option>
+                            </select>
+                        </div>
+                        <div class="form-col"><label class="form-label">Published</label>
+                            <label class="switch-row" style="margin-top: 4px;"><input type="checkbox" name="is_published" {% if t.is_published %}checked{% endif %}><span>Yes</span></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-foot"><button type="button" class="btn btn-outline" data-modal-close>Cancel</button><button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Save Changes</button></div>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 6 — PINN MODELS                                           -->
+<!-- ============================================================ -->
+<div class="admin-tab-panel" id="tab-pinn">
+    <div class="panel-head">
+        <div><h2>PINN Models</h2><p>Create, edit, delete PINN models — inline.</p></div>
+        <button class="btn btn-primary" data-modal-open="modal-pinn-create"><i class="bi bi-plus-circle"></i> Add Model</button>
+    </div>
+    <div class="panel-body">
+        {% if all_pinn_models %}
+        <div class="data-table-wrap">
+            <table class="data-table">
+                <thead><tr><th>Name</th><th>Version</th><th>Architecture</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                <tbody>
+                    {% for m in all_pinn_models %}
+                    <tr>
+                        <td><div class="user-name">{{ m.name }}</div></td>
+                        <td><span class="font-mono fs-12">{{ m.version }}</span></td>
+                        <td><span class="pill pill-grey">{{ m.get_architecture_display }}</span></td>
+                        <td>
+                            {% if m.status == 'READY' %}<span class="pill pill-green">Ready</span>
+                            {% elif m.status == 'TRAINING' %}<span class="pill pill-gold">Training</span>
+                            {% elif m.status == 'FAILED' %}<span class="pill pill-red">Failed</span>
+                            {% else %}<span class="pill pill-grey">{{ m.get_status_display }}</span>{% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <button class="row-action" title="Edit" data-modal-open="modal-pinn-edit-{{ m.pk }}"><i class="bi bi-pencil"></i></button>
+                                <button class="row-action row-action-del" title="Delete"
+                                        data-confirm-delete="{% url 'advisories:admin_pinn_delete' m.pk %}"
+                                        data-confirm-text="Delete model {{ m.name }}?"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-cpu"></i><h5>No PINN models yet</h5><p>Click "Add Model" to create one.</p></div>
+        {% endif %}
+    </div>
+
+    <div class="modal-shell" id="modal-pinn-create" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head"><h3><i class="bi bi-plus-circle"></i> Add PINN Model</h3><button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button></div>
+            <form method="post" action="{% url 'advisories:admin_pinn_create' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Name <span class="req">*</span></label><input type="text" name="name" class="form-control" required></div>
+                        <div class="form-col"><label class="form-label">Version</label><input type="text" name="version" class="form-control" value="0.1.0"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Architecture</label>
+                            <select name="architecture" class="form-select">
+                                <option value="MLP">MLP</option><option value="LSTM">LSTM</option><option value="GRU">GRU</option><option value="TF">Transformer</option><option value="HYBRID">Hybrid</option>
+                            </select>
+                        </div>
+                        <div class="form-col"><label class="form-label">Status</label>
+                            <select name="status" class="form-select"><option value="DRAFT">Draft</option><option value="TRAINING">Training</option><option value="READY">Ready</option><option value="ARCHIVED">Archived</option></select>
+                        </div>
+                    </div>
+                    <div class="form-row"><div class="form-col" style="grid-column: 1 / -1;"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="3"></textarea></div></div>
+                </div>
+                <div class="modal-foot"><button type="button" class="btn btn-outline" data-modal-close>Cancel</button><button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Create Model</button></div>
+            </form>
+        </div>
+    </div>
+
+    {% for m in all_pinn_models %}
+    <div class="modal-shell" id="modal-pinn-edit-{{ m.pk }}" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head"><h3><i class="bi bi-pencil"></i> Edit {{ m.name }}</h3><button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button></div>
+            <form method="post" action="{% url 'advisories:admin_pinn_update' m.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Name</label><input type="text" name="name" class="form-control" value="{{ m.name }}"></div>
+                        <div class="form-col"><label class="form-label">Version</label><input type="text" name="version" class="form-control" value="{{ m.version }}"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Architecture</label>
+                            <select name="architecture" class="form-select">
+                                <option value="MLP" {% if m.architecture == 'MLP' %}selected{% endif %}>MLP</option>
+                                <option value="LSTM" {% if m.architecture == 'LSTM' %}selected{% endif %}>LSTM</option>
+                                <option value="GRU" {% if m.architecture == 'GRU' %}selected{% endif %}>GRU</option>
+                                <option value="TF" {% if m.architecture == 'TF' %}selected{% endif %}>Transformer</option>
+                                <option value="HYBRID" {% if m.architecture == 'HYBRID' %}selected{% endif %}>Hybrid</option>
+                            </select>
+                        </div>
+                        <div class="form-col"><label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="DRAFT" {% if m.status == 'DRAFT' %}selected{% endif %}>Draft</option>
+                                <option value="TRAINING" {% if m.status == 'TRAINING' %}selected{% endif %}>Training</option>
+                                <option value="READY" {% if m.status == 'READY' %}selected{% endif %}>Ready</option>
+                                <option value="ARCHIVED" {% if m.status == 'ARCHIVED' %}selected{% endif %}>Archived</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-foot"><button type="button" class="btn btn-outline" data-modal-close>Cancel</button><button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Save Changes</button></div>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 7 — WEATHER                                               -->
+<!-- ============================================================ -->
+<div class="admin-tab-panel" id="tab-weather">
+    <div class="panel-head">
+        <div><h2>Weather Records</h2><p>Create, edit, delete weather observations — inline.</p></div>
+        <button class="btn btn-primary" data-modal-open="modal-weather-create"><i class="bi bi-plus-circle"></i> Add Record</button>
+    </div>
+    <div class="panel-body">
+        {% if all_weather %}
+        <div class="data-table-wrap">
+            <table class="data-table">
+                <thead><tr><th>Date</th><th>Station</th><th>Rainfall (mm)</th><th>Temp min/max</th><th>Humidity</th><th class="text-end">Actions</th></tr></thead>
+                <tbody>
+                    {% for w in all_weather %}
+                    <tr>
+                        <td><span class="font-mono fs-12">{{ w.date|date:"d M Y" }}</span></td>
+                        <td>{{ w.station.name|default:"—" }}</td>
+                        <td>{{ w.rainfall_mm|default:"—" }}</td>
+                        <td>{{ w.temp_min_c|default:"—" }} / {{ w.temp_max_c|default:"—" }}</td>
+                        <td>{{ w.humidity_pct|default:"—" }}%</td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <button class="row-action" title="Edit" data-modal-open="modal-weather-edit-{{ w.pk }}"><i class="bi bi-pencil"></i></button>
+                                <button class="row-action row-action-del" title="Delete"
+                                        data-confirm-delete="{% url 'advisories:admin_weather_delete' w.pk %}"
+                                        data-confirm-text="Delete weather record from {{ w.date }}?"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-cloud-sun"></i><h5>No weather records yet</h5><p>Click "Add Record" to create one.</p></div>
+        {% endif %}
+    </div>
+
+    <div class="modal-shell" id="modal-weather-create" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head"><h3><i class="bi bi-plus-circle"></i> Add Weather Record</h3><button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button></div>
+            <form method="post" action="{% url 'advisories:admin_weather_create' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Station <span class="req">*</span></label>
+                            <select name="station" class="form-select" required>
+                                <option value="">—</option>
+                                {% for s in all_weather_stations %}<option value="{{ s.pk }}">{{ s.name }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-col"><label class="form-label">Date <span class="req">*</span></label><input type="date" name="date" class="form-control" required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Rainfall (mm)</label><input type="number" step="0.01" name="rainfall_mm" class="form-control"></div>
+                        <div class="form-col"><label class="form-label">Humidity (%)</label><input type="number" step="0.01" name="humidity_pct" class="form-control"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Temp min (°C)</label><input type="number" step="0.01" name="temp_min_c" class="form-control"></div>
+                        <div class="form-col"><label class="form-label">Temp max (°C)</label><input type="number" step="0.01" name="temp_max_c" class="form-control"></div>
+                    </div>
+                </div>
+                <div class="modal-foot"><button type="button" class="btn btn-outline" data-modal-close>Cancel</button><button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Create</button></div>
+            </form>
+        </div>
+    </div>
+
+    {% for w in all_weather %}
+    <div class="modal-shell" id="modal-weather-edit-{{ w.pk }}" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head"><h3><i class="bi bi-pencil"></i> Edit Weather — {{ w.date }}</h3><button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button></div>
+            <form method="post" action="{% url 'advisories:admin_weather_update' w.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Rainfall (mm)</label><input type="number" step="0.01" name="rainfall_mm" class="form-control" value="{{ w.rainfall_mm|default_if_none:'' }}"></div>
+                        <div class="form-col"><label class="form-label">Humidity (%)</label><input type="number" step="0.01" name="humidity_pct" class="form-control" value="{{ w.humidity_pct|default_if_none:'' }}"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Temp min (°C)</label><input type="number" step="0.01" name="temp_min_c" class="form-control" value="{{ w.temp_min_c|default_if_none:'' }}"></div>
+                        <div class="form-col"><label class="form-label">Temp max (°C)</label><input type="number" step="0.01" name="temp_max_c" class="form-control" value="{{ w.temp_max_c|default_if_none:'' }}"></div>
+                    </div>
+                </div>
+                <div class="modal-foot"><button type="button" class="btn btn-outline" data-modal-close>Cancel</button><button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Save Changes</button></div>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 8 — SOIL                                                  -->
+<!-- ============================================================ -->
+<div class="admin-tab-panel" id="tab-soil">
+    <div class="panel-head">
+        <div><h2>Soil Tests</h2><p>Create, edit, delete soil tests — inline.</p></div>
+        <button class="btn btn-primary" data-modal-open="modal-soil-create"><i class="bi bi-plus-circle"></i> Add Soil Test</button>
+    </div>
+    <div class="panel-body">
+        {% if all_soil_tests %}
+        <div class="data-table-wrap">
+            <table class="data-table">
+                <thead><tr><th>Sample ID</th><th>Farm</th><th>Sampled</th><th>pH</th><th>N (%)</th><th>P (ppm)</th><th>K (ppm)</th><th class="text-end">Actions</th></tr></thead>
+                <tbody>
+                    {% for s in all_soil_tests %}
+                    <tr>
+                        <td><span class="font-mono fs-12">{{ s.sample_id }}</span></td>
+                        <td>{{ s.farm.name|default:"—" }}</td>
+                        <td><span class="font-mono fs-12">{{ s.sampled_on|date:"d M Y" }}</span></td>
+                        <td>{{ s.ph|default:"—" }}</td>
+                        <td>{{ s.nitrogen_pct|default:"—" }}</td>
+                        <td>{{ s.phosphorus_ppm|default:"—" }}</td>
+                        <td>{{ s.potassium_ppm|default:"—" }}</td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <button class="row-action" title="Edit" data-modal-open="modal-soil-edit-{{ s.pk }}"><i class="bi bi-pencil"></i></button>
+                                <button class="row-action row-action-del" title="Delete"
+                                        data-confirm-delete="{% url 'advisories:admin_soil_delete' s.pk %}"
+                                        data-confirm-text="Delete soil test {{ s.sample_id }}?"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-droplet-half"></i><h5>No soil tests yet</h5><p>Click "Add Soil Test" to create one.</p></div>
+        {% endif %}
+    </div>
+
+    <div class="modal-shell" id="modal-soil-create" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head"><h3><i class="bi bi-plus-circle"></i> Add Soil Test</h3><button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button></div>
+            <form method="post" action="{% url 'advisories:admin_soil_create' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Farm <span class="req">*</span></label>
+                            <select name="farm" class="form-select" required>
+                                <option value="">—</option>
+                                {% for fm in all_farms %}<option value="{{ fm.pk }}">{{ fm.name }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-col"><label class="form-label">Sample ID <span class="req">*</span></label><input type="text" name="sample_id" class="form-control" required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Sampled on <span class="req">*</span></label><input type="date" name="sampled_on" class="form-control" required></div>
+                        <div class="form-col"><label class="form-label">Lab</label>
+                            <select name="lab" class="form-select">
+                                <option value="KALRO">KALRO</option><option value="KEPHIS">KEPHIS</option>
+                                <option value="PRIVATE">Private Lab</option><option value="FIELD">Field Kit</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">pH</label><input type="number" step="0.01" name="ph" class="form-control"></div>
+                        <div class="form-col"><label class="form-label">Organic carbon (%)</label><input type="number" step="0.001" name="organic_carbon_pct" class="form-control"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Nitrogen (%)</label><input type="number" step="0.001" name="nitrogen_pct" class="form-control"></div>
+                        <div class="form-col"><label class="form-label">Phosphorus (ppm)</label><input type="number" step="0.01" name="phosphorus_ppm" class="form-control"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Potassium (ppm)</label><input type="number" step="0.01" name="potassium_ppm" class="form-control"></div>
+                        <div class="form-col"><label class="form-label">Texture</label><input type="text" name="texture" class="form-control"></div>
+                    </div>
+                </div>
+                <div class="modal-foot"><button type="button" class="btn btn-outline" data-modal-close>Cancel</button><button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Create</button></div>
+            </form>
+        </div>
+    </div>
+
+    {% for s in all_soil_tests %}
+    <div class="modal-shell" id="modal-soil-edit-{{ s.pk }}" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head"><h3><i class="bi bi-pencil"></i> Edit {{ s.sample_id }}</h3><button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button></div>
+            <form method="post" action="{% url 'advisories:admin_soil_update' s.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">pH</label><input type="number" step="0.01" name="ph" class="form-control" value="{{ s.ph|default_if_none:'' }}"></div>
+                        <div class="form-col"><label class="form-label">Nitrogen (%)</label><input type="number" step="0.001" name="nitrogen_pct" class="form-control" value="{{ s.nitrogen_pct|default_if_none:'' }}"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Phosphorus (ppm)</label><input type="number" step="0.01" name="phosphorus_ppm" class="form-control" value="{{ s.phosphorus_ppm|default_if_none:'' }}"></div>
+                        <div class="form-col"><label class="form-label">Potassium (ppm)</label><input type="number" step="0.01" name="potassium_ppm" class="form-control" value="{{ s.potassium_ppm|default_if_none:'' }}"></div>
+                    </div>
+                </div>
+                <div class="modal-foot"><button type="button" class="btn btn-outline" data-modal-close>Cancel</button><button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Save Changes</button></div>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 9 — CROPS                                                 -->
+<!-- ============================================================ -->
+<div class="admin-tab-panel" id="tab-crops">
+    <div class="panel-head">
+        <div><h2>Crops</h2><p>Create, edit, delete crops — inline.</p></div>
+        <button class="btn btn-primary" data-modal-open="modal-crop-create"><i class="bi bi-plus-circle"></i> Add Crop</button>
+    </div>
+    <div class="panel-body">
+        {% if all_crops %}
+        <div class="data-table-wrap">
+            <table class="data-table">
+                <thead><tr><th>Name</th><th>Category</th><th>Season</th><th>Water (mm)</th><th>Active</th><th class="text-end">Actions</th></tr></thead>
+                <tbody>
+                    {% for c in all_crops %}
+                    <tr>
+                        <td><div class="user-name">{{ c.name }}</div><div class="user-meta">{{ c.scientific_name|default:"" }}</div></td>
+                        <td>{{ c.category.name|default:"—" }}</td>
+                        <td><span class="pill pill-grey">{{ c.get_season_display }}</span></td>
+                        <td>{{ c.water_requirement_mm|default:"—" }}</td>
+                        <td>{% if c.is_active %}<span class="pill pill-green">Yes</span>{% else %}<span class="pill pill-grey">No</span>{% endif %}</td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <button class="row-action" title="Edit" data-modal-open="modal-crop-edit-{{ c.pk }}"><i class="bi bi-pencil"></i></button>
+                                <button class="row-action row-action-del" title="Delete"
+                                        data-confirm-delete="{% url 'advisories:admin_crop_delete' c.pk %}"
+                                        data-confirm-text="Delete crop {{ c.name }}?"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-flower1"></i><h5>No crops yet</h5><p>Click "Add Crop" to create one.</p></div>
+        {% endif %}
+    </div>
+
+    <div class="modal-shell" id="modal-crop-create" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head"><h3><i class="bi bi-plus-circle"></i> Add Crop</h3><button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button></div>
+            <form method="post" action="{% url 'advisories:admin_crop_create' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Name <span class="req">*</span></label><input type="text" name="name" class="form-control" required></div>
+                        <div class="form-col"><label class="form-label">Scientific name</label><input type="text" name="scientific_name" class="form-control"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Category</label>
+                            <select name="category" class="form-select"><option value="">—</option>{% for cat in all_crop_categories %}<option value="{{ cat.pk }}">{{ cat.name }}</option>{% endfor %}</select>
+                        </div>
+                        <div class="form-col"><label class="form-label">Season</label>
+                            <select name="season" class="form-select">
+                                <option value="LR">Long Rains</option><option value="SR">Short Rains</option>
+                                <option value="BOTH">Both seasons</option><option value="DRY">Dry season</option>
+                                <option value="PER">Perennial</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Water requirement (mm)</label><input type="number" name="water_requirement_mm" class="form-control"></div>
+                        <div class="form-col"><label class="form-label">Days to maturity</label><input type="number" name="days_to_maturity" class="form-control"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="switch-row"><input type="checkbox" name="is_active" checked><span>Active</span></label></div>
+                    </div>
+                </div>
+                <div class="modal-foot"><button type="button" class="btn btn-outline" data-modal-close>Cancel</button><button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Create</button></div>
+            </form>
+        </div>
+    </div>
+
+    {% for c in all_crops %}
+    <div class="modal-shell" id="modal-crop-edit-{{ c.pk }}" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head"><h3><i class="bi bi-pencil"></i> Edit {{ c.name }}</h3><button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button></div>
+            <form method="post" action="{% url 'advisories:admin_crop_update' c.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Name</label><input type="text" name="name" class="form-control" value="{{ c.name }}"></div>
+                        <div class="form-col"><label class="form-label">Scientific name</label><input type="text" name="scientific_name" class="form-control" value="{{ c.scientific_name }}"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Water (mm)</label><input type="number" name="water_requirement_mm" class="form-control" value="{{ c.water_requirement_mm|default_if_none:'' }}"></div>
+                        <div class="form-col"><label class="form-label">Days to maturity</label><input type="number" name="days_to_maturity" class="form-control" value="{{ c.days_to_maturity|default_if_none:'' }}"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="switch-row"><input type="checkbox" name="is_active" {% if c.is_active %}checked{% endif %}><span>Active</span></label></div>
+                    </div>
+                </div>
+                <div class="modal-foot"><button type="button" class="btn btn-outline" data-modal-close>Cancel</button><button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Save Changes</button></div>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 10 — INTEGRATIONS                                         -->
+<!-- ============================================================ -->
+<div class="admin-tab-panel" id="tab-integrations">
+    <div class="panel-head">
+        <div><h2>Integrations</h2><p>Configure external providers — inline.</p></div>
+        <button class="btn btn-primary" data-modal-open="modal-integration-create"><i class="bi bi-plus-circle"></i> Add Config</button>
+    </div>
+    <div class="panel-body">
+        {% if all_integrations %}
+        <div class="data-table-wrap">
+            <table class="data-table">
+                <thead><tr><th>Provider</th><th>Auth</th><th>Base URL</th><th>Active</th><th>Last OK</th><th class="text-end">Actions</th></tr></thead>
+                <tbody>
+                    {% for i in all_integrations %}
+                    <tr>
+                        <td><div class="user-name">{{ i.get_provider_display }}</div></td>
+                        <td><span class="pill pill-grey">{{ i.get_auth_type_display }}</span></td>
+                        <td><span class="font-mono fs-12">{{ i.base_url|default:"—"|truncatechars:40 }}</span></td>
+                        <td>{% if i.is_active %}<span class="pill pill-green">Active</span>{% else %}<span class="pill pill-grey">Off</span>{% endif %}</td>
+                        <td>{% if i.last_ok_at %}<span class="fs-12">{{ i.last_ok_at|date:"d M H:i" }}</span>{% else %}—{% endif %}</td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <button class="row-action" title="Edit" data-modal-open="modal-integration-edit-{{ i.pk }}"><i class="bi bi-pencil"></i></button>
+                                <button class="row-action row-action-del" title="Delete"
+                                        data-confirm-delete="{% url 'advisories:admin_integration_delete' i.pk %}"
+                                        data-confirm-text="Delete {{ i.get_provider_display }} config?"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-plug"></i><h5>No integrations configured</h5><p>Click "Add Config" to add one.</p></div>
+        {% endif %}
+    </div>
+
+    <div class="modal-shell" id="modal-integration-create" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head"><h3><i class="bi bi-plus-circle"></i> Add Integration</h3><button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button></div>
+            <form method="post" action="{% url 'advisories:admin_integration_create' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Provider <span class="req">*</span></label>
+                            <select name="provider" class="form-select" required>
+                                <option value="KAOP">KAOP</option><option value="AGDATA">AgData Hub</option>
+                                <option value="SELECTOR">Selector</option><option value="ISHAMBA">iShamba SMS</option>
+                                <option value="REGISTRY">KALRO Registry</option><option value="OTHER">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-col"><label class="form-label">Display name</label><input type="text" name="display_name" class="form-control"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Base URL</label><input type="url" name="base_url" class="form-control"></div>
+                        <div class="form-col"><label class="form-label">Auth type</label>
+                            <select name="auth_type" class="form-select">
+                                <option value="NONE">None</option><option value="APIKEY">API Key</option>
+                                <option value="BEARER">Bearer Token</option><option value="BASIC">Basic Auth</option>
+                                <option value="OAUTH2">OAuth 2.0</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">API Key</label><input type="text" name="api_key" class="form-control"></div>
+                        <div class="form-col"><label class="form-label">API Secret</label><input type="text" name="api_secret" class="form-control"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="switch-row"><input type="checkbox" name="is_active"><span>Active</span></label></div>
+                        <div class="form-col"><label class="switch-row"><input type="checkbox" name="is_sandbox" checked><span>Sandbox</span></label></div>
+                    </div>
+                </div>
+                <div class="modal-foot"><button type="button" class="btn btn-outline" data-modal-close>Cancel</button><button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Create</button></div>
+            </form>
+        </div>
+    </div>
+
+    {% for i in all_integrations %}
+    <div class="modal-shell" id="modal-integration-edit-{{ i.pk }}" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-card">
+            <div class="modal-head"><h3><i class="bi bi-pencil"></i> Edit {{ i.get_provider_display }}</h3><button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button></div>
+            <form method="post" action="{% url 'advisories:admin_integration_update' i.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">Display name</label><input type="text" name="display_name" class="form-control" value="{{ i.display_name }}"></div>
+                        <div class="form-col"><label class="form-label">Base URL</label><input type="url" name="base_url" class="form-control" value="{{ i.base_url }}"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="form-label">API Key</label><input type="text" name="api_key" class="form-control" value="{{ i.api_key }}"></div>
+                        <div class="form-col"><label class="form-label">API Secret</label><input type="text" name="api_secret" class="form-control" value="{{ i.api_secret }}"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col"><label class="switch-row"><input type="checkbox" name="is_active" {% if i.is_active %}checked{% endif %}><span>Active</span></label></div>
+                        <div class="form-col"><label class="switch-row"><input type="checkbox" name="is_sandbox" {% if i.is_sandbox %}checked{% endif %}><span>Sandbox</span></label></div>
+                    </div>
+                </div>
+                <div class="modal-foot"><button type="button" class="btn btn-outline" data-modal-close>Cancel</button><button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Save Changes</button></div>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 11 — ACTIVITY                                             -->
+<!-- ============================================================ -->
+<div class="admin-tab-panel" id="tab-activity">
+    <div class="panel-head">
+        <div><h2>Recent Login Activity</h2><p>Audit trail of sign-ins across the platform.</p></div>
+    </div>
+    <div class="panel-body">
+        {% if recent_logins %}
+            {% for audit in recent_logins %}
+            <div class="activity-row">
+                <div class="activity-icon {% if audit.successful %}act-ok{% else %}act-fail{% endif %}">
+                    <i class="bi {% if audit.successful %}bi-check-lg{% else %}bi-x-lg{% endif %}"></i>
+                </div>
+                <div class="activity-body">
+                    <div class="activity-title">
+                        {% if audit.successful %}
+                            <strong>{{ audit.user.get_full_name|default:audit.user.username|default:audit.username_attempted }}</strong> signed in
+                        {% else %}
+                            Failed sign-in as <strong>{{ audit.username_attempted }}</strong>
+                        {% endif %}
+                    </div>
+                    <div class="activity-meta">
+                        <span><i class="bi bi-clock"></i> {{ audit.timestamp|date:"d M Y · H:i" }}</span>
+                        {% if audit.ip_address %}<span><i class="bi bi-hdd-network"></i> {{ audit.ip_address }}</span>{% endif %}
+                        {% if audit.user %}<span class="pill pill-grey" style="font-size:10px;">{{ audit.user.get_role_display }}</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state"><i class="bi bi-shield-check"></i><h5>No login activity yet</h5></div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- DELETE CONFIRMATION MODAL                                     -->
+<!-- ============================================================ -->
+<div class="modal-shell" id="modal-confirm-delete" aria-hidden="true">
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="modal-card modal-card-sm">
+        <div class="modal-head modal-head-danger">
+            <h3><i class="bi bi-exclamation-triangle"></i> Confirm Delete</h3>
+            <button class="modal-close" data-modal-close><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body">
+            <p id="confirmDeleteText" style="margin: 0; font-size: 14px; color: var(--ink-700);">Are you sure?</p>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+            <form method="post" id="confirmDeleteForm" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- STYLES                                                        -->
+<!-- ============================================================ -->
+<style>
+    .admin-hero { background: linear-gradient(135deg, #0f1a14 0%, #0b3d2e 55%, #14543f 100%); border-radius: 12px; padding: 26px 28px; margin-bottom: 24px; color: #fff; position: relative; overflow: hidden; }
+    .admin-hero::after { content: ''; position: absolute; right: -60px; top: -60px; width: 260px; height: 260px; background: radial-gradient(circle, rgba(244,196,48,.22), transparent 70%); pointer-events: none; }
+    .admin-hero-inner { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; position: relative; z-index: 2; }
+    .admin-hero-badge { width: 68px; height: 68px; border-radius: 14px; background: rgba(255,255,255,.08); border: 2px solid var(--kalro-gold); color: var(--kalro-gold); display: grid; place-items: center; font-size: 30px; flex-shrink: 0; }
+    .admin-hero-text { flex: 1; min-width: 240px; }
+    .admin-hero-eyebrow { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--kalro-gold); margin-bottom: 6px; }
+    .admin-hero-name { font-family: var(--font-serif); font-size: 28px; font-weight: 700; color: #fff; margin: 0 0 8px; line-height: 1.15; letter-spacing: -0.01em; }
+    .admin-hero-meta { display: flex; gap: 20px; flex-wrap: wrap; font-size: 12.5px; color: rgba(255,255,255,.82); }
+    .admin-hero-meta span { display: inline-flex; align-items: center; gap: 6px; }
+    .admin-hero-meta i { color: var(--kalro-gold); }
+
+    .kpi-strip { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 24px; }
+    .kpi { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 16px; display: flex; gap: 12px; align-items: center; transition: all .15s; }
+    .kpi:hover { border-color: var(--kalro-green-400); box-shadow: 0 4px 12px rgba(11,61,46,.06); }
+    .kpi-icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+    .kpi-icon-green  { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .kpi-icon-gold   { background: var(--kalro-gold-100); color: var(--kalro-gold-700); }
+    .kpi-icon-blue   { background: #dbeafe; color: #1e40af; }
+    .kpi-icon-purple { background: #ede9fe; color: #5b21b6; }
+    .kpi-icon-red    { background: var(--kalro-red-100); color: var(--kalro-red); }
+    .kpi-value { font-family: var(--font-serif); font-size: 22px; font-weight: 700; color: var(--ink-900); line-height: 1; margin-bottom: 3px; }
+    .kpi-label { font-size: 10.5px; color: var(--ink-500); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; line-height: 1.2; }
+
+    .admin-tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--border); overflow-x: auto; }
+    .admin-tab { padding: 12px 18px; background: transparent; border: 0; border-bottom: 3px solid transparent; font-size: 12.5px; font-weight: 600; color: var(--ink-600); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; transition: all .15s; margin-bottom: -2px; }
+    .admin-tab:hover { color: var(--kalro-green); }
+    .admin-tab.active { color: var(--kalro-green); border-bottom-color: var(--kalro-green); }
+    .admin-tab .tab-count { background: var(--ink-100); color: var(--ink-700); font-size: 11px; padding: 1px 8px; border-radius: 10px; font-family: var(--font-mono); font-weight: 600; }
+    .admin-tab.active .tab-count { background: var(--kalro-green); color: #fff; }
+
+    .admin-tab-panel { display: none; }
+    .admin-tab-panel.active { display: block; }
+
+    .panel-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+    .panel-head h2 { font-family: var(--font-serif); font-size: 20px; font-weight: 700; color: var(--ink-900); margin: 0 0 4px; }
+    .panel-head p { font-size: 13px; color: var(--ink-600); margin: 0; }
+    .panel-body { background: #fff; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+
+    .data-table-wrap { overflow-x: auto; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table thead th { background: var(--ink-50); border-bottom: 2px solid var(--border-strong); padding: 11px 14px; text-align: left; font-size: 11px; font-weight: 700; color: var(--ink-600); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+    .data-table tbody td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .data-table tbody tr:hover { background: var(--kalro-green-50); }
+    .data-table tbody tr:last-child td { border-bottom: 0; }
+    .data-table .text-end { text-align: right; }
+
+    .user-cell { display: flex; gap: 10px; align-items: center; }
+    .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--kalro-green-100); color: var(--kalro-green); display: grid; place-items: center; font-family: var(--font-serif); font-weight: 700; font-size: 14px; flex-shrink: 0; }
+    .user-name { font-size: 13px; font-weight: 600; color: var(--ink-900); line-height: 1.2; }
+    .user-meta { font-size: 11px; color: var(--ink-500); margin-top: 1px; }
+    .adv-row-title { font-size: 13px; font-weight: 600; color: var(--ink-900); line-height: 1.3; }
+    .adv-row-meta  { font-size: 11.5px; color: var(--ink-500); margin-top: 2px; }
+
+    .action-bar { display: inline-flex; gap: 4px; }
+    .row-action { width: 30px; height: 30px; border: 1px solid transparent; background: transparent; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); cursor: pointer; text-decoration: none; font-size: 14px; transition: all .12s; }
+    .row-action:hover { background: var(--ink-100); color: var(--ink-900); border-color: var(--border); }
+    .row-action-ok:hover  { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .row-action-warn:hover { background: var(--kalro-gold-100); color: var(--kalro-gold-700); }
+    .row-action-del:hover { background: var(--kalro-red-100); color: var(--kalro-red); }
+
+    .btn { font-family: var(--font-sans); font-weight: 500; font-size: 13px; padding: 8px 16px; border-radius: 6px; border: 1px solid transparent; display: inline-flex; align-items: center; gap: 7px; text-decoration: none; cursor: pointer; transition: all .12s; white-space: nowrap; }
+    .btn-primary { background: var(--kalro-green); color: #fff; }
+    .btn-primary:hover { background: var(--kalro-green-700); color: #fff; }
+    .btn-outline { background: transparent; color: var(--ink-700); border-color: var(--border-strong); }
+    .btn-outline:hover { background: var(--ink-50); color: var(--ink-900); }
+    .btn-danger { background: var(--kalro-red); color: #fff; }
+    .btn-danger:hover { background: #9a1810; color: #fff; }
+
+    .modal-shell { display: none; position: fixed; inset: 0; z-index: 1050; align-items: center; justify-content: center; padding: 24px; }
+    .modal-shell.open { display: flex; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(15, 26, 20, .55); backdrop-filter: blur(3px); animation: fadeIn .15s ease; }
+    .modal-card { position: relative; background: #fff; border-radius: 12px; width: 100%; max-width: 680px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,.25); animation: slideUp .2s ease; }
+    .modal-card-sm { max-width: 440px; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .modal-head { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #fff; z-index: 2; }
+    .modal-head h3 { font-family: var(--font-serif); font-size: 18px; font-weight: 700; color: var(--ink-900); margin: 0; display: inline-flex; align-items: center; gap: 10px; }
+    .modal-head h3 i { color: var(--kalro-green); }
+    .modal-head-danger h3 i { color: var(--kalro-red); }
+    .modal-close { width: 32px; height: 32px; border: 0; background: transparent; border-radius: 6px; color: var(--ink-500); cursor: pointer; display: grid; place-items: center; font-size: 16px; }
+    .modal-close:hover { background: var(--ink-100); color: var(--ink-900); }
+
+    .modal-body { padding: 22px; }
+    .modal-foot { padding: 16px 22px; border-top: 1px solid var(--border); background: var(--ink-50); display: flex; justify-content: flex-end; gap: 10px; border-radius: 0 0 12px 12px; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .form-row:last-child { margin-bottom: 0; }
+    .form-col { display: flex; flex-direction: column; }
+    .form-label { font-size: 12.5px; font-weight: 600; color: var(--ink-700); margin-bottom: 6px; }
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .form-control, .form-select { font-family: var(--font-sans); font-size: 13.5px; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--border-strong); background: #fff; color: var(--ink-900); transition: all .12s; width: 100%; }
+    .form-control:focus, .form-select:focus { outline: none; border-color: var(--kalro-green-500); box-shadow: 0 0 0 3px var(--kalro-green-100); }
+    .switch-row { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; color: var(--ink-700); cursor: pointer; }
+    .switch-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--kalro-green); cursor: pointer; }
+
+    .activity-row { display: flex; gap: 12px; padding: 14px 22px; border-bottom: 1px solid var(--border); align-items: flex-start; }
+    .activity-row:last-child { border-bottom: 0; }
+    .activity-icon { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; flex-shrink: 0; }
+    .act-ok   { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .act-fail { background: var(--kalro-red-100);   color: var(--kalro-red); }
+    .activity-body { flex: 1; min-width: 0; }
+    .activity-title { font-size: 12.5px; color: var(--ink-800); line-height: 1.4; margin-bottom: 3px; }
+    .activity-title strong { color: var(--ink-900); }
+    .activity-meta { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--ink-500); align-items: center; }
+    .activity-meta span { display: inline-flex; align-items: center; gap: 4px; }
+
+    .empty-state { padding: 60px 20px; text-align: center; color: var(--ink-500); }
+    .empty-state i { font-size: 42px; color: var(--ink-300); display: block; margin-bottom: 12px; }
+    .empty-state h5 { color: var(--ink-700); font-family: var(--font-sans); font-weight: 600; margin-bottom: 6px; }
+    .empty-state p { font-size: 13px; max-width: 400px; margin: 0 auto 16px; }
+
+    .pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 12px; font-size: 11px; font-weight: 600; line-height: 1.6; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
+    .pill-grey  { background: var(--ink-100); color: var(--ink-600); }
+    .pill-green { background: var(--kalro-green-100); color: var(--kalro-green-700); }
+    .pill-gold  { background: var(--kalro-gold-100); color: var(--kalro-gold-700); }
+    .pill-red   { background: var(--kalro-red-100); color: var(--kalro-red); }
+    .pill-priority-urgent { background: var(--kalro-red); color: #fff; }
+    .pill-priority-high   { background: #fef3c7; color: #92400e; }
+    .pill-priority-normal { background: var(--ink-100); color: var(--ink-700); }
+
+    .fs-12 { font-size: 12px; }
+    .text-muted { color: var(--ink-500) !important; }
+    .font-mono { font-family: var(--font-mono); }
+
+    @media (max-width: 1280px) { .kpi-strip { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 900px) {
+        .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+        .form-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+        .admin-hero { padding: 20px; }
+        .admin-hero-name { font-size: 22px; }
+        .kpi-strip { grid-template-columns: 1fr; }
+    }
+</style>
+
+<!-- ============================================================ -->
+<!-- SCRIPTS                                                       -->
+<!-- ============================================================ -->
+<script>
+(function () {
+    'use strict';
+
+    document.querySelectorAll('.admin-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.admin-tab-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            const panel = document.getElementById(btn.dataset.tab);
+            if (panel) panel.classList.add('active');
+        });
+    });
+
+    document.querySelectorAll('[data-modal-open]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = document.getElementById(btn.dataset.modalOpen);
+            if (target) target.classList.add('open');
+        });
+    });
+
+    document.querySelectorAll('[data-modal-close]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const shell = btn.closest('.modal-shell');
+            if (shell) shell.classList.remove('open');
+        });
+    });
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-shell.open').forEach(m => m.classList.remove('open'));
+        }
+    });
+
+    document.querySelectorAll('[data-confirm-delete]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const url = btn.dataset.confirmDelete;
+            const text = btn.dataset.confirmText || 'Are you sure you want to delete this?';
+            const form = document.getElementById('confirmDeleteForm');
+            const txt = document.getElementById('confirmDeleteText');
+            if (form) form.action = url;
+            if (txt) txt.textContent = text;
+            const shell = document.getElementById('modal-confirm-delete');
+            if (shell) shell.classList.add('open');
+        });
+    });
+
+})();
+</script>
+
+{% endblock %}

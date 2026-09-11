@@ -1,0 +1,90 @@
+{% extends "crops/base_crops.html" %}
+{% load static %}
+
+{% block title %}Growth Stages — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Growth Stages</h1>
+        <div class="page-header-sub">Phenological stages across all crops</div>
+    </div>
+    {% if can_edit %}
+    <div class="page-header-actions">
+        <a href="{% url 'crops:growthstage_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Stage</a>
+    </div>
+    {% endif %}
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label">Crop</label>
+        <select name="crop" class="form-select">
+            <option value="">All crops</option>
+            {% for c in crops %}
+            <option value="{{ c.pk }}" {% if current_crop == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'crops:growthstage_list' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if stages %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>Crop</th>
+                        <th>Order</th>
+                        <th>Stage</th>
+                        <th>Day range</th>
+                        <th>Kc</th>
+                        <th>Water (mm)</th>
+                        <th>N (kg/ha)</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in stages %}
+                    <tr>
+                        <td><strong>{{ s.crop.name }}</strong></td>
+                        <td><span class="pill pill-grey">{{ s.order }}</span></td>
+                        <td>{{ s.name }}</td>
+                        <td><span class="font-mono fs-12">Day {{ s.start_day }}–{{ s.end_day }}</span></td>
+                        <td>{{ s.kc_coefficient|default:"—" }}</td>
+                        <td>{{ s.water_requirement_mm|default:"—" }}</td>
+                        <td>{{ s.n_requirement_kg_ha|default:"—" }}</td>
+                        <td class="text-end">
+                            {% if can_edit %}<a href="{% url 'crops:growthstage_update' s.pk %}" class="row-action" title="Edit"><i class="bi bi-pencil"></i></a>{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-graph-up"></i><h5>No growth stages</h5><p>Define the phenological stages for a crop.</p></div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .row-action { width: 30px; height: 30px; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); text-decoration: none; font-size: 14px; }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .text-end { text-align: right; }
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+</style>
+
+{% endblock %}

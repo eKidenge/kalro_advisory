@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block subheader_actions %}
+    <a href="{% url 'crops:crop_list' %}"
+       class="btn btn-sm {% if request.resolver_match.url_name == 'crop_list' %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-flower1"></i> Crops
+    </a>
+    <a href="{% url 'crops:growthstage_list' %}"
+       class="btn btn-sm {% if 'growthstage' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-graph-up"></i> Stages
+    </a>
+    <a href="{% url 'crops:crop_calendar' %}"
+       class="btn btn-sm {% if 'calendar' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-calendar3"></i> Calendar
+    </a>
+{% endblock %}
+
+{% block content %}{% endblock %}

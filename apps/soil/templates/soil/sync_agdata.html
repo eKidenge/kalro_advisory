@@ -1,0 +1,93 @@
+{% extends "soil/base_soil.html" %}
+{% load static %}
+
+{% block title %}AgData Sync — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>AgData Hub Sync</h1>
+        <div class="page-header-sub">Trigger a manual pull of soil test and market price data</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'soil:soiltest_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-arrow-repeat me-2"></i> Trigger Sync</h5></div>
+            <div class="card-body">
+                <p style="font-size: 13.5px; color: var(--ink-600); line-height: 1.6; margin-bottom: 20px;">
+                    Pull the latest soil test data and market prices from AgData Hub.
+                    The sync runs in the background; results appear in the log on the right.
+                </p>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; justify-content: center;">
+                        <i class="bi bi-cloud-download"></i> Start Sync
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-info-circle me-2"></i> About AgData Hub</h5></div>
+            <div class="card-body">
+                <p style="font-size: 13px; color: var(--ink-600); line-height: 1.6; margin: 0;">
+                    <strong>AgData Hub</strong> centralizes soil tests, nutrient profiles,
+                    and market prices for Kenyan agriculture.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-clock-history me-2"></i> Recent Sync Log</h5></div>
+            <div class="card-body p-0">
+                {% if recent %}
+                <div class="table-wrap">
+                    <table class="table-kalro">
+                        <thead><tr><th>When</th><th>Status</th><th>Soil</th><th>Prices</th><th>Duration</th></tr></thead>
+                        <tbody>
+                            {% for log in recent %}
+                            <tr>
+                                <td><span class="font-mono fs-12">{{ log.started_at|date:"d M H:i" }}</span></td>
+                                <td>
+                                    {% if log.status == 'SUCCESS' %}<span class="pill pill-green">Success</span>
+                                    {% elif log.status == 'PARTIAL' %}<span class="pill pill-gold">Partial</span>
+                                    {% elif log.status == 'FAILED' %}<span class="pill pill-red">Failed</span>
+                                    {% elif log.status == 'RUNNING' %}<span class="pill pill-blue">Running</span>
+                                    {% else %}<span class="pill pill-grey">{{ log.get_status_display }}</span>{% endif %}
+                                </td>
+                                <td>{{ log.soil_records_fetched }}</td>
+                                <td>{{ log.price_records_fetched }}</td>
+                                <td>{% if log.finished_at %}{{ log.finished_at|timesince:log.started_at }}{% else %}—{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;">
+                    <i class="bi bi-arrow-repeat"></i>
+                    <h5>No syncs yet</h5>
+                    <p>Start the first sync to populate data.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+    .pill-blue { background: #dbeafe; color: #1e40af; }
+</style>
+
+{% endblock %}

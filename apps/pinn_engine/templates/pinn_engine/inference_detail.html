@@ -1,0 +1,124 @@
+{% extends "pinn_engine/base_pinn.html" %}
+{% load static %}
+
+{% block title %}Inference #{{ inference.pk }} — PINN{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Inference #{{ inference.pk }}</h1>
+        <div class="page-header-sub">
+            {{ inference.model.name|default:"—" }} ·
+            {{ inference.farm.name|default:"—" }} ·
+            {{ inference.crop.name|default:"—" }} ·
+            <span class="pill {% if inference.status == 'SUCCESS' %}pill-green{% elif inference.status == 'FAILED' %}pill-red{% else %}pill-gold{% endif %}">{{ inference.get_status_display }}</span>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'pinn_engine:inference_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-lightning-charge me-2"></i> Output</h5></div>
+            <div class="card-body p-0">
+                {% if inference.output_payload %}
+                <table class="table-kalro">
+                    <tbody>
+                        {% for k, v in inference.output_payload.items %}
+                        <tr><td class="lbl">{{ k|title }}</td><td><strong>{{ v }}</strong></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-lightning-charge"></i><p style="margin: 0;">No output yet</p></div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-info-circle me-2"></i> Details</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Model</td><td>{{ inference.model.name|default:"—" }} v{{ inference.model.version|default:"" }}</td></tr>
+                        <tr><td class="lbl">Farm</td><td>{{ inference.farm.name|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Crop</td><td>{{ inference.crop.name|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Duration</td><td>{% if inference.duration_ms %}{{ inference.duration_ms }} ms{% else %}—{% endif %}</td></tr>
+                        <tr><td class="lbl">Requested by</td><td>{{ inference.requested_by.get_full_name|default:inference.requested_by.username|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Created</td><td>{{ inference.created_at|date:"d M Y H:i" }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% if inference.error_text %}
+        <div class="card" style="border-left: 4px solid var(--kalro-red);">
+            <div class="card-header"><h5><i class="bi bi-exclamation-octagon me-2"></i> Error</h5></div>
+            <div class="card-body"><pre style="margin: 0; font-size: 12px; white-space: pre-wrap;">{{ inference.error_text }}</pre></div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-6">
+        {% if attributions_sorted %}
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-bar-chart me-2"></i> Feature Attributions</h5></div>
+            <div class="card-body">
+                <div class="attrib-list">
+                    {% for name, weight in attributions_sorted %}
+                    <div class="attrib-row">
+                        <div class="attrib-name">{{ name }}</div>
+                        <div class="attrib-bar-track">
+                            <div class="attrib-bar-fill" style="width: {% widthratio weight 1 100 %}%"></div>
+                        </div>
+                        <div class="attrib-value">{{ weight|floatformat:3 }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if residuals_sorted %}
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-check2-square me-2"></i> Physics Residuals</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <thead><tr><th>Constraint</th><th>Residual</th><th>Status</th></tr></thead>
+                    <tbody>
+                        {% for name, val in residuals_sorted %}
+                        <tr>
+                            <td>{{ name }}</td>
+                            <td><span class="font-mono fs-12">{{ val|floatformat:5 }}</span></td>
+                            <td>
+                                {% if val < 0.02 %}<span class="pill pill-green">OK</span>
+                                {% elif val < 0.05 %}<span class="pill pill-gold">Watch</span>
+                                {% else %}<span class="pill pill-red">High</span>{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .lbl { color: var(--ink-500); font-weight: 500; width: 40%; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+    .attrib-list { display: flex; flex-direction: column; gap: 10px; }
+    .attrib-row { display: grid; grid-template-columns: 120px 1fr 70px; gap: 12px; align-items: center; }
+    .attrib-name { font-size: 12.5px; color: var(--ink-700); font-weight: 500; }
+    .attrib-bar-track { height: 8px; background: var(--ink-100); border-radius: 4px; overflow: hidden; }
+    .attrib-bar-fill { height: 100%; background: var(--kalro-green-500); border-radius: 4px; transition: width .4s; }
+    .attrib-value { font-family: var(--font-mono); font-size: 12px; text-align: right; color: var(--ink-700); }
+</style>
+
+{% endblock %}

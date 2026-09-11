@@ -1,0 +1,94 @@
+{% extends "trials/base_trials.html" %}
+{% load static %}
+
+{% block title %}Trial Results — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Trial Results</h1>
+        <div class="page-header-sub">All observation records across trials</div>
+    </div>
+    {% if can_edit %}
+    <div class="page-header-actions">
+        <a href="{% url 'trials:trial_result_export' %}{% if current.trial %}?trial={{ current.trial }}{% endif %}" class="btn btn-outline">
+            <i class="bi bi-download"></i> Export CSV
+        </a>
+        <a href="{% url 'trials:trial_result_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Result</a>
+    </div>
+    {% endif %}
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label">Trial</label>
+        <select name="trial" class="form-select">
+            <option value="">All trials</option>
+            {% for t in trials %}<option value="{{ t.pk }}" {% if current.trial == t.pk|stringformat:"s" %}selected{% endif %}>{{ t.code }} — {{ t.title|truncatechars:40 }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'trials:trial_result_list' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if results %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>Trial</th>
+                        <th>Treatment</th>
+                        <th>Plot</th>
+                        <th>Observed</th>
+                        <th>Grain yield</th>
+                        <th>Biomass</th>
+                        <th>NUE</th>
+                        <th>Rainfall</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in results %}
+                    <tr>
+                        <td><span class="font-mono fs-12">{{ r.treatment.trial.code }}</span></td>
+                        <td>{{ r.treatment.code }}</td>
+                        <td>{{ r.plot_number|default:"—" }} {% if r.replication %}<span class="user-meta" style="display:inline;">R{{ r.replication }}</span>{% endif %}</td>
+                        <td><span class="font-mono fs-12">{{ r.observed_on|date:"d M Y" }}</span></td>
+                        <td>{{ r.grain_yield_kg_ha|default:"—" }}</td>
+                        <td>{{ r.biomass_kg_ha|default:"—" }}</td>
+                        <td>{{ r.nitrogen_use_efficiency|default:"—" }}</td>
+                        <td>{{ r.rainfall_mm|default:"—" }}</td>
+                        <td class="text-end">
+                            {% if can_edit %}<a href="{% url 'trials:trial_result_update' r.pk %}" class="row-action" title="Edit"><i class="bi bi-pencil"></i></a>{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-table"></i><h5>No results yet</h5><p>Record trial results to see them here.</p></div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .row-action { width: 30px; height: 30px; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); text-decoration: none; font-size: 14px; }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .text-end { text-align: right; }
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+    .user-meta { font-size: 11px; color: var(--ink-500); }
+</style>
+
+{% endblock %}

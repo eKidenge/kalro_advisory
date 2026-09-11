@@ -1,0 +1,84 @@
+{% extends "farmers/base_farmers.html" %}
+{% load static %}
+
+{% block title %}Farm Map — KALRO Advisory{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Farm Map</h1>
+        <div class="page-header-sub">{{ points|length }} farms with GPS coordinates</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'farmers:farm_list' %}" class="btn btn-outline"><i class="bi bi-list-ul"></i> List View</a>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field">
+        <label class="form-label">County</label>
+        <select name="county" class="form-select" onchange="this.form.submit()">
+            <option value="">All counties</option>
+            {% for c in counties %}<option value="{{ c.pk }}" {% if request.GET.county == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+        </select>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div id="map" style="height: 620px; border-radius: 10px;"></div>
+    </div>
+</div>
+
+{% if not points %}
+<div class="card">
+    <div class="empty-state"><i class="bi bi-geo"></i><h5>No farms with GPS coordinates</h5><p>Add latitude &amp; longitude to farm records to see them on the map.</p></div>
+</div>
+{% endif %}
+
+{{ points|json_script:"farm-points" }}
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+    const mapEl = document.getElementById('map');
+    if (!mapEl) return;
+
+    const points = JSON.parse(document.getElementById('farm-points').textContent || '[]');
+
+    const map = L.map('map').setView([0.0236, 37.9062], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    const markers = [];
+
+    points.forEach(p => {
+        if (!p.lat || !p.lng) return;
+        const marker = L.marker([p.lat, p.lng]).addTo(map);
+        marker.bindPopup(`
+            <div style="font-family: Inter, sans-serif; min-width: 180px;">
+                <div style="font-weight: 600; margin-bottom: 4px;">${p.name}</div>
+                <div style="font-size: 12px; color: #666; margin-bottom: 6px;">${p.farmer}</div>
+                <div style="font-size: 12px; color: #666; margin-bottom: 8px;">${p.county}</div>
+                <a href="${p.url}" style="font-size: 12px; color: #0b3d2e; font-weight: 500;">View farm →</a>
+            </div>
+        `);
+        markers.push(marker);
+    });
+
+    if (markers.length > 0) {
+        const group = new L.featureGroup(markers);
+        map.fitBounds(group.getBounds().pad(0.2));
+    }
+})();
+</script>
+
+{% endblock %}

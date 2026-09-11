@@ -1,0 +1,74 @@
+{% extends "integrations/base_integrations.html" %}
+{% load static %}
+
+{% block title %}Selector — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Selector Dashboard</h1>
+        <div class="page-header-sub">Advisory delivery across county networks</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'integrations:trigger_sync' %}" class="btn btn-primary"><i class="bi bi-arrow-repeat"></i> Trigger Sync</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card"><div class="stat-label">Total Deliveries</div><div class="stat-value">{{ delivery_count|default:0 }}</div></div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card">
+            <div class="stat-label">Config Status</div>
+            <div class="stat-value">{% if config and config.is_active %}Active{% else %}Off{% endif %}</div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card stat-ink">
+            <div class="stat-label">Last OK</div>
+            <div class="stat-value" style="font-size:18px;">{% if config.last_ok_at %}{{ config.last_ok_at|date:"d M H:i" }}{% else %}—{% endif %}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><h5><i class="bi bi-send me-2"></i> Recent Selector Deliveries</h5></div>
+    <div class="card-body p-0">
+        {% if recent_deliveries %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead><tr><th>Advisory</th><th>Status</th><th>Recipient</th><th>Sent</th><th>Delivered</th></tr></thead>
+                <tbody>
+                    {% for d in recent_deliveries %}
+                    <tr>
+                        <td><a href="{% url 'advisories:advisory_detail' d.advisory.pk %}" style="color: var(--kalro-green); font-weight: 500; font-size:13px;">{{ d.advisory.title|truncatechars:50 }}</a></td>
+                        <td>
+                            {% if d.status == 'DELIVERED' %}<span class="pill pill-green">Delivered</span>
+                            {% elif d.status == 'SENT' %}<span class="pill pill-green">Sent</span>
+                            {% elif d.status == 'QUEUED' %}<span class="pill pill-gold">Queued</span>
+                            {% elif d.status == 'FAILED' %}<span class="pill pill-red">Failed</span>
+                            {% else %}<span class="pill pill-grey">{{ d.get_status_display }}</span>{% endif %}
+                        </td>
+                        <td><span class="font-mono fs-12">{{ d.recipient_ref|default:"—" }}</span></td>
+                        <td><span class="font-mono fs-12">{{ d.sent_at|date:"d M H:i"|default:"—" }}</span></td>
+                        <td><span class="font-mono fs-12">{{ d.delivered_at|date:"d M H:i"|default:"—" }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-send"></i><p style="margin: 0;">No Selector deliveries yet</p></div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+</style>
+
+{% endblock %}

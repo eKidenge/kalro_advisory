@@ -1,0 +1,195 @@
+{% extends "advisories/base_advisories.html" %}
+{% load static %}
+
+{% block title %}{{ advisory.title|truncatechars:50 }} — Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{{ advisory.title }}</h1>
+        <div class="page-header-sub">
+            {{ advisory.get_kind_display }} ·
+            {{ advisory.get_priority_display }} priority ·
+            <span class="pill {% if advisory.status == 'DRAFT' %}pill-status-draft{% elif advisory.status == 'APPROVED' %}pill-status-approved{% elif advisory.status == 'SENT' %}pill-status-sent{% elif advisory.status == 'FAILED' %}pill-status-failed{% else %}pill-grey{% endif %}">{{ advisory.get_status_display }}</span>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'advisories:advisory_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Back</a>
+        <a href="{% url 'advisories:advisory_explanation' advisory.pk %}" class="btn btn-outline"><i class="bi bi-lightbulb"></i> Explanation</a>
+        {% if can_approve and advisory.status == 'DRAFT' %}
+        <a href="{% url 'advisories:advisory_approve' advisory.pk %}" class="btn btn-gold" onclick="event.preventDefault(); document.getElementById('approveForm').submit();">
+            <i class="bi bi-check2-circle"></i> Approve
+        </a>
+        <form id="approveForm" method="post" action="{% url 'advisories:advisory_approve' advisory.pk %}" style="display: none;">{% csrf_token %}</form>
+        {% endif %}
+        <a href="{% url 'advisories:advisory_update' advisory.pk %}" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-chat-quote me-2"></i> Message</h5></div>
+            <div class="card-body">
+                <p style="font-size: 15px; line-height: 1.75; color: var(--ink-800); margin: 0;">{{ advisory.body|linebreaksbr }}</p>
+            </div>
+        </div>
+
+        {% if advisory.short_message %}
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-phone me-2"></i> SMS Version</h5></div>
+            <div class="card-body">
+                <div class="sms-preview">{{ advisory.short_message }}</div>
+                <div class="user-meta" style="margin-top: 8px;">{{ advisory.short_message|length }} / 320 characters</div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if advisory.explanation %}
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-lightbulb me-2"></i> Reasoning</h5>
+                <div class="card-header-actions">
+                    <a href="{% url 'advisories:advisory_explanation' advisory.pk %}" class="btn btn-ghost btn-sm">Full explanation <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+            <div class="card-body">
+                <p style="font-size: 13.5px; line-height: 1.7; color: var(--ink-700); margin: 0;">{{ advisory.explanation }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-send me-2"></i> Delivery Log ({{ deliveries|length }})</h5>
+                <div class="card-header-actions">
+                    <a href="{% url 'advisories:advisory_delivery_log' %}?advisory={{ advisory.pk }}" class="btn btn-ghost btn-sm">View all <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if deliveries %}
+                <table class="table-kalro">
+                    <thead><tr><th>Channel</th><th>Status</th><th>Recipient</th><th>Queued</th><th>Sent</th></tr></thead>
+                    <tbody>
+                        {% for d in deliveries %}
+                        <tr>
+                            <td><span class="pill pill-grey">{{ d.get_channel_display }}</span></td>
+                            <td>
+                                {% if d.status == 'DELIVERED' %}<span class="pill pill-green">Delivered</span>
+                                {% elif d.status == 'SENT' %}<span class="pill pill-green">Sent</span>
+                                {% elif d.status == 'QUEUED' %}<span class="pill pill-gold">Queued</span>
+                                {% elif d.status == 'FAILED' %}<span class="pill pill-red">Failed</span>
+                                {% else %}<span class="pill pill-grey">{{ d.get_status_display }}</span>{% endif %}
+                            </td>
+                            <td><span class="font-mono fs-12">{{ d.recipient_phone|default:"—" }}</span></td>
+                            <td><span class="font-mono fs-12">{{ d.queued_at|date:"d M H:i" }}</span></td>
+                            <td>{% if d.sent_at %}<span class="font-mono fs-12">{{ d.sent_at|date:"d M H:i" }}</span>{% else %}—{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-send"></i><p style="margin: 0;">Not yet dispatched</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-info-circle me-2"></i> Context</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Farmer</td><td>{% if advisory.farmer %}<a href="{% url 'farmers:farmer_detail' advisory.farmer.pk %}">{{ advisory.farmer.full_name }}</a>{% else %}—{% endif %}</td></tr>
+                        <tr><td class="lbl">Farm</td><td>{{ advisory.farm.name|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Crop</td><td>{{ advisory.crop.name|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Growth stage</td><td>{{ advisory.growth_stage.name|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Source</td><td>{{ advisory.get_source_display }}</td></tr>
+                        <tr><td class="lbl">Valid from</td><td>{{ advisory.valid_from|date:"d M Y"|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Valid until</td><td>{{ advisory.valid_until|date:"d M Y"|default:"—" }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% if advisory.inference_run %}
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-cpu me-2"></i> Inference</h5></div>
+            <div class="card-body">
+                <div class="user-meta" style="margin-bottom: 8px;">#{{ advisory.inference_run.pk }} · {{ advisory.inference_run.created_at|date:"d M Y H:i" }}</div>
+                <a href="{% url 'pinn_engine:inference_detail' advisory.inference_run.pk %}" class="btn btn-outline btn-sm btn-block">
+                    <i class="bi bi-eye"></i> View Inference
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-person-badge me-2"></i> Authorship</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Created by</td><td>{{ advisory.created_by.get_full_name|default:advisory.created_by.username|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Created</td><td>{{ advisory.created_at|date:"d M Y H:i" }}</td></tr>
+                        <tr><td class="lbl">Approved by</td><td>{{ advisory.approved_by.get_full_name|default:advisory.approved_by.username|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Approved at</td><td>{{ advisory.approved_at|date:"d M Y H:i"|default:"—" }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% if feedback %}
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-chat-square-text me-2"></i> Feedback</h5></div>
+            <div class="card-body p-0">
+                {% for f in feedback %}
+                <div class="list-row">
+                    <div style="flex: 1;">
+                        <div class="list-title">{{ f.get_rating_display|default:"—" }} · {{ f.get_outcome_display }}</div>
+                        <div class="list-meta">{{ f.reported_by.username|default:"Anonymous" }} · {{ f.reported_at|date:"d M Y" }}</div>
+                        {% if f.comment %}<div style="font-size: 12.5px; color: var(--ink-600); margin-top: 4px;">{{ f.comment }}</div>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .lbl { color: var(--ink-500); font-weight: 500; width: 42%; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+    .user-meta { font-size: 11px; color: var(--ink-500); }
+    .list-row { display: flex; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .list-row:last-child { border-bottom: 0; }
+    .list-title { font-size: 13px; font-weight: 600; color: var(--ink-900); }
+    .list-meta { font-size: 11px; color: var(--ink-500); margin-top: 2px; }
+    .btn-block { width: 100%; justify-content: center; }
+    .sms-preview {
+        background: #e6f2ec;
+        border-radius: 12px;
+        padding: 14px 18px;
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: var(--ink-800);
+        border-left: 4px solid var(--kalro-green);
+        position: relative;
+        font-family: var(--font-sans);
+        max-width: 340px;
+    }
+    .sms-preview::before {
+        content: '';
+        position: absolute;
+        left: -8px; bottom: 0;
+        width: 0; height: 0;
+        border-right: 8px solid var(--kalro-green);
+        border-bottom: 8px solid transparent;
+        border-top: 8px solid transparent;
+    }
+</style>
+
+{% endblock %}

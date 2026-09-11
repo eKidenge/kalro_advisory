@@ -1,0 +1,48 @@
+{% extends "pinn_engine/base_pinn.html" %}
+{% load static %}
+
+{% block title %}Run Inference — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Run Inference</h1>
+        <div class="page-header-sub">Manually run the PINN engine for a specific farm and crop</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'pinn_engine:inference_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Cancel</a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-7">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert-kalro alert-danger"><i class="bi bi-exclamation-octagon"></i><div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div></div>{% endif %}
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-lightning-charge me-2"></i> Inference Input</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-12"><label class="form-label">Model</label>{{ form.model }}{% if form.model.errors %}<div class="field-error">{{ form.model.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Farm <span class="req">*</span></label>{{ form.farm }}{% if form.farm.errors %}<div class="field-error">{{ form.farm.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Crop <span class="req">*</span></label>{{ form.crop }}{% if form.crop.errors %}<div class="field-error">{{ form.crop.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-12"><label class="form-label">Override payload (JSON, optional)</label>{{ form.override_payload }}<div class="form-text">{{ form.override_payload.help_text }}</div></div>
+                    </div>
+                </div>
+                <div class="card-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <a href="{% url 'pinn_engine:inference_list' %}" class="btn btn-outline">Cancel</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-lightning-charge"></i> Run Inference</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error { font-size: 12px; color: var(--kalro-red); margin-top: 6px; }
+</style>
+
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "crops/base_crops.html" %}
+{% load static %}
+
+{% block title %}{% if object %}Edit Stage{% else %}Add Growth Stage{% endif %} — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{% if object %}Edit Growth Stage{% else %}Add Growth Stage{% endif %}</h1>
+        <div class="page-header-sub">Define a phenological stage with its resource needs</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'crops:growthstage_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Cancel</a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-8">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert-kalro alert-danger"><i class="bi bi-exclamation-octagon"></i><div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div></div>{% endif %}
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-graph-up me-2"></i> Stage Details</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Crop <span class="req">*</span></label>{{ form.crop }}{% if form.crop.errors %}<div class="field-error">{{ form.crop.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Name <span class="req">*</span></label>{{ form.name }}{% if form.name.errors %}<div class="field-error">{{ form.name.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-4"><label class="form-label">Order</label>{{ form.order }}</div>
+                        <div class="col-md-4"><label class="form-label">Start day</label>{{ form.start_day }}</div>
+                        <div class="col-md-4"><label class="form-label">End day</label>{{ form.end_day }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-sliders me-2"></i> Resource Requirements</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Kc coefficient</label>{{ form.kc_coefficient }}</div>
+                        <div class="col-md-6"><label class="form-label">Water (mm)</label>{{ form.water_requirement_mm }}</div>
+                        <div class="col-md-4"><label class="form-label">N (kg/ha)</label>{{ form.n_requirement_kg_ha }}</div>
+                        <div class="col-md-4"><label class="form-label">P (kg/ha)</label>{{ form.p_requirement_kg_ha }}</div>
+                        <div class="col-md-4"><label class="form-label">K (kg/ha)</label>{{ form.k_requirement_kg_ha }}</div>
+                        <div class="col-md-12"><label class="form-label">Critical notes</label>{{ form.critical_notes }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions-bar">
+                <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check2"></i> Save</button>
+                <a href="{% url 'crops:growthstage_list' %}" class="btn btn-outline btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error { font-size: 12px; color: var(--kalro-red); margin-top: 6px; }
+    .form-actions-bar { display: flex; gap: 10px; padding: 20px 0 8px; flex-wrap: wrap; }
+</style>
+
+{% endblock %}

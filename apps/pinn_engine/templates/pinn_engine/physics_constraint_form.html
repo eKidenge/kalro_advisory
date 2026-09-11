@@ -1,0 +1,55 @@
+{% extends "pinn_engine/base_pinn.html" %}
+{% load static %}
+
+{% block title %}{% if object %}Edit Constraint{% else %}Add Physics Constraint{% endif %} — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{% if object %}Edit Physics Constraint{% else %}Add Physics Constraint{% endif %}</h1>
+        <div class="page-header-sub">Define a law or empirical rule embedded in the loss function</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'pinn_engine:physics_constraint_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Cancel</a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-8">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert-kalro alert-danger"><i class="bi bi-exclamation-octagon"></i><div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div></div>{% endif %}
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-sliders me-2"></i> Constraint</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-12"><label class="form-label">Name <span class="req">*</span></label>{{ form.name }}{% if form.name.errors %}<div class="field-error">{{ form.name.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Kind</label>{{ form.kind }}</div>
+                        <div class="col-md-6"><label class="form-label">Domain</label>{{ form.domain }}</div>
+                        <div class="col-md-12"><label class="form-label">Mathematical form</label>{{ form.mathematical_form }}<div class="form-text">e.g. dS/dt = P − ET − R − D</div></div>
+                        <div class="col-md-12"><label class="form-label">Description</label>{{ form.description }}</div>
+                        <div class="col-md-4"><label class="form-label">Weight (λ)</label>{{ form.weight }}</div>
+                        <div class="col-md-4"><label class="form-label">Crop (optional)</label>{{ form.crop }}</div>
+                        <div class="col-md-4"><label class="form-label d-block">Active</label><label class="checkbox-row">{{ form.is_active }} <span>Enabled</span></label></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions-bar">
+                <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check2"></i> Save</button>
+                <a href="{% url 'pinn_engine:physics_constraint_list' %}" class="btn btn-outline btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error { font-size: 12px; color: var(--kalro-red); margin-top: 6px; }
+    .form-actions-bar { display: flex; gap: 10px; padding: 20px 0 8px; flex-wrap: wrap; }
+    .checkbox-row { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; color: var(--ink-700); cursor: pointer; }
+</style>
+
+{% endblock %}

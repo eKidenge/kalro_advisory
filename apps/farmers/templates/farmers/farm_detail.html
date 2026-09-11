@@ -1,0 +1,96 @@
+{% extends "farmers/base_farmers.html" %}
+{% load static %}
+
+{% block title %}{{ farm.name }} — Farm{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{{ farm.name }}</h1>
+        <div class="page-header-sub">
+            <a href="{% url 'farmers:farmer_detail' farm.farmer.pk %}">{{ farm.farmer.full_name }}</a>
+            · {{ farm.county.name|default:"—" }} · {{ farm.size|default:"—" }} {{ farm.get_size_unit_display|default:"" }}
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'farmers:farm_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Back</a>
+        <a href="{% url 'farmers:farm_update' farm.pk %}" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-info-circle me-2"></i> Farm Details</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Farmer</td><td><a href="{% url 'farmers:farmer_detail' farm.farmer.pk %}">{{ farm.farmer.full_name }}</a></td></tr>
+                        <tr><td class="lbl">Size</td><td>{{ farm.size|default:"—" }} {{ farm.get_size_unit_display|default:"" }}</td></tr>
+                        <tr><td class="lbl">County</td><td>{{ farm.county.name|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Sub-county</td><td>{{ farm.sub_county|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Ward</td><td>{{ farm.ward|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Soil type</td><td>{{ farm.soil_type|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Irrigation</td><td>{{ farm.get_irrigation_type_display|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Altitude</td><td>{{ farm.altitude_m|default:"—" }} m</td></tr>
+                        <tr><td class="lbl">GPS</td><td><span class="font-mono">{{ farm.gps_latitude|default:"—" }}, {{ farm.gps_longitude|default:"—" }}</span></td></tr>
+                        <tr><td class="lbl">AgriPark</td><td>{% if farm.is_agripark_demo %}<span class="pill pill-gold">Yes</span>{% else %}No{% endif %}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-droplet-half me-2"></i> Soil Tests</h5></div>
+            <div class="card-body p-0">
+                {% if soil_tests %}
+                {% for s in soil_tests %}
+                <div class="list-row">
+                    <div>
+                        <div class="list-title">{{ s.sample_id }}</div>
+                        <div class="list-meta">{{ s.sampled_on|date:"d M Y" }} · pH {{ s.ph|default:"—" }}</div>
+                    </div>
+                    <a href="{% url 'soil:soiltest_detail' s.pk %}" class="row-action"><i class="bi bi-arrow-right"></i></a>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-droplet-half"></i><p style="margin: 0;">No soil tests yet</p></div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-cloud-sun me-2"></i> Weather Records</h5></div>
+            <div class="card-body p-0">
+                {% if weather_records %}
+                {% for w in weather_records %}
+                <div class="list-row">
+                    <div>
+                        <div class="list-title">{{ w.date|date:"d M Y" }}</div>
+                        <div class="list-meta">{{ w.station.name }} · {{ w.rainfall_mm|default:"—" }}mm rain</div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-cloud-sun"></i><p style="margin: 0;">No weather data linked</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .lbl { color: var(--ink-500); font-weight: 500; width: 38%; }
+    .font-mono { font-family: var(--font-mono); font-size: 12.5px; }
+    .list-row { display: flex; gap: 12px; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .list-row:last-child { border-bottom: 0; }
+    .list-title { font-size: 13px; font-weight: 600; color: var(--ink-900); }
+    .list-meta { font-size: 11px; color: var(--ink-500); margin-top: 2px; }
+    .row-action { width: 30px; height: 30px; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); text-decoration: none; font-size: 14px; transition: all .12s; }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+</style>
+
+{% endblock %}

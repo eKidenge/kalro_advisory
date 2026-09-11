@@ -1,0 +1,98 @@
+{% extends "climate/base_climate.html" %}
+{% load static %}
+
+{% block title %}Forecasts — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Forecasts</h1>
+        <div class="page-header-sub">Weather forecasts from KAOP and other providers</div>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field">
+        <label class="form-label">Station</label>
+        <select name="station" class="form-select">
+            <option value="">All stations</option>
+            {% for s in filter_form.station.field.queryset %}
+            <option value="{{ s.pk }}">{{ s.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Horizon</label>
+        <select name="horizon" class="form-select">
+            <option value="">All horizons</option>
+            <option value="D1">1 day</option>
+            <option value="D3">3 days</option>
+            <option value="D7">7 days</option>
+            <option value="D14">14 days</option>
+            <option value="SEAS">Seasonal</option>
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'climate:forecast_list' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if forecasts %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>Station</th>
+                        <th>Horizon</th>
+                        <th>Issued</th>
+                        <th>Valid</th>
+                        <th>Expected rain</th>
+                        <th>Probability</th>
+                        <th>Summary</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in forecasts %}
+                    <tr>
+                        <td>
+                            <div class="user-name" style="font-size:13px;">{{ f.station.name }}</div>
+                            <div class="user-meta">{{ f.station.county.name|default:"—" }}</div>
+                        </td>
+                        <td><span class="pill pill-grey">{{ f.get_horizon_display }}</span></td>
+                        <td><span class="font-mono fs-12">{{ f.issued_at|date:"d M Y H:i" }}</span></td>
+                        <td><span class="fs-12">{{ f.valid_from|date:"d M" }} → {{ f.valid_to|date:"d M" }}</span></td>
+                        <td>{% if f.expected_rainfall_mm %}<strong>{{ f.expected_rainfall_mm }}</strong> mm{% else %}—{% endif %}</td>
+                        <td>{% if f.probability_pct %}<span class="pill {% if f.probability_pct > 60 %}pill-green{% elif f.probability_pct > 30 %}pill-gold{% else %}pill-grey{% endif %}">{{ f.probability_pct }}%</span>{% else %}—{% endif %}</td>
+                        <td style="max-width: 260px; font-size: 12.5px; color: var(--ink-600);">{{ f.summary|truncatechars:80|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-cloud-drizzle"></i>
+            <h5>No forecasts available</h5>
+            <p>Forecasts will appear here once synced from KAOP.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .user-name { font-weight: 600; color: var(--ink-900); line-height: 1.2; }
+    .user-meta { font-size: 11px; color: var(--ink-500); margin-top: 1px; }
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+</style>
+
+{% endblock %}

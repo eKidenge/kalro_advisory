@@ -1,0 +1,1103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ request.LANGUAGE_CODE|default:'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="KALRO Climate-Resilient Agriculture Advisory System — Physics-Informed AI advisories for Kenyan farmers.">
+    <meta name="author" content="Kenya Agricultural and Livestock Research Organization (KALRO)">
+    <meta name="theme-color" content="#0b3d2e">
+    <title>{% block title %}KALRO Advisory System{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230b3d2e'/><text y='72' x='50%25' text-anchor='middle' font-size='60' fill='%23f4c430' font-family='Georgia'>K</text></svg>">
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Fonts: Source Serif 4 (headers) + Inter (body) — government/editorial feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============================================================
+           KALRO ADVISORY SYSTEM — DESIGN TOKENS
+           Government-grade, serious, editorial. Kenya national palette.
+           ============================================================ */
+        :root {
+            /* Brand — KALRO green (from crest) */
+            --kalro-green:        #0b3d2e;
+            --kalro-green-700:    #14543f;
+            --kalro-green-600:    #1b6a4f;
+            --kalro-green-500:    #27876a;
+            --kalro-green-400:    #4fa88c;
+            --kalro-green-100:    #e6f2ec;
+            --kalro-green-50:     #f3f9f6;
+
+            /* Accent — Kenyan gold (from flag/crest) */
+            --kalro-gold:         #f4c430;
+            --kalro-gold-700:     #c99d16;
+            --kalro-gold-100:     #fdf4d4;
+
+            /* Kenyan red (from flag) — sparing use for danger */
+            --kalro-red:          #bb1e10;
+            --kalro-red-100:      #fbe4e1;
+
+            /* Neutrals — editorial */
+            --ink-900:            #0f1a14;
+            --ink-800:            #1c2a22;
+            --ink-700:            #2d3d34;
+            --ink-600:            #4a5b51;
+            --ink-500:            #6b7a70;
+            --ink-400:            #98a49c;
+            --ink-300:            #c4cbc6;
+            --ink-200:            #e0e5e1;
+            --ink-100:            #f0f3f1;
+            --ink-50:             #f8faf9;
+
+            /* Semantic */
+            --bg-app:             #f5f7f5;
+            --bg-surface:         #ffffff;
+            --border:             #dfe5e1;
+            --border-strong:      #c1cac4;
+
+            /* Type scale */
+            --font-serif:         'Source Serif 4', Georgia, 'Times New Roman', serif;
+            --font-sans:          'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono:          'JetBrains Mono', 'SF Mono', Consolas, monospace;
+
+            /* Layout */
+            --sidebar-w:          264px;
+            --header-h:           64px;
+            --subheader-h:        48px;
+
+            /* Shadow */
+            --shadow-sm:          0 1px 2px rgba(15, 26, 20, .05);
+            --shadow-md:          0 2px 8px rgba(15, 26, 20, .08);
+            --shadow-lg:          0 8px 24px rgba(15, 26, 20, .10);
+            --shadow-xl:          0 16px 48px rgba(15, 26, 20, .14);
+        }
+
+        /* ============================================================
+           RESET & BASE
+           ============================================================ */
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html, body { height: 100%; }
+
+        body {
+            margin: 0;
+            font-family: var(--font-sans);
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--ink-800);
+            background: var(--bg-app);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-serif);
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: var(--ink-900);
+            margin-top: 0;
+        }
+
+        h1 { font-size: 1.875rem; line-height: 1.2; }
+        h2 { font-size: 1.5rem;   line-height: 1.25; }
+        h3 { font-size: 1.25rem;  line-height: 1.3; }
+        h4 { font-size: 1.125rem; line-height: 1.35; }
+        h5 { font-size: 1rem;     line-height: 1.4; }
+        h6 { font-size: 0.875rem; line-height: 1.4; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-600); }
+
+        a { color: var(--kalro-green-600); text-decoration: none; }
+        a:hover { color: var(--kalro-green); text-decoration: underline; }
+
+        code, pre, kbd, samp { font-family: var(--font-mono); font-size: 0.85em; }
+
+        hr { border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+        /* ============================================================
+           GOVERNMENT BANNER (top, thin)
+           ============================================================ */
+        .gov-banner {
+            background: var(--ink-900);
+            color: var(--ink-200);
+            font-size: 11px;
+            letter-spacing: 0.02em;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--kalro-gold);
+        }
+        .gov-banner .container-fluid { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+        .gov-banner .flag-mark {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-weight: 600; color: var(--kalro-gold);
+            text-transform: uppercase; letter-spacing: 0.08em;
+        }
+        .gov-banner .flag-mark::before {
+            content: ''; display: inline-block;
+            width: 22px; height: 14px;
+            background: linear-gradient(to bottom,
+                #000 0 33%, #bb1e10 33% 66%, #0b3d2e 66% 100%);
+            border: 1px solid rgba(244, 196, 48, .5);
+        }
+        .gov-banner a { color: var(--ink-200); }
+        .gov-banner a:hover { color: var(--kalro-gold); }
+
+        /* ============================================================
+           HEADER
+           ============================================================ */
+        .app-header {
+            height: var(--header-h);
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            box-shadow: var(--shadow-sm);
+        }
+        .app-header .container-fluid {
+            height: 100%;
+            display: flex; align-items: center; gap: 20px;
+        }
+        .app-header .brand {
+            display: flex; align-items: center; gap: 12px;
+            text-decoration: none; color: inherit;
+            flex-shrink: 0;
+        }
+        .app-header .brand:hover { text-decoration: none; }
+        .app-header .brand-crest {
+            width: 40px; height: 40px;
+            background: var(--kalro-green);
+            border-radius: 6px;
+            display: grid; place-items: center;
+            color: var(--kalro-gold);
+            font-family: var(--font-serif);
+            font-weight: 700; font-size: 20px;
+            border: 2px solid var(--kalro-gold);
+        }
+        .app-header .brand-text { line-height: 1.15; }
+        .app-header .brand-title {
+            font-family: var(--font-serif);
+            font-weight: 700; font-size: 17px;
+            color: var(--ink-900);
+            letter-spacing: -0.01em;
+        }
+        .app-header .brand-sub {
+            font-size: 11px; color: var(--ink-600);
+            text-transform: uppercase; letter-spacing: 0.06em;
+        }
+
+        .app-header .search-bar {
+            flex: 1; max-width: 480px; position: relative;
+        }
+        .app-header .search-bar input {
+            width: 100%;
+            height: 38px;
+            padding: 0 14px 0 38px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--ink-50);
+            font-size: 13px;
+            transition: all .15s;
+        }
+        .app-header .search-bar input:focus {
+            outline: none;
+            border-color: var(--kalro-green-500);
+            background: #fff;
+            box-shadow: 0 0 0 3px var(--kalro-green-100);
+        }
+        .app-header .search-bar i {
+            position: absolute; left: 12px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--ink-500); font-size: 15px;
+        }
+
+        .app-header .header-actions {
+            display: flex; align-items: center; gap: 8px;
+            margin-left: auto;
+        }
+        .app-header .icon-btn {
+            width: 38px; height: 38px;
+            border: 1px solid transparent; background: transparent;
+            border-radius: 6px;
+            display: grid; place-items: center;
+            color: var(--ink-700); font-size: 17px;
+            cursor: pointer;
+            position: relative;
+            transition: all .15s;
+        }
+        .app-header .icon-btn:hover {
+            background: var(--ink-100);
+            border-color: var(--border);
+            color: var(--kalro-green);
+        }
+        .app-header .icon-btn .badge-dot {
+            position: absolute; top: 6px; right: 6px;
+            min-width: 16px; height: 16px; padding: 0 4px;
+            background: var(--kalro-red); color: #fff;
+            border-radius: 8px; font-size: 10px; font-weight: 600;
+            display: grid; place-items: center;
+            border: 2px solid var(--bg-surface);
+        }
+
+        .app-header .user-menu {
+            display: flex; align-items: center; gap: 10px;
+            padding: 6px 10px 6px 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background .15s;
+        }
+        .app-header .user-menu:hover { background: var(--ink-100); }
+        .app-header .user-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--kalro-green);
+            color: var(--kalro-gold);
+            display: grid; place-items: center;
+            font-weight: 600; font-size: 13px;
+            font-family: var(--font-serif);
+        }
+        .app-header .user-meta { line-height: 1.2; }
+        .app-header .user-name { font-size: 13px; font-weight: 600; color: var(--ink-900); }
+        .app-header .user-role { font-size: 11px; color: var(--ink-500); }
+
+        /* ============================================================
+           LAYOUT — SIDEBAR + CONTENT
+           ============================================================ */
+        .app-shell {
+            display: flex;
+            min-height: calc(100vh - var(--header-h) - 32px);
+        }
+
+        /* ----- SIDEBAR ----- */
+        .app-sidebar {
+            width: var(--sidebar-w);
+            flex-shrink: 0;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            position: sticky;
+            top: var(--header-h);
+            height: calc(100vh - var(--header-h));
+            overflow-y: auto;
+            transition: transform .2s ease;
+        }
+        .app-sidebar::-webkit-scrollbar { width: 6px; }
+        .app-sidebar::-webkit-scrollbar-thumb { background: var(--ink-300); border-radius: 3px; }
+
+        .app-sidebar .nav-section {
+            margin-bottom: 22px;
+        }
+        .app-sidebar .nav-section-title {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--ink-500);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0 20px 8px;
+        }
+        .app-sidebar .nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 9px 20px 9px 22px;
+            color: var(--ink-700);
+            font-size: 13.5px;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+            transition: all .12s;
+            text-decoration: none;
+        }
+        .app-sidebar .nav-item:hover {
+            background: var(--kalro-green-50);
+            color: var(--kalro-green);
+            text-decoration: none;
+        }
+        .app-sidebar .nav-item.active {
+            background: var(--kalro-green-100);
+            color: var(--kalro-green);
+            border-left-color: var(--kalro-green);
+            font-weight: 600;
+        }
+        .app-sidebar .nav-item i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .app-sidebar .nav-item .nav-badge {
+            margin-left: auto;
+            min-width: 20px; padding: 1px 6px;
+            background: var(--ink-200); color: var(--ink-700);
+            border-radius: 10px;
+            font-size: 11px; font-weight: 600;
+            text-align: center;
+        }
+        .app-sidebar .nav-item.active .nav-badge {
+            background: var(--kalro-green); color: #fff;
+        }
+
+        /* ----- MAIN CONTENT ----- */
+        .app-main {
+            flex: 1;
+            min-width: 0;
+            display: flex; flex-direction: column;
+        }
+
+        /* ----- SUBHEADER / BREADCRUMBS ----- */
+        .app-subheader {
+            min-height: var(--subheader-h);
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 28px;
+            display: flex; align-items: center; gap: 16px;
+            flex-wrap: wrap;
+        }
+        .app-subheader .breadcrumbs {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12.5px;
+            color: var(--ink-500);
+            flex-wrap: wrap;
+        }
+        .app-subheader .breadcrumbs a { color: var(--ink-600); }
+        .app-subheader .breadcrumbs i { font-size: 10px; color: var(--ink-400); }
+        .app-subheader .subheader-actions {
+            margin-left: auto;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* ----- PAGE CONTENT ----- */
+        .app-content {
+            padding: 28px;
+            flex: 1;
+        }
+        .page-header {
+            display: flex; align-items: flex-start; gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .page-header .page-header-text { flex: 1; min-width: 240px; }
+        .page-header h1 { margin: 0 0 4px; }
+        .page-header .page-header-sub {
+            font-size: 13px; color: var(--ink-500);
+        }
+        .page-header .page-header-actions {
+            display: flex; gap: 8px; flex-wrap: wrap;
+        }
+
+        /* ============================================================
+           CARDS
+           ============================================================ */
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            background: transparent;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .card-header h5, .card-header h6 { margin: 0; }
+        .card-header .card-header-actions { margin-left: auto; }
+        .card-body { padding: 20px; }
+        .card-footer {
+            padding: 14px 20px;
+            border-top: 1px solid var(--border);
+            background: var(--ink-50);
+            border-radius: 0 0 8px 8px;
+        }
+
+        /* ============================================================
+           STAT CARDS
+           ============================================================ */
+        .stat-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--kalro-green);
+            border-radius: 8px;
+            padding: 18px 20px;
+            height: 100%;
+            transition: box-shadow .15s;
+        }
+        .stat-card:hover { box-shadow: var(--shadow-md); }
+        .stat-card .stat-label {
+            font-size: 11.5px; font-weight: 600;
+            color: var(--ink-500); text-transform: uppercase;
+            letter-spacing: 0.06em; margin-bottom: 6px;
+        }
+        .stat-card .stat-value {
+            font-family: var(--font-serif);
+            font-size: 28px; font-weight: 700;
+            color: var(--ink-900); line-height: 1.1;
+            margin-bottom: 4px;
+        }
+        .stat-card .stat-delta {
+            font-size: 12px; font-weight: 500;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .stat-card .stat-delta.up   { color: var(--kalro-green-600); }
+        .stat-card .stat-delta.down { color: var(--kalro-red); }
+        .stat-card .stat-delta i { font-size: 11px; }
+        .stat-card.stat-gold  { border-left-color: var(--kalro-gold); }
+        .stat-card.stat-red   { border-left-color: var(--kalro-red); }
+        .stat-card.stat-ink   { border-left-color: var(--ink-500); }
+
+        /* ============================================================
+           TABLES
+           ============================================================ */
+        .table-kalro {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .table-kalro thead th {
+            background: var(--ink-50);
+            border-bottom: 2px solid var(--border-strong);
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 11px; font-weight: 700;
+            color: var(--ink-600);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+        .table-kalro tbody td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        .table-kalro tbody tr:hover { background: var(--kalro-green-50); }
+        .table-kalro tbody tr:last-child td { border-bottom: 0; }
+
+        /* ============================================================
+           BADGES / PILLS
+           ============================================================ */
+        .pill {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 9px;
+            border-radius: 12px;
+            font-size: 11.5px; font-weight: 600;
+            line-height: 1.6;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+        }
+        .pill-green { background: var(--kalro-green-100); color: var(--kalro-green-700); }
+        .pill-gold  { background: var(--kalro-gold-100);  color: var(--kalro-gold-700); }
+        .pill-red   { background: var(--kalro-red-100);   color: var(--kalro-red); }
+        .pill-grey  { background: var(--ink-100);         color: var(--ink-600); }
+        .pill-ink   { background: var(--ink-800);         color: #fff; }
+        .pill-outline { background: transparent; border: 1px solid var(--border-strong); color: var(--ink-700); }
+
+        /* Status variants */
+        .pill-status-draft     { background: var(--ink-100);   color: var(--ink-700); }
+        .pill-status-approved  { background: var(--kalro-gold-100); color: var(--kalro-gold-700); }
+        .pill-status-sent      { background: var(--kalro-green-100); color: var(--kalro-green-700); }
+        .pill-status-failed    { background: var(--kalro-red-100);   color: var(--kalro-red); }
+        .pill-status-running   { background: #dbeafe; color: #1e40af; }
+
+        /* Priority */
+        .pill-priority-urgent  { background: var(--kalro-red); color: #fff; }
+        .pill-priority-high    { background: #fef3c7; color: #92400e; }
+        .pill-priority-normal  { background: var(--ink-100); color: var(--ink-700); }
+        .pill-priority-low     { background: var(--ink-50); color: var(--ink-500); }
+
+        /* ============================================================
+           BUTTONS
+           ============================================================ */
+        .btn {
+            font-family: var(--font-sans);
+            font-weight: 500;
+            font-size: 13.5px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            transition: all .12s;
+            display: inline-flex; align-items: center; gap: 6px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px var(--kalro-green-100);
+        }
+        .btn-primary {
+            background: var(--kalro-green); color: #fff;
+            border-color: var(--kalro-green);
+        }
+        .btn-primary:hover {
+            background: var(--kalro-green-700);
+            border-color: var(--kalro-green-700);
+            color: #fff;
+        }
+        .btn-gold {
+            background: var(--kalro-gold); color: var(--ink-900);
+            border-color: var(--kalro-gold);
+        }
+        .btn-gold:hover { background: var(--kalro-gold-700); color: var(--ink-900); }
+        .btn-outline {
+            background: transparent; color: var(--ink-700);
+            border-color: var(--border-strong);
+        }
+        .btn-outline:hover {
+            background: var(--ink-50);
+            border-color: var(--ink-500);
+            color: var(--ink-900);
+        }
+        .btn-ghost {
+            background: transparent; color: var(--ink-600);
+            border-color: transparent;
+        }
+        .btn-ghost:hover { background: var(--ink-100); color: var(--ink-900); }
+        .btn-danger {
+            background: transparent; color: var(--kalro-red);
+            border-color: var(--kalro-red);
+        }
+        .btn-danger:hover { background: var(--kalro-red); color: #fff; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        .btn-lg { padding: 11px 22px; font-size: 15px; }
+
+        /* ============================================================
+           FORMS
+           ============================================================ */
+        .form-label {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--ink-700);
+            margin-bottom: 5px;
+            letter-spacing: 0.01em;
+        }
+        .form-control, .form-select {
+            font-family: var(--font-sans);
+            font-size: 13.5px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-strong);
+            background: #fff;
+            color: var(--ink-900);
+            transition: all .12s;
+        }
+        .form-control:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--kalro-green-500);
+            box-shadow: 0 0 0 3px var(--kalro-green-100);
+        }
+        .form-text { font-size: 12px; color: var(--ink-500); }
+        .form-check-input:checked {
+            background-color: var(--kalro-green);
+            border-color: var(--kalro-green);
+        }
+        .required-mark { color: var(--kalro-red); margin-left: 2px; }
+
+        /* Filter bar */
+        .filter-bar {
+            background: var(--ink-50);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            display: flex; flex-wrap: wrap;
+            align-items: flex-end; gap: 12px;
+        }
+        .filter-bar .filter-field {
+            display: flex; flex-direction: column;
+            min-width: 160px; flex: 1;
+        }
+
+        /* ============================================================
+           ALERTS / MESSAGES
+           ============================================================ */
+        .alert-kalro {
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 13.5px;
+            display: flex; align-items: flex-start; gap: 10px;
+            margin-bottom: 12px;
+            border: 1px solid transparent;
+        }
+        .alert-kalro i { font-size: 16px; margin-top: 1px; }
+        .alert-kalro.alert-success { background: var(--kalro-green-100); color: var(--kalro-green-700); border-color: var(--kalro-green-400); }
+        .alert-kalro.alert-info    { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+        .alert-kalro.alert-warning { background: var(--kalro-gold-100); color: var(--kalro-gold-700); border-color: var(--kalro-gold); }
+        .alert-kalro.alert-danger  { background: var(--kalro-red-100); color: var(--kalro-red); border-color: #f0a9a1; }
+
+        /* ============================================================
+           FOOTER
+           ============================================================ */
+        .app-footer {
+            background: var(--ink-900);
+            color: var(--ink-300);
+            font-size: 12.5px;
+            padding: 28px 28px 18px;
+            border-top: 3px solid var(--kalro-gold);
+        }
+        .app-footer a { color: var(--ink-300); }
+        .app-footer a:hover { color: var(--kalro-gold); }
+        .app-footer .footer-cols {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 24px;
+        }
+        .app-footer .footer-crest {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 12px;
+        }
+        .app-footer .footer-crest-mark {
+            width: 42px; height: 42px;
+            background: var(--kalro-green);
+            border: 2px solid var(--kalro-gold);
+            border-radius: 6px;
+            display: grid; place-items: center;
+            color: var(--kalro-gold); font-family: var(--font-serif);
+            font-weight: 700; font-size: 20px;
+        }
+        .app-footer h6 {
+            color: #fff; font-family: var(--font-sans);
+            font-size: 11.5px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            margin-bottom: 12px;
+        }
+        .app-footer ul { list-style: none; padding: 0; margin: 0; }
+        .app-footer li { margin-bottom: 8px; }
+        .app-footer .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,.12);
+            padding-top: 16px;
+            display: flex; justify-content: space-between; gap: 20px;
+            flex-wrap: wrap;
+            font-size: 11.5px;
+            color: var(--ink-400);
+        }
+
+        /* ============================================================
+           MOBILE
+           ============================================================ */
+        .sidebar-toggle { display: none; }
+        .sidebar-backdrop { display: none; }
+
+        @media (max-width: 991.98px) {
+            .app-sidebar {
+                position: fixed;
+                top: var(--header-h);
+                left: 0; bottom: 0;
+                z-index: 1030;
+                transform: translateX(-100%);
+                box-shadow: var(--shadow-xl);
+            }
+            .app-sidebar.open { transform: translateX(0); }
+            .sidebar-toggle { display: grid; }
+            .sidebar-backdrop {
+                display: block;
+                position: fixed; inset: 0;
+                background: rgba(15,26,20,.4);
+                z-index: 1025;
+                opacity: 0; pointer-events: none;
+                transition: opacity .2s;
+            }
+            .sidebar-backdrop.open { opacity: 1; pointer-events: auto; }
+            .app-content { padding: 18px; }
+            .app-footer .footer-cols { grid-template-columns: 1fr; gap: 24px; }
+            .app-header .search-bar { display: none; }
+            .app-header .user-meta { display: none; }
+        }
+
+        /* ============================================================
+           UTILITIES
+           ============================================================ */
+        .text-muted     { color: var(--ink-500) !important; }
+        .text-ink       { color: var(--ink-900) !important; }
+        .text-green     { color: var(--kalro-green) !important; }
+        .text-gold      { color: var(--kalro-gold-700) !important; }
+        .text-danger    { color: var(--kalro-red) !important; }
+        .font-serif     { font-family: var(--font-serif); }
+        .font-mono      { font-family: var(--font-mono); }
+        .fw-500         { font-weight: 500; }
+        .fw-600         { font-weight: 600; }
+        .fs-12          { font-size: 12px; }
+        .fs-13          { font-size: 13px; }
+        .fs-14          { font-size: 14px; }
+        .divider-v      { width: 1px; background: var(--border); align-self: stretch; }
+
+        /* Empty state */
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            color: var(--ink-500);
+        }
+        .empty-state i {
+            font-size: 42px;
+            color: var(--ink-300);
+            margin-bottom: 12px;
+            display: block;
+        }
+        .empty-state h5 {
+            color: var(--ink-700);
+            font-family: var(--font-sans);
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .empty-state p { font-size: 13.5px; max-width: 400px; margin: 0 auto 16px; }
+
+        /* Pagination */
+        .pagination {
+            display: flex; gap: 4px; list-style: none; padding: 0; margin: 0;
+            justify-content: center;
+        }
+        .pagination .page-link {
+            min-width: 34px; height: 34px;
+            display: grid; place-items: center;
+            padding: 0 10px;
+            border: 1px solid var(--border);
+            background: #fff; color: var(--ink-700);
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .pagination .page-link:hover {
+            background: var(--kalro-green-50);
+            border-color: var(--kalro-green-400);
+            color: var(--kalro-green);
+            text-decoration: none;
+        }
+        .pagination .page-item.active .page-link {
+            background: var(--kalro-green);
+            border-color: var(--kalro-green);
+            color: #fff;
+        }
+        .pagination .page-item.disabled .page-link {
+            opacity: .45; pointer-events: none;
+        }
+
+        /* Dropdown */
+        .dropdown-menu {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            padding: 6px;
+            font-size: 13.5px;
+            min-width: 200px;
+        }
+        .dropdown-item {
+            border-radius: 5px;
+            padding: 8px 12px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .dropdown-item:hover { background: var(--kalro-green-50); color: var(--kalro-green); }
+        .dropdown-item i { font-size: 15px; width: 18px; text-align: center; }
+        .dropdown-divider { margin: 6px 0; border-color: var(--border); }
+        .dropdown-header {
+            font-size: 10.5px; font-weight: 700;
+            color: var(--ink-500);
+            text-transform: uppercase; letter-spacing: 0.08em;
+            padding: 6px 12px;
+        }
+
+        /* Print */
+        @media print {
+            .gov-banner, .app-header, .app-sidebar, .app-footer,
+            .app-subheader, .sidebar-toggle, .page-header-actions { display: none !important; }
+            .app-content { padding: 0; }
+            body { background: #fff; }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- GOVERNMENT BANNER                                             -->
+<!-- ============================================================ -->
+<div class="gov-banner">
+    <div class="container-fluid">
+        <div>
+            <span class="flag-mark">Republic of Kenya</span>
+            <span class="d-none d-md-inline ms-3">· Kenya Agricultural and Livestock Research Organization</span>
+        </div>
+        <div class="d-none d-md-flex align-items-center gap-3">
+            <span><i class="bi bi-shield-check"></i> Official System</span>
+            <span>·</span>
+            <span>{{ request.user.get_role_display|default:"Public Access" }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- APP HEADER                                                    -->
+<!-- ============================================================ -->
+<header class="app-header">
+    <div class="container-fluid">
+
+        <!-- Sidebar toggle (mobile) -->
+        <button class="icon-btn sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation">
+            <i class="bi bi-list"></i>
+        </button>
+
+        <!-- Brand -->
+        <a href="{% url 'advisories:advisory_dashboard' %}" class="brand">
+            <div class="brand-crest">K</div>
+            <div class="brand-text">
+                <div class="brand-title">KALRO Advisory</div>
+                <div class="brand-sub">Climate-Resilient Agriculture</div>
+            </div>
+        </a>
+
+        <!-- Search -->
+        {% block header_search %}
+        <div class="search-bar d-none d-lg-block">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Search farmers, farms, advisories, trials…" aria-label="Search">
+        </div>
+        {% endblock %}
+
+        <!-- Header actions -->
+        <div class="header-actions">
+
+            <button class="icon-btn" title="Climate alerts">
+                <i class="bi bi-cloud-sun"></i>
+            </button>
+
+            <button class="icon-btn" title="Notifications">
+                <i class="bi bi-bell"></i>
+                <span class="badge-dot">3</span>
+            </button>
+
+            <div class="divider-v" style="height: 32px;"></div>
+
+            {% if user.is_authenticated %}
+            <div class="dropdown">
+                <div class="user-menu" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="user-avatar">
+                        {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+                    </div>
+                    <div class="user-meta d-none d-md-block">
+                        <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+                        <div class="user-role">{{ user.get_role_display }}</div>
+                    </div>
+                    <i class="bi bi-chevron-down ms-1 fs-12 text-muted"></i>
+                </div>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li class="dropdown-header">Signed in as {{ user.username }}</li>
+                    <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person"></i> My Profile</a></li>
+                    <li><a class="dropdown-item" href="{% url 'accounts:profile_edit' %}"><i class="bi bi-gear"></i> Account Settings</a></li>
+                    {% if user.is_farmer %}
+                    <li><a class="dropdown-item" href="{% url 'farmers:my_profile' %}"><i class="bi bi-house-door"></i> My Farm</a></li>
+                    {% endif %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock"></i> Admin Console</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item text-danger">
+                                <i class="bi bi-box-arrow-right"></i> Sign Out
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+            {% else %}
+            <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-box-arrow-in-right"></i> Sign In
+            </a>
+            {% endif %}
+        </div>
+
+    </div>
+</header>
+
+<!-- ============================================================ -->
+<!-- APP SHELL — SIDEBAR + MAIN                                    -->
+<!-- ============================================================ -->
+<div class="app-shell">
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="app-sidebar" id="appSidebar">
+        {% include "partials/_sidebar.html" %}
+    </aside>
+
+    <!-- Backdrop for mobile -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- ========== MAIN ========== -->
+    <div class="app-main">
+
+        <!-- SUBHEADER / BREADCRUMBS -->
+        <div class="app-subheader">
+            {% include "partials/_breadcrumbs.html" %}
+            <div class="subheader-actions">
+                {% block subheader_actions %}{% endblock %}
+            </div>
+        </div>
+
+        <!-- CONTENT -->
+        <main class="app-content">
+
+            <!-- Messages -->
+            {% include "partials/_messages.html" %}
+
+            <!-- Page content -->
+            {% block content %}{% endblock %}
+
+        </main>
+
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- FOOTER                                                        -->
+<!-- ============================================================ -->
+<footer class="app-footer">
+    <div class="container-fluid">
+        <div class="footer-cols">
+            <div>
+                <div class="footer-crest">
+                    <div class="footer-crest-mark">K</div>
+                    <div>
+                        <div style="color:#fff; font-family: var(--font-serif); font-weight: 700; font-size: 15px;">KALRO Advisory</div>
+                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;">Climate-Resilient Agriculture</div>
+                    </div>
+                </div>
+                <p style="max-width: 340px; line-height: 1.6;">
+                    A physics-informed AI advisory platform for climate-resilient agriculture.
+                    Powered by KALRO research and delivered to every farmer in Kenya.
+                </p>
+            </div>
+            <div>
+                <h6>Platform</h6>
+                <ul>
+                    <li><a href="{% url 'advisories:advisory_dashboard' %}">Dashboard</a></li>
+                    <li><a href="{% url 'advisories:advisory_list' %}">Advisories</a></li>
+                    <li><a href="{% url 'farmers:farmer_list' %}">Farmers</a></li>
+                    <li><a href="{% url 'climate:weatherrecord_list' %}">Climate</a></li>
+                </ul>
+            </div>
+            <div>
+                <h6>Research</h6>
+                <ul>
+                    <li><a href="{% url 'crops:crop_list' %}">Crops</a></li>
+                    <li><a href="{% url 'trials:trial_list' %}">Trials</a></li>
+                    <li><a href="{% url 'pinn_engine:model_list' %}">PINN Models</a></li>
+                    <li><a href="{% url 'pinn_engine:metrics_dashboard' %}">Metrics</a></li>
+                </ul>
+            </div>
+            <div>
+                <h6>Support</h6>
+                <ul>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">Report an Issue</a></li>
+                    <li><a href="#">Contact KALRO</a></li>
+                    <li><a href="{% url 'admin:index' %}">Admin Console</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div>© {% now "Y" %} Kenya Agricultural and Livestock Research Organization. All rights reserved.</div>
+            <div>
+                <a href="#">Privacy</a> ·
+                <a href="#">Terms</a> ·
+                <a href="#">Data Policy</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- ============================================================ -->
+<!-- SCRIPTS                                                       -->
+<!-- ============================================================ -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<script>
+    /* ============================================================
+       KALRO ADVISORY — GLOBAL JS
+       ============================================================ */
+    (function () {
+        'use strict';
+
+        // -------- Sidebar toggle (mobile) --------
+        const sidebar   = document.getElementById('appSidebar');
+        const backdrop  = document.getElementById('sidebarBackdrop');
+        const toggleBtn = document.getElementById('sidebarToggle');
+
+        function closeSidebar() {
+            if (sidebar) sidebar.classList.remove('open');
+            if (backdrop) backdrop.classList.remove('open');
+        }
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                backdrop.classList.toggle('open');
+            });
+        }
+        if (backdrop) backdrop.addEventListener('click', closeSidebar);
+
+        // -------- Auto-dismiss alerts after 6s --------
+        document.querySelectorAll('[data-auto-dismiss]').forEach(el => {
+            setTimeout(() => {
+                el.style.transition = 'opacity .4s';
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 400);
+            }, 6000);
+        });
+
+        // -------- Confirm on destructive buttons --------
+        document.querySelectorAll('[data-confirm]').forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (!confirm(el.dataset.confirm)) e.preventDefault();
+            });
+        });
+
+        // -------- CSRF helper for fetch --------
+        window.getCsrfToken = function () {
+            const m = document.cookie.match(/csrftoken=([^;]+)/);
+            return m ? m[1] : '';
+        };
+
+        // -------- Default Chart.js config --------
+        if (window.Chart) {
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            Chart.defaults.font.size = 12;
+            Chart.defaults.color = '#4a5b51';
+            Chart.defaults.borderColor = '#dfe5e1';
+            Chart.defaults.plugins.legend.labels.boxWidth = 12;
+            Chart.defaults.plugins.legend.labels.padding = 14;
+            Chart.defaults.plugins.tooltip.backgroundColor = '#0f1a14';
+            Chart.defaults.plugins.tooltip.padding = 10;
+            Chart.defaults.plugins.tooltip.titleFont = { weight: '600', size: 12 };
+            Chart.defaults.plugins.tooltip.bodyFont = { size: 12 };
+            Chart.defaults.plugins.tooltip.cornerRadius = 6;
+        }
+
+        // -------- Palette helpers for charts --------
+        window.KALRO_PALETTE = {
+            green:  '#0b3d2e',
+            greenL: '#27876a',
+            gold:   '#f4c430',
+            red:    '#bb1e10',
+            ink:    '#2d3d34',
+            muted:  '#98a49c',
+        };
+
+        // -------- Live clock in header (optional, silent) --------
+        const clockEl = document.querySelector('[data-live-clock]');
+        if (clockEl) {
+            setInterval(() => {
+                const d = new Date();
+                clockEl.textContent = d.toLocaleTimeString('en-KE', { hour12: false });
+            }, 1000);
+        }
+    })();
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

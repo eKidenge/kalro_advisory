@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ form_title|default:"Edit Profile" }} — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{{ form_title|default:"Edit Profile" }}</h1>
+        <div class="page-header-sub">
+            {% if is_admin_view %}
+                Update account details and permissions
+            {% else %}
+                Update your personal information
+            {% endif %}
+        </div>
+    </div>
+    <div class="page-header-actions">
+        {% if is_admin_view %}
+            <a href="{% url 'accounts:user_detail' object.pk %}" class="btn btn-outline">
+                <i class="bi bi-arrow-left"></i> Cancel
+            </a>
+        {% else %}
+            <a href="{% url 'accounts:profile' %}" class="btn btn-outline">
+                <i class="bi bi-arrow-left"></i> Cancel
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-8">
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert-kalro alert-danger">
+                <i class="bi bi-exclamation-octagon"></i>
+                <div>
+                    {% for err in form.non_field_errors %}
+                        {{ err }}{% if not forloop.last %}<br>{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ===== IDENTITY ===== -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-person me-2"></i> Identity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% if form.username %}
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.username.id_for_label }}">
+                                Username
+                            </label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <div class="field-error">{{ form.username.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if form.email %}
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.email.id_for_label }}">
+                                Email
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="field-error">{{ form.email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if form.first_name %}
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.first_name.id_for_label }}">
+                                First name
+                            </label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="field-error">{{ form.first_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if form.last_name %}
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.last_name.id_for_label }}">
+                                Last name
+                            </label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="field-error">{{ form.last_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== CONTACT & LOCATION ===== -->
+            {% if form.phone_number or form.county or form.sub_county or form.ward or form.preferred_language %}
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-geo-alt me-2"></i> Contact &amp; Location</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% if form.phone_number %}
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.phone_number.id_for_label }}">
+                                Phone number
+                            </label>
+                            {{ form.phone_number }}
+                            {% if form.phone_number.errors %}
+                                <div class="field-error">{{ form.phone_number.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if form.preferred_language %}
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.preferred_language.id_for_label }}">
+                                Preferred language
+                            </label>
+                            {{ form.preferred_language }}
+                            {% if form.preferred_language.errors %}
+                                <div class="field-error">{{ form.preferred_language.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if form.county %}
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.county.id_for_label }}">County</label>
+                            {{ form.county }}
+                            {% if form.county.errors %}
+                                <div class="field-error">{{ form.county.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if form.sub_county %}
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.sub_county.id_for_label }}">Sub-county</label>
+                            {{ form.sub_county }}
+                            {% if form.sub_county.errors %}
+                                <div class="field-error">{{ form.sub_county.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if form.ward %}
+                        <div class="col-md-12">
+                            <label class="form-label" for="{{ form.ward.id_for_label }}">Ward</label>
+                            {{ form.ward }}
+                            {% if form.ward.errors %}
+                                <div class="field-error">{{ form.ward.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ===== ADMIN: ROLE & STATUS ===== -->
+            {% if is_admin_view and form.role %}
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-shield-lock me-2"></i> Role &amp; Access</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.role.id_for_label }}">Role</label>
+                            {{ form.role }}
+                            {% if form.role.errors %}
+                                <div class="field-error">{{ form.role.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        {% if form.is_verified %}
+                        <div class="col-md-6">
+                            <label class="form-label d-block">Verification Status</label>
+                            <div class="form-check form-switch">
+                                {{ form.is_verified }}
+                                <label class="form-check-label" for="{{ form.is_verified.id_for_label }}">
+                                    Mark as verified
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if form.is_active %}
+                        <div class="col-md-6">
+                            <label class="form-label d-block">Account Status</label>
+                            <div class="form-check form-switch">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                    Account is active
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ===== ACTIONS ===== -->
+            <div class="form-actions-bar">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="bi bi-check2"></i>
+                    {% if is_admin_view %}Save Changes{% else %}Update Profile{% endif %}
+                </button>
+                <a href="{% if is_admin_view %}{% url 'accounts:user_detail' object.pk %}{% else %}{% url 'accounts:profile' %}{% endif %}"
+                   class="btn btn-outline btn-lg">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<style>
+    .field-error {
+        font-size: 12px;
+        color: var(--kalro-red);
+        margin-top: 6px;
+        display: flex;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    .field-error::before {
+        content: '\F33A';
+        font-family: 'bootstrap-icons';
+        font-size: 11px;
+        padding-top: 2px;
+    }
+    .form-actions-bar {
+        display: flex;
+        gap: 10px;
+        padding: 20px 0 8px;
+        flex-wrap: wrap;
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,32 @@
+databases:
+  - name: kalro-db
+    plan: free
+    databaseName: kalro_advisory
+    user: kalro
+
+services:
+  - type: web
+    name: kalro-advisory
+    runtime: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn kalro_advisory.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.6"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kalro-db
+          property: connectionString
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: admin
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: admin@kalro.go.ke
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false

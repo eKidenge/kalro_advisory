@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block subheader_actions %}
+    <a href="{% url 'trials:trial_list' %}"
+       class="btn btn-sm {% if 'trial_list' in request.resolver_match.url_name or 'trial_detail' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-clipboard-data"></i> Trials
+    </a>
+    <a href="{% url 'trials:trial_result_list' %}"
+       class="btn btn-sm {% if 'result' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-table"></i> Results
+    </a>
+    <a href="{% url 'trials:trial_analytics' %}"
+       class="btn btn-sm {% if request.resolver_match.url_name == 'trial_analytics' %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-graph-up-arrow"></i> Analytics
+    </a>
+    {% if request.user.is_kalro_staff or request.user.is_researcher %}
+    <a href="{% url 'trials:trial_import' %}"
+       class="btn btn-sm btn-outline">
+        <i class="bi bi-upload"></i> Import
+    </a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}{% endblock %}

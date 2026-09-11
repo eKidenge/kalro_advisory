@@ -1,0 +1,143 @@
+{% extends "farmers/base_farmers.html" %}
+{% load static %}
+
+{% block title %}Farmers — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>
+            {% if is_county_scoped %}
+                Farmers — {{ request.user.county }}
+            {% else %}
+                Farmers
+            {% endif %}
+        </h1>
+        <div class="page-header-sub">
+            {{ total_count }} farmer{{ total_count|pluralize }} registered
+            {% if is_county_scoped %} in your county{% endif %}
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'farmers:farmer_export' %}" class="btn btn-outline">
+            <i class="bi bi-download"></i> Export CSV
+        </a>
+        {% if request.user.is_kalro_staff or request.user.is_superuser %}
+        <a href="{% url 'farmers:bulk_import' %}" class="btn btn-outline">
+            <i class="bi bi-upload"></i> Import
+        </a>
+        {% endif %}
+        <a href="{% url 'farmers:farmer_create' %}" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Register Farmer
+        </a>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" class="form-control" value="{{ current_q }}" placeholder="Name, national ID, phone…">
+    </div>
+    <div class="filter-field">
+        <label class="form-label">County</label>
+        <select name="county" class="form-select">
+            <option value="">All counties</option>
+            {% for c in counties %}
+            <option value="{{ c.pk }}" {% if current_county == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Enterprise</label>
+        <input type="text" name="enterprise" class="form-control" value="{{ current_enterprise }}" placeholder="Maize, Dairy…">
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'farmers:farmer_list' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if farmers %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>Farmer</th>
+                        <th>National ID</th>
+                        <th>Phone</th>
+                        <th>County</th>
+                        <th>Enterprise</th>
+                        <th>Farms</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in farmers %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar">{{ f.full_name|slice:":1"|upper }}</div>
+                                <div>
+                                    <div class="user-name">{{ f.full_name }}</div>
+                                    <div class="user-meta">{{ f.email|default:"" }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="font-mono fs-12">{{ f.national_id }}</span></td>
+                        <td><span class="font-mono fs-12">{{ f.phone_number }}</span></td>
+                        <td>{{ f.county.name|default:"—" }}</td>
+                        <td>{{ f.primary_enterprise|default:"—" }}</td>
+                        <td><span class="pill pill-grey">{{ f.farms_total }}</span></td>
+                        <td>
+                            {% if f.is_active %}<span class="pill pill-green">Active</span>
+                            {% else %}<span class="pill pill-red">Inactive</span>{% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <a href="{% url 'farmers:farmer_detail' f.pk %}" class="row-action" title="View"><i class="bi bi-eye"></i></a>
+                                <a href="{% url 'farmers:farmer_update' f.pk %}" class="row-action" title="Edit"><i class="bi bi-pencil"></i></a>
+                                {% if request.user.is_kalro_staff %}
+                                <a href="{% url 'farmers:farmer_delete' f.pk %}" class="row-action row-action-del" title="Delete"><i class="bi bi-trash"></i></a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-people"></i>
+            <h5>No farmers found</h5>
+            <p>{% if current_q or current_county or current_enterprise %}Adjust your filters or clear them.{% else %}Register the first farmer to get started.{% endif %}</p>
+            <a href="{% url 'farmers:farmer_create' %}" class="btn btn-primary"><i class="bi bi-person-plus"></i> Register Farmer</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .user-cell { display: flex; gap: 10px; align-items: center; }
+    .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--kalro-green-100); color: var(--kalro-green); display: grid; place-items: center; font-family: var(--font-serif); font-weight: 700; font-size: 14px; flex-shrink: 0; }
+    .user-name { font-size: 13px; font-weight: 600; color: var(--ink-900); line-height: 1.2; }
+    .user-meta { font-size: 11px; color: var(--ink-500); margin-top: 1px; }
+    .action-bar { display: inline-flex; gap: 4px; }
+    .row-action { width: 30px; height: 30px; border: 1px solid transparent; background: transparent; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); cursor: pointer; text-decoration: none; font-size: 14px; transition: all .12s; }
+    .row-action:hover { background: var(--ink-100); color: var(--ink-900); border-color: var(--border); }
+    .row-action-del:hover { background: var(--kalro-red-100); color: var(--kalro-red); }
+    .text-end { text-align: right; }
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+</style>
+
+{% endblock %}

@@ -1,0 +1,379 @@
+{% extends "accounts/base_auth.html" %}
+{% load static %}
+
+{% block title %}Sign In — KALRO Advisory{% endblock %}
+
+{% block auth_content %}
+
+<div class="auth-panel">
+
+    <!-- ============================================================ -->
+    <!-- HEADER                                                        -->
+    <!-- ============================================================ -->
+    <div class="auth-header">
+        <div class="auth-eyebrow">
+            <i class="bi bi-shield-lock"></i>
+            <span>Secure Sign In · Republic of Kenya</span>
+        </div>
+        <h1 class="auth-title">Welcome back</h1>
+        <p class="auth-subtitle">
+            Sign in to access your dashboard, advisories, and field data.
+        </p>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- LOGIN FORM                                                    -->
+    <!-- ============================================================ -->
+    <form method="post" novalidate class="auth-form" autocomplete="on">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="alert-kalro alert-danger">
+            <i class="bi bi-exclamation-octagon"></i>
+            <div>
+                {% for err in form.non_field_errors %}
+                    {{ err }}{% if not forloop.last %}<br>{% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Username -->
+        <div class="field">
+            <label class="form-label" for="{{ form.username.id_for_label }}">
+                Username or email <span class="required-mark">*</span>
+            </label>
+            <div class="input-with-icon">
+                <i class="bi bi-person"></i>
+                {{ form.username }}
+            </div>
+            {% if form.username.errors %}
+                <div class="field-error">{{ form.username.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Password -->
+        <div class="field">
+            <div class="label-row">
+                <label class="form-label" for="{{ form.password.id_for_label }}">
+                    Password <span class="required-mark">*</span>
+                </label>
+                <a href="{% url 'accounts:password_reset' %}" class="forgot-link">
+                    Forgot password?
+                </a>
+            </div>
+            <div class="input-with-toggle">
+                {{ form.password }}
+                <button type="button"
+                        class="pw-toggle"
+                        data-target="{{ form.password.id_for_label }}"
+                        aria-label="Toggle password visibility">
+                    <i class="bi bi-eye"></i>
+                </button>
+            </div>
+            {% if form.password.errors %}
+                <div class="field-error">{{ form.password.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Remember me -->
+        <div class="options-row">
+            <label class="checkbox-row">
+                <input type="checkbox" name="remember_me" id="remember_me" value="1">
+                <span>Keep me signed in on this device</span>
+            </label>
+        </div>
+
+        <!-- Submit -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg btn-block">
+                <i class="bi bi-box-arrow-in-right"></i>
+                Sign in to portal
+            </button>
+        </div>
+
+        <!-- Divider -->
+        <div class="auth-divider"><span>New to KALRO Advisory?</span></div>
+
+        <!-- Register CTA -->
+        <div class="register-cta">
+            <a href="{% url 'accounts:register' %}" class="btn btn-outline btn-block">
+                <i class="bi bi-person-plus"></i>
+                Create an account
+            </a>
+            <p class="register-note">
+                Farmers get instant access.
+                Extension officers, researchers, and KALRO admins are verified by an authorized officer.
+            </p>
+        </div>
+
+    </form>
+
+    <!-- ============================================================ -->
+    <!-- SUPPORT FOOTNOTE                                              -->
+    <!-- ============================================================ -->
+    <div class="auth-footnote">
+        <i class="bi bi-info-circle"></i>
+        <div>
+            Trouble signing in? Contact your county extension officer or email
+            <a href="mailto:support@kalro.org">support@kalro.org</a>.
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- PAGE-SCOPED CSS                                               -->
+<!-- ============================================================ -->
+<style>
+    .auth-panel { width: 100%; max-width: 460px; }
+
+    /* ---- Header ---- */
+    .auth-header { margin-bottom: 28px; }
+    .auth-eyebrow {
+        display: inline-flex; align-items: center; gap: 8px;
+        font-size: 11.5px; font-weight: 600;
+        color: var(--kalro-green);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        background: var(--kalro-green-100);
+        padding: 5px 12px;
+        border-radius: 4px;
+        margin-bottom: 18px;
+    }
+    .auth-eyebrow i { font-size: 13px; }
+    .auth-title {
+        font-family: var(--font-serif);
+        font-size: 30px;
+        font-weight: 700;
+        color: var(--ink-900);
+        margin: 0 0 10px;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+    }
+    .auth-subtitle {
+        font-size: 14px;
+        color: var(--ink-600);
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* ---- Form ---- */
+    .auth-form { display: block; }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 16px;
+    }
+
+    .label-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+    }
+
+    .form-label {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--ink-700);
+        margin-bottom: 6px;
+        letter-spacing: 0.01em;
+    }
+    .required-mark { color: var(--kalro-red); margin-left: 2px; }
+
+    .forgot-link {
+        font-size: 12px;
+        color: var(--kalro-green);
+        font-weight: 500;
+    }
+    .forgot-link:hover { text-decoration: underline; }
+
+    /* Text inputs */
+    .auth-form input[type="text"],
+    .auth-form input[type="email"],
+    .auth-form input[type="password"] {
+        font-family: var(--font-sans);
+        font-size: 14px;
+        padding: 11px 12px;
+        border-radius: 6px;
+        border: 1px solid var(--border-strong);
+        background: #fff;
+        color: var(--ink-900);
+        transition: all .12s;
+        width: 100%;
+    }
+    .auth-form input:focus {
+        outline: none;
+        border-color: var(--kalro-green-500);
+        box-shadow: 0 0 0 3px var(--kalro-green-100);
+    }
+
+    /* ---- Input with leading icon ---- */
+    .input-with-icon { position: relative; }
+    .input-with-icon i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--ink-400);
+        font-size: 15px;
+        pointer-events: none;
+    }
+    .input-with-icon input { padding-left: 38px !important; }
+    .input-with-icon:focus-within i { color: var(--kalro-green); }
+
+    /* ---- Password toggle ---- */
+    .input-with-toggle { position: relative; }
+    .input-with-toggle input { padding-right: 42px !important; }
+    .pw-toggle {
+        position: absolute;
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 34px;
+        height: 34px;
+        border: 0;
+        background: transparent;
+        border-radius: 5px;
+        color: var(--ink-500);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-size: 15px;
+    }
+    .pw-toggle:hover {
+        background: var(--ink-100);
+        color: var(--kalro-green);
+    }
+
+    /* ---- Errors ---- */
+    .field-error {
+        font-size: 12px;
+        color: var(--kalro-red);
+        margin-top: 6px;
+        display: flex;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    .field-error::before {
+        content: '\F33A';
+        font-family: 'bootstrap-icons';
+        font-size: 11px;
+        padding-top: 2px;
+    }
+
+    /* ---- Options ---- */
+    .options-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 22px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .checkbox-row {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 13px;
+        color: var(--ink-700);
+        cursor: pointer;
+    }
+    .checkbox-row input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--kalro-green);
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    /* ---- Actions ---- */
+    .form-actions { margin-bottom: 22px; }
+    .btn-block { width: 100%; justify-content: center; }
+
+    /* ---- Divider ---- */
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 22px 0;
+        color: var(--ink-500);
+        font-size: 11.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 600;
+    }
+    .auth-divider::before,
+    .auth-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+    }
+
+    /* ---- Register CTA ---- */
+    .register-cta { text-align: center; }
+    .register-note {
+        margin: 12px 0 0;
+        font-size: 12px;
+        color: var(--ink-500);
+        line-height: 1.55;
+    }
+
+    /* ---- Footnote ---- */
+    .auth-footnote {
+        margin-top: 28px;
+        padding: 12px 14px;
+        background: var(--ink-50);
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        display: flex;
+        gap: 10px;
+        font-size: 12.5px;
+        color: var(--ink-600);
+        line-height: 1.55;
+    }
+    .auth-footnote i {
+        color: var(--kalro-green);
+        font-size: 14px;
+        flex-shrink: 0;
+        padding-top: 2px;
+    }
+    .auth-footnote a {
+        color: var(--kalro-green);
+        font-weight: 500;
+    }
+</style>
+
+
+<!-- ============================================================ -->
+<!-- PAGE-SCOPED JS                                                -->
+<!-- ============================================================ -->
+<script>
+    (function () {
+        'use strict';
+
+        // Password visibility toggle
+        document.querySelectorAll('.pw-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = document.getElementById(btn.dataset.target);
+                if (!target) return;
+                const showing = target.type === 'text';
+                target.type = showing ? 'password' : 'text';
+                btn.innerHTML = showing
+                    ? '<i class="bi bi-eye"></i>'
+                    : '<i class="bi bi-eye-slash"></i>';
+            });
+        });
+
+        // Autofocus username
+        const userField = document.getElementById('{{ form.username.id_of_label }}');
+        if (userField && !userField.value) userField.focus();
+
+    })();
+</script>
+
+{% endblock %}

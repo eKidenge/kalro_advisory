@@ -1,0 +1,124 @@
+{% extends "climate/base_climate.html" %}
+{% load static %}
+
+{% block title %}Rainfall Chart — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Rainfall Chart</h1>
+        <div class="page-header-sub">
+            {% if station %}{{ station.name }} · Last {{ days }} days{% else %}Select a station to view trends{% endif %}
+        </div>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label">Station</label>
+        <select name="station" class="form-select" onchange="this.form.submit()">
+            <option value="">Select station</option>
+            {% for s in stations %}
+            <option value="{{ s.pk }}" {% if station and station.pk == s.pk %}selected{% endif %}>{{ s.name }} ({{ s.code }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Days</label>
+        <select name="days" class="form-select" onchange="this.form.submit()">
+            <option value="14" {% if days == 14 %}selected{% endif %}>14 days</option>
+            <option value="30" {% if days == 30 %}selected{% endif %}>30 days</option>
+            <option value="60" {% if days == 60 %}selected{% endif %}>60 days</option>
+            <option value="90" {% if days == 90 %}selected{% endif %}>90 days</option>
+        </select>
+    </div>
+</form>
+
+{% if station %}
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-cloud-rain me-2"></i> Rainfall (mm)</h5></div>
+            <div class="card-body">
+                <canvas id="rainChart" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-thermometer-half me-2"></i> Temperature (°C)</h5></div>
+            <div class="card-body">
+                <canvas id="tempChart" height="180"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="empty-state"><i class="bi bi-bar-chart"></i><h5>No station selected</h5><p>Choose a station above to view its rainfall and temperature trends.</p></div>
+</div>
+{% endif %}
+
+{{ labels|json_script:"chart-labels" }}
+{{ rainfall|json_script:"chart-rain" }}
+{{ temp_min|json_script:"chart-tmin" }}
+{{ temp_max|json_script:"chart-tmax" }}
+
+<script>
+(function () {
+    const rainCanvas = document.getElementById('rainChart');
+    const tempCanvas = document.getElementById('tempChart');
+    if (!rainCanvas) return;
+
+    const labels = JSON.parse(document.getElementById('chart-labels').textContent || '[]');
+    const rain  = JSON.parse(document.getElementById('chart-rain').textContent || '[]');
+    const tmin  = JSON.parse(document.getElementById('chart-tmin').textContent || '[]');
+    const tmax  = JSON.parse(document.getElementById('chart-tmax').textContent || '[]');
+
+    new Chart(rainCanvas, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Rainfall (mm)',
+                data: rain,
+                backgroundColor: '#27876a',
+                borderRadius: 4,
+                barPercentage: 0.7,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#e0e5e1' }, ticks: { color: '#4a5b51' } },
+                x: { grid: { display: false }, ticks: { color: '#6b7a70', maxRotation: 0, autoSkip: true, maxTicksLimit: 10 } }
+            }
+        }
+    });
+
+    if (tempCanvas) {
+        new Chart(tempCanvas, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'Min', data: tmin, borderColor: '#1e40af', backgroundColor: 'rgba(30,64,175,.1)', tension: .3, pointRadius: 2 },
+                    { label: 'Max', data: tmax, borderColor: '#bb1e10', backgroundColor: 'rgba(187,30,16,.1)', tension: .3, pointRadius: 2 }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: true, position: 'bottom' } },
+                scales: {
+                    y: { grid: { color: '#e0e5e1' }, ticks: { color: '#4a5b51' } },
+                    x: { grid: { display: false }, ticks: { display: false } }
+                }
+            }
+        });
+    }
+})();
+</script>
+
+{% endblock %}

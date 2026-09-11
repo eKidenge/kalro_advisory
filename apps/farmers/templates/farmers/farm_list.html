@@ -1,0 +1,88 @@
+{% extends "farmers/base_farmers.html" %}
+{% load static %}
+
+{% block title %}Farms — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Farms</h1>
+        <div class="page-header-sub">All registered farms across the platform</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'farmers:farm_map' %}" class="btn btn-outline"><i class="bi bi-map"></i> Map</a>
+        <a href="{% url 'farmers:farm_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Farm</a>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field">
+        <label class="form-label">County</label>
+        <select name="county" class="form-select">
+            <option value="">All counties</option>
+            {% for c in counties %}<option value="{{ c.pk }}">{{ c.name }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Irrigation</label>
+        <select name="irrigation" class="form-select">
+            <option value="">All types</option>
+            {% for val, label in irrigation_types %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'farmers:farm_list' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if farms %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead><tr><th>Farm</th><th>Farmer</th><th>County</th><th>Size</th><th>Irrigation</th><th class="text-end">Actions</th></tr></thead>
+                <tbody>
+                    {% for farm in farms %}
+                    <tr>
+                        <td>
+                            <div style="font-size:13px; font-weight:600; color: var(--ink-900);">{{ farm.name }}</div>
+                            {% if farm.is_agripark_demo %}<span class="pill pill-gold" style="font-size:10px;">AgriPark</span>{% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'farmers:farmer_detail' farm.farmer.pk %}" style="font-size:13px; color: var(--kalro-green); font-weight:500;">{{ farm.farmer.full_name }}</a>
+                        </td>
+                        <td>{{ farm.county.name|default:"—" }}</td>
+                        <td>{{ farm.size|default:"—" }} {{ farm.get_size_unit_display|default:"" }}</td>
+                        <td><span class="pill pill-grey">{{ farm.get_irrigation_type_display|default:"—" }}</span></td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <a href="{% url 'farmers:farm_detail' farm.pk %}" class="row-action" title="View"><i class="bi bi-eye"></i></a>
+                                <a href="{% url 'farmers:farm_update' farm.pk %}" class="row-action" title="Edit"><i class="bi bi-pencil"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-geo-alt"></i><h5>No farms yet</h5><p>Add the first farm to get started.</p></div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .action-bar { display: inline-flex; gap: 4px; }
+    .row-action { width: 30px; height: 30px; border: 1px solid transparent; background: transparent; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); text-decoration: none; font-size: 14px; transition: all .12s; }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .text-end { text-align: right; }
+    .table-wrap { overflow-x: auto; }
+</style>
+
+{% endblock %}

@@ -1,0 +1,457 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How It Works — KALRO Advisory</title>
+    <meta name="description" content="From climate data to farm decisions — how the KALRO PINN advisory engine works.">
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230b3d2e'/><text y='72' x='50%25' text-anchor='middle' font-size='60' fill='%23f4c430' font-family='Georgia'>K</text></svg>">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --kalro-green: #0b3d2e;
+            --kalro-green-700: #14543f;
+            --kalro-green-600: #1b6a4f;
+            --kalro-green-500: #27876a;
+            --kalro-green-100: #e6f2ec;
+            --kalro-green-50: #f3f9f6;
+            --kalro-gold: #f4c430;
+            --kalro-gold-700: #c99d16;
+            --kalro-gold-100: #fdf4d4;
+            --kalro-red: #bb1e10;
+            --ink-900: #0f1a14;
+            --ink-800: #1c2a22;
+            --ink-700: #2d3d34;
+            --ink-600: #4a5b51;
+            --ink-500: #6b7a70;
+            --ink-300: #c4cbc6;
+            --ink-200: #e0e5e1;
+            --ink-100: #f0f3f1;
+            --font-serif: 'Source Serif 4', Georgia, serif;
+            --font-sans: 'Inter', sans-serif;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: var(--font-sans); color: var(--ink-800); background: #fff; }
+        h1, h2, h3, h4 { font-family: var(--font-serif); color: var(--ink-900); letter-spacing: -0.015em; }
+
+        .top-nav {
+            position: sticky; top: 0; z-index: 1030;
+            background: rgba(255,255,255,.96); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--ink-200);
+        }
+        .top-nav .wrap {
+            max-width: 1280px; margin: 0 auto; padding: 0 24px;
+            height: 72px; display: flex; align-items: center; gap: 40px;
+        }
+        .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; flex-shrink: 0; }
+        .brand:hover { text-decoration: none; }
+        .brand-logo { height: 44px; width: auto; max-width: 120px; object-fit: contain; flex-shrink: 0; }
+        .brand-crest {
+            width: 44px; height: 44px; background: var(--kalro-green); border-radius: 7px;
+            display: grid; place-items: center; color: var(--kalro-gold);
+            font-family: var(--font-serif); font-weight: 700; font-size: 22px;
+            border: 2px solid var(--kalro-gold); flex-shrink: 0;
+        }
+        .brand-text { line-height: 1.1; }
+        .brand-title {
+            font-family: var(--font-serif); font-weight: 700; font-size: 16.5px;
+            letter-spacing: 0.02em; text-transform: uppercase; color: var(--ink-900); white-space: nowrap;
+        }
+        .brand-sub { font-size: 10px; color: var(--ink-500); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap; }
+        .top-nav .nav-links { display: flex; gap: 30px; margin-left: auto; }
+        .top-nav .nav-links a {
+            font-size: 12px; font-weight: 600; color: var(--ink-700); text-decoration: none;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            padding: 6px 0; border-bottom: 2px solid transparent; transition: all .15s;
+        }
+        .top-nav .nav-links a:hover, .top-nav .nav-links a.active { color: var(--kalro-green); border-bottom-color: var(--kalro-green); }
+        .top-nav .nav-cta { display: flex; gap: 10px; flex-shrink: 0; }
+        .nav-toggle {
+            display: none; margin-left: auto; width: 44px; height: 44px;
+            border: 1px solid var(--ink-200); background: #fff; border-radius: 7px;
+            align-items: center; justify-content: center;
+            font-size: 20px; color: var(--ink-800); cursor: pointer;
+        }
+        .mobile-drawer {
+            display: none; position: fixed; top: 72px; left: 0; right: 0; bottom: 0;
+            background: #fff; z-index: 1025; padding: 24px;
+            border-top: 1px solid var(--ink-200); overflow-y: auto;
+        }
+        .mobile-drawer.open { display: block; }
+        .mobile-drawer a {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 4px; font-size: 13px; font-weight: 600;
+            color: var(--ink-800); text-decoration: none;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            border-bottom: 1px solid var(--ink-100);
+        }
+        .mobile-drawer a:hover, .mobile-drawer a.active { color: var(--kalro-green); }
+        .mobile-drawer .mobile-cta { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+
+        .btn {
+            font-family: var(--font-sans); font-weight: 500; font-size: 13px;
+            padding: 9px 18px; border-radius: 6px; border: 1px solid transparent;
+            display: inline-flex; align-items: center; gap: 7px;
+            text-decoration: none; cursor: pointer; transition: all .12s;
+            white-space: nowrap; text-transform: uppercase; letter-spacing: 0.06em;
+        }
+        .btn-primary { background: var(--kalro-green); color: #fff; }
+        .btn-primary:hover { background: var(--kalro-green-700); color: #fff; }
+        .btn-outline { background: transparent; color: var(--ink-700); border-color: var(--ink-300); }
+        .btn-outline:hover { border-color: var(--kalro-green); color: var(--kalro-green); }
+        .btn-gold { background: var(--kalro-gold); color: var(--ink-900); }
+        .btn-gold:hover { background: var(--kalro-gold-700); color: var(--ink-900); }
+        .btn-lg { padding: 13px 26px; font-size: 14px; }
+
+        .page-hero {
+            background: linear-gradient(160deg, var(--kalro-green) 0%, var(--kalro-green-700) 60%, var(--kalro-green-600) 100%);
+            color: #fff; padding: 72px 0 80px; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .page-hero::before {
+            content: ''; position: absolute; inset: 0;
+            background:
+                radial-gradient(circle at 90% 10%, rgba(244,196,48,.18), transparent 40%),
+                radial-gradient(circle at 10% 80%, rgba(244,196,48,.10), transparent 45%);
+            pointer-events: none;
+        }
+        .page-hero .wrap { max-width: 900px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 2; }
+        .page-hero .eyebrow {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 12px; font-weight: 600; color: var(--kalro-gold);
+            text-transform: uppercase; letter-spacing: 0.12em;
+            background: rgba(244,196,48,.12);
+            padding: 6px 14px; border-radius: 20px;
+            border: 1px solid rgba(244,196,48,.35); margin-bottom: 22px;
+        }
+        .page-hero h1 { font-size: 46px; line-height: 1.1; color: #fff; margin: 0 0 20px; font-weight: 700; }
+        .page-hero p { font-size: 17px; line-height: 1.6; color: rgba(255,255,255,.82); max-width: 660px; margin: 0 auto; }
+
+        section { padding: 80px 0; }
+        section .wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+        .section-head { text-align: center; max-width: 720px; margin: 0 auto 56px; }
+        .section-head .eyebrow {
+            font-size: 12px; font-weight: 700; color: var(--kalro-green);
+            text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 14px;
+        }
+        .section-head h2 { font-size: 36px; line-height: 1.15; margin: 0 0 16px; }
+        .section-head p { font-size: 16px; line-height: 1.6; color: var(--ink-600); margin: 0; }
+
+        /* STEP CARDS (numbered, big) */
+        .pipeline { display: flex; flex-direction: column; gap: 24px; }
+        .pipe-step {
+            display: grid; grid-template-columns: 90px 1fr;
+            gap: 28px; align-items: flex-start;
+            background: #fff; border: 1px solid var(--ink-200);
+            border-radius: 12px; padding: 32px;
+            transition: all .2s;
+        }
+        .pipe-step:hover {
+            border-color: var(--kalro-green);
+            box-shadow: 0 12px 32px rgba(11,61,46,.08);
+        }
+        .pipe-num {
+            width: 70px; height: 70px;
+            background: var(--kalro-green); color: var(--kalro-gold);
+            border-radius: 50%; display: grid; place-items: center;
+            font-family: var(--font-serif); font-size: 30px; font-weight: 700;
+            border: 4px solid var(--kalro-green-100);
+        }
+        .pipe-body h3 {
+            font-size: 24px; margin: 0 0 12px;
+            font-family: var(--font-serif);
+        }
+        .pipe-body .pipe-lede {
+            font-size: 15px; line-height: 1.65;
+            color: var(--ink-600); margin: 0 0 18px;
+        }
+        .pipe-body ul {
+            list-style: none; padding: 0; margin: 0;
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+        }
+        .pipe-body ul li {
+            font-size: 13px; color: var(--ink-700);
+            display: flex; align-items: flex-start; gap: 8px;
+            line-height: 1.55;
+        }
+        .pipe-body ul li i {
+            color: var(--kalro-green); font-size: 13px;
+            padding-top: 3px; flex-shrink: 0;
+        }
+
+        /* CTA */
+        .cta-section {
+            background: linear-gradient(135deg, var(--kalro-green) 0%, var(--kalro-green-700) 100%);
+            text-align: center; color: #fff; padding: 72px 0;
+        }
+        .cta-section h2 { color: #fff; font-size: 34px; margin: 0 0 16px; }
+        .cta-section p { font-size: 16px; color: rgba(255,255,255,.8); max-width: 600px; margin: 0 auto 28px; }
+        .cta-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+        /* FOOTER */
+        footer {
+            background: var(--ink-900); color: var(--ink-300);
+            padding: 48px 0 24px; border-top: 3px solid var(--kalro-gold); font-size: 13px;
+        }
+        footer .wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+        footer .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+        footer h6 { color:#fff; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 16px; font-family: var(--font-sans); }
+        footer a { color: var(--ink-300); text-decoration: none; }
+        footer a:hover { color: var(--kalro-gold); }
+        footer ul { list-style: none; padding: 0; margin: 0; }
+        footer li { margin-bottom: 8px; }
+        footer .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,.12); padding-top: 20px;
+            display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+            font-size: 12px; color: var(--ink-500);
+        }
+
+        @media (max-width: 991.98px) {
+            .top-nav .wrap { gap: 16px; height: 64px; padding: 0 18px; }
+            .top-nav .nav-links, .top-nav .nav-cta { display: none; }
+            .nav-toggle { display: flex; }
+            .mobile-drawer { top: 64px; }
+            .brand-title { font-size: 14px; }
+            .brand-sub { display: none; }
+            .brand-logo { height: 38px; }
+            .page-hero { padding: 56px 0 64px; }
+            .page-hero h1 { font-size: 30px; }
+            section { padding: 56px 0; }
+            .section-head h2 { font-size: 26px; }
+            .pipe-step { grid-template-columns: 1fr; gap: 18px; padding: 24px; }
+            .pipe-num { width: 56px; height: 56px; font-size: 24px; }
+            .pipe-body ul { grid-template-columns: 1fr; }
+            .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+        }
+        @media (max-width: 480px) {
+            .page-hero h1 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="top-nav">
+    <div class="wrap">
+        <a href="/" class="brand">
+            <img src="{% static 'img/kalro-logo.png' %}" alt="KALRO" class="brand-logo"
+                 onerror="this.style.display='none'; document.getElementById('brandFallback').style.display='grid';">
+            <div class="brand-crest" id="brandFallback" style="display:none;">K</div>
+            <div class="brand-text">
+                <div class="brand-title">KALRO ADVISORY</div>
+                <div class="brand-sub">Climate-Resilient Agriculture</div>
+            </div>
+        </a>
+        <div class="nav-links">
+            <a href="{% url 'features' %}">Features</a>
+            <a href="{% url 'how_it_works' %}" class="active">How it works</a>
+            <a href="{% url 'integrations:integrationconfig_list' %}">Integrations</a>
+        </div>
+        <div class="nav-cta">
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline"><i class="bi bi-box-arrow-in-right"></i> Sign In</a>
+            <a href="{% url 'accounts:register' %}" class="btn btn-primary"><i class="bi bi-person-plus"></i> Register</a>
+        </div>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+            <i class="bi bi-list" id="navToggleIcon"></i>
+        </button>
+    </div>
+</nav>
+
+<div class="mobile-drawer" id="mobileDrawer">
+    <a href="{% url 'features' %}"><i class="bi bi-star"></i> Features</a>
+    <a href="{% url 'how_it_works' %}" class="active"><i class="bi bi-diagram-3"></i> How it works</a>
+    <a href="{% url 'integrations:integrationconfig_list' %}"><i class="bi bi-plug"></i> Integrations</a>
+    <div class="mobile-cta">
+        <a href="{% url 'accounts:login' %}" class="btn btn-outline"><i class="bi bi-box-arrow-in-right"></i> Sign In</a>
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary"><i class="bi bi-person-plus"></i> Register</a>
+    </div>
+</div>
+
+<section class="page-hero">
+    <div class="wrap">
+        <div class="eyebrow"><i class="bi bi-diagram-3"></i> The Pipeline</div>
+        <h1>From climate data to farm decisions.</h1>
+        <p>
+            Four stages. One outcome: an advisory a farmer can act on today,
+            with the reasoning behind it exposed.
+        </p>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <div class="section-head">
+            <div class="eyebrow">End-to-end flow</div>
+            <h2>How an advisory is built.</h2>
+            <p>Each stage is auditable, and every step is logged for KALRO researchers.</p>
+        </div>
+
+        <div class="pipeline">
+
+            <div class="pipe-step">
+                <div class="pipe-num">1</div>
+                <div class="pipe-body">
+                    <h3>Ingest</h3>
+                    <p class="pipe-lede">
+                        Data flows in from the systems KALRO already runs — no new sensors required.
+                    </p>
+                    <ul>
+                        <li><i class="bi bi-check2"></i> KAOP weather &amp; forecasts</li>
+                        <li><i class="bi bi-check2"></i> AgData Hub soil tests</li>
+                        <li><i class="bi bi-check2"></i> KALRO fertilizer trial database</li>
+                        <li><i class="bi bi-check2"></i> Market prices &amp; farmer registry</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="pipe-step">
+                <div class="pipe-num">2</div>
+                <div class="pipe-body">
+                    <h3>Constrain</h3>
+                    <p class="pipe-lede">
+                        Physical laws are embedded directly into the model's loss function,
+                        so predictions stay physically plausible even with sparse data.
+                    </p>
+                    <ul>
+                        <li><i class="bi bi-check2"></i> Water balance (dS/dt = P − ET − R − D)</li>
+                        <li><i class="bi bi-check2"></i> Nutrient cycling constraints</li>
+                        <li><i class="bi bi-check2"></i> Energy conservation</li>
+                        <li><i class="bi bi-check2"></i> Crop growth stage coefficients</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="pipe-step">
+                <div class="pipe-num">3</div>
+                <div class="pipe-body">
+                    <h3>Infer</h3>
+                    <p class="pipe-lede">
+                        The PINN produces a farm-level recommendation plus a full explanation —
+                        not just an output number.
+                    </p>
+                    <ul>
+                        <li><i class="bi bi-check2"></i> Recommended fertilizer rates (N, P, K)</li>
+                        <li><i class="bi bi-check2"></i> Feature attributions per advisory</li>
+                        <li><i class="bi bi-check2"></i> Physics residuals (consistency check)</li>
+                        <li><i class="bi bi-check2"></i> Human-readable reasoning chain</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="pipe-step">
+                <div class="pipe-num">4</div>
+                <div class="pipe-body">
+                    <h3>Deliver</h3>
+                    <p class="pipe-lede">
+                        Advisories reach farmers through channels they already trust —
+                        and the feedback loop keeps improving the model.
+                    </p>
+                    <ul>
+                        <li><i class="bi bi-check2"></i> iShamba SMS (no smartphone required)</li>
+                        <li><i class="bi bi-check2"></i> Selector Platform (county networks)</li>
+                        <li><i class="bi bi-check2"></i> Extension officers on the ground</li>
+                        <li><i class="bi bi-check2"></i> Farmer feedback captured &amp; scored</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="wrap">
+        <h2>See the features.</h2>
+        <p>Every step above is backed by a capability. Explore what each one does.</p>
+        <div class="cta-buttons">
+            <a href="{% url 'features' %}" class="btn btn-gold btn-lg">
+                <i class="bi bi-star"></i> Explore features
+            </a>
+            <a href="{% url 'accounts:register' %}" class="btn btn-outline btn-lg" style="border-color: rgba(255,255,255,.4); color:#fff;">
+                <i class="bi bi-person-plus"></i> Register
+            </a>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <div class="footer-grid">
+            <div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <img src="{% static 'img/kalro-logo.png' %}" alt="KALRO" style="height: 38px; width: auto;"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+                    <div class="brand-crest" style="width: 38px; height: 38px; font-size: 18px; display:none;">K</div>
+                    <div>
+                        <div style="color:#fff; font-family: var(--font-serif); font-weight: 700; font-size: 14px; letter-spacing:0.02em;">KALRO ADVISORY</div>
+                        <div style="font-size:10px; text-transform: uppercase; letter-spacing:0.1em; color: var(--ink-500);">Climate-Resilient Agriculture</div>
+                    </div>
+                </div>
+                <p style="max-width: 340px; line-height: 1.6; color: var(--ink-500);">
+                    A physics-informed AI advisory platform. Powered by KALRO research, delivered to every farmer in Kenya.
+                </p>
+            </div>
+            <div>
+                <h6>Platform</h6>
+                <ul>
+                    <li><a href="{% url 'accounts:login' %}">Sign In</a></li>
+                    <li><a href="{% url 'accounts:register' %}">Register</a></li>
+                    <li><a href="{% url 'admin:index' %}">Admin Console</a></li>
+                </ul>
+            </div>
+            <div>
+                <h6>About</h6>
+                <ul>
+                    <li><a href="{% url 'features' %}">Features</a></li>
+                    <li><a href="{% url 'how_it_works' %}">How it works</a></li>
+                    <li><a href="{% url 'integrations:integrationconfig_list' %}">Integrations</a></li>
+                </ul>
+            </div>
+            <div>
+                <h6>Contact</h6>
+                <ul>
+                    <li><a href="#">KALRO Headquarters</a></li>
+                    <li><a href="#">Report an Issue</a></li>
+                    <li><a href="#">Data Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div>© {% now "Y" %} Kenya Agricultural and Livestock Research Organization. All rights reserved.</div>
+            <div>Privacy · Terms · Data Policy</div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    (function () {
+        'use strict';
+        const t = document.getElementById('navToggle');
+        const icon = document.getElementById('navToggleIcon');
+        const drawer = document.getElementById('mobileDrawer');
+        if (t && drawer) {
+            t.addEventListener('click', () => {
+                const open = drawer.classList.toggle('open');
+                icon.className = open ? 'bi bi-x-lg' : 'bi bi-list';
+                document.body.style.overflow = open ? 'hidden' : '';
+            });
+            document.querySelectorAll('.drawer-close-link').forEach(a => {
+                a.addEventListener('click', () => {
+                    drawer.classList.remove('open');
+                    icon.className = 'bi bi-list';
+                    document.body.style.overflow = '';
+                });
+            });
+        }
+    })();
+</script>
+
+</body>
+</html>

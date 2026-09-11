@@ -1,0 +1,102 @@
+{% extends "advisories/base_advisories.html" %}
+{% load static %}
+
+{% block title %}Delivery Log — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Delivery Log</h1>
+        <div class="page-header-sub">Every delivery attempt across SMS, Selector, and other channels</div>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field">
+        <label class="form-label">Channel</label>
+        <select name="channel" class="form-select">
+            <option value="">All channels</option>
+            {% for val, label in channels %}<option value="{{ val }}" {% if current.channel == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+            <option value="">All statuses</option>
+            {% for val, label in statuses %}<option value="{{ val }}" {% if current.status == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label">Advisory ID</label>
+        <input type="text" name="advisory" class="form-control" value="{{ current.advisory }}" placeholder="Numeric ID">
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'advisories:advisory_delivery_log' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if deliveries %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Advisory</th>
+                        <th>Channel</th>
+                        <th>Status</th>
+                        <th>Recipient</th>
+                        <th>Queued</th>
+                        <th>Sent</th>
+                        <th>Delivered</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in deliveries %}
+                    <tr>
+                        <td><span class="font-mono fs-12">#{{ d.pk }}</span></td>
+                        <td>
+                            <a href="{% url 'advisories:advisory_detail' d.advisory.pk %}" style="color: var(--kalro-green); font-weight: 500; font-size: 13px;">{{ d.advisory.title|truncatechars:40 }}</a>
+                        </td>
+                        <td><span class="pill pill-grey">{{ d.get_channel_display }}</span></td>
+                        <td>
+                            {% if d.status == 'DELIVERED' %}<span class="pill pill-green">Delivered</span>
+                            {% elif d.status == 'SENT' %}<span class="pill pill-green">Sent</span>
+                            {% elif d.status == 'QUEUED' %}<span class="pill pill-gold">Queued</span>
+                            {% elif d.status == 'FAILED' %}<span class="pill pill-red">Failed</span>
+                            {% elif d.status == 'BOUNCED' %}<span class="pill pill-red">Bounced</span>
+                            {% else %}<span class="pill pill-grey">{{ d.get_status_display }}</span>{% endif %}
+                        </td>
+                        <td><span class="font-mono fs-12">{{ d.recipient_phone|default:d.recipient_ref|default:"—" }}</span></td>
+                        <td><span class="font-mono fs-12">{{ d.queued_at|date:"d M H:i" }}</span></td>
+                        <td>{% if d.sent_at %}<span class="font-mono fs-12">{{ d.sent_at|date:"d M H:i" }}</span>{% else %}—{% endif %}</td>
+                        <td>{% if d.delivered_at %}<span class="font-mono fs-12">{{ d.delivered_at|date:"d M H:i" }}</span>{% else %}—{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-send"></i>
+            <h5>No deliveries recorded</h5>
+            <p>Advisories dispatched via SMS or Selector will appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+</style>
+
+{% endblock %}

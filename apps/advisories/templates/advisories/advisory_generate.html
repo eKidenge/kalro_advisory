@@ -1,0 +1,64 @@
+{% extends "advisories/base_advisories.html" %}
+{% load static %}
+
+{% block title %}Generate Advisory — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Generate Advisory</h1>
+        <div class="page-header-sub">Run the PINN engine and produce a single advisory for a farm and crop</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'advisories:advisory_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Cancel</a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-7">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert-kalro alert-danger"><i class="bi bi-exclamation-octagon"></i><div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div></div>{% endif %}
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-magic me-2"></i> Generate</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-12"><label class="form-label">Farm <span class="req">*</span></label>{{ form.farm }}{% if form.farm.errors %}<div class="field-error">{{ form.farm.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-12"><label class="form-label">Crop <span class="req">*</span></label>{{ form.crop }}{% if form.crop.errors %}<div class="field-error">{{ form.crop.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Type</label>{{ form.kind }}</div>
+                        <div class="col-md-6"><label class="form-label">Priority</label>{{ form.priority }}</div>
+                        <div class="col-md-12"><label class="form-label">Notes / context (optional)</label>{{ form.notes }}</div>
+                    </div>
+                </div>
+                <div class="card-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <a href="{% url 'advisories:advisory_list' %}" class="btn btn-outline">Cancel</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-magic"></i> Generate Advisory</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-info-circle me-2"></i> What happens next</h5></div>
+            <div class="card-body">
+                <ol class="flow-list">
+                    <li>A draft advisory is created in <span class="pill pill-status-draft" style="font-size:10px;">Draft</span> state.</li>
+                    <li>The PINN inference runs in the background using the farm, crop, soil, and climate data.</li>
+                    <li>Once complete, the advisory is populated with recommendations, reasoning, and physics residuals.</li>
+                    <li>A KALRO admin approves it before it's dispatched to the farmer.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error { font-size: 12px; color: var(--kalro-red); margin-top: 6px; }
+    .flow-list { padding-left: 22px; margin: 0; font-size: 13px; line-height: 1.75; color: var(--ink-600); }
+    .flow-list li { margin-bottom: 10px; }
+    .flow-list li:last-child { margin-bottom: 0; }
+</style>
+
+{% endblock %}

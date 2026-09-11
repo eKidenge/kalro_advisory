@@ -1,0 +1,101 @@
+{% extends "crops/base_crops.html" %}
+{% load static %}
+
+{% block title %}Crop Calendar — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Crop Calendar</h1>
+        <div class="page-header-sub">Planting and harvest windows by county and agro-ecological zone</div>
+    </div>
+    {% if can_edit %}
+    <div class="page-header-actions">
+        <a href="{% url 'crops:crop_calendar_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Entry</a>
+    </div>
+    {% endif %}
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label">Crop</label>
+        <select name="crop" class="form-select">
+            <option value="">All crops</option>
+            {% for c in crops %}<option value="{{ c.pk }}" {% if current.crop == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">County</label>
+        <select name="county" class="form-select">
+            <option value="">All counties</option>
+            {% for c in counties %}<option value="{{ c.pk }}" {% if current.county == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">AEZ</label>
+        <select name="aez" class="form-select">
+            <option value="">All AEZ</option>
+            {% for val, label in aez_choices %}<option value="{{ val }}" {% if current.aez == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'crops:crop_calendar' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if calendars %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>Crop</th>
+                        <th>Region</th>
+                        <th>Planting window</th>
+                        <th>Harvest window</th>
+                        <th>Expected rain</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cal in calendars %}
+                    <tr>
+                        <td><strong>{{ cal.crop.name }}</strong></td>
+                        <td>
+                            {% if cal.county %}{{ cal.county.name }}{% elif cal.aez %}{{ cal.get_aez_display }}{% else %}<span class="user-meta">Any</span>{% endif %}
+                        </td>
+                        <td><span class="pill pill-green">Month {{ cal.planting_start_month }} – {{ cal.planting_end_month }}</span></td>
+                        <td>
+                            {% if cal.harvest_start_month %}<span class="pill pill-gold">Month {{ cal.harvest_start_month }} – {{ cal.harvest_end_month }}</span>{% else %}—{% endif %}
+                        </td>
+                        <td>{{ cal.expected_rainfall_mm|default:"—" }} mm</td>
+                        <td class="text-end">
+                            {% if can_edit %}<a href="{% url 'crops:crop_calendar_update' cal.pk %}" class="row-action" title="Edit"><i class="bi bi-pencil"></i></a>{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-calendar3"></i><h5>No calendar entries</h5><p>Add planting windows for crops across regions.</p></div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .row-action { width: 30px; height: 30px; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); text-decoration: none; font-size: 14px; }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .text-end { text-align: right; }
+    .table-wrap { overflow-x: auto; }
+    .user-meta { font-size: 11px; color: var(--ink-500); }
+</style>
+
+{% endblock %}

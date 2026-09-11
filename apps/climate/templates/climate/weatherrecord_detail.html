@@ -1,0 +1,83 @@
+{% extends "climate/base_climate.html" %}
+{% load static %}
+
+{% block title %}{{ record.station.name }} — {{ record.date }} — Weather{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{{ record.date|date:"d M Y" }}</h1>
+        <div class="page-header-sub">{{ record.station.name }} ({{ record.station.code }})</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'climate:weatherrecord_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Back</a>
+        <a href="{% url 'climate:weatherrecord_update' record.pk %}" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-cloud-sun me-2"></i> Observation</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Date</td><td>{{ record.date|date:"d M Y" }} ({{ record.date|date:"l" }})</td></tr>
+                        <tr><td class="lbl">Station</td><td>{{ record.station.name }} · <span class="font-mono">{{ record.station.code }}</span></td></tr>
+                        <tr><td class="lbl">County</td><td>{{ record.station.county.name|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Rainfall</td><td><strong>{{ record.rainfall_mm|default:"—" }}</strong> mm</td></tr>
+                        <tr><td class="lbl">Temp min</td><td>{{ record.temp_min_c|default:"—" }} °C</td></tr>
+                        <tr><td class="lbl">Temp max</td><td>{{ record.temp_max_c|default:"—" }} °C</td></tr>
+                        <tr><td class="lbl">Humidity</td><td>{{ record.humidity_pct|default:"—" }}{% if record.humidity_pct %}%{% endif %}</td></tr>
+                        <tr><td class="lbl">Wind speed</td><td>{{ record.wind_speed_ms|default:"—" }} m/s</td></tr>
+                        <tr><td class="lbl">Solar radiation</td><td>{{ record.solar_rad_mj|default:"—" }} MJ/m²</td></tr>
+                        <tr><td class="lbl">ET</td><td>{{ record.evapotranspiration_mm|default:"—" }} mm</td></tr>
+                        <tr><td class="lbl">Quality</td>
+                            <td>
+                                {% if record.quality == 'QC' %}<span class="pill pill-green">QC Passed</span>
+                                {% elif record.quality == 'QCF' %}<span class="pill pill-red">QC Failed</span>
+                                {% elif record.quality == 'IMP' %}<span class="pill pill-gold">Imputed</span>
+                                {% else %}<span class="pill pill-grey">Raw</span>{% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-bar-chart me-2"></i> Last 14 Days</h5></div>
+            <div class="card-body p-0">
+                {% if recent %}
+                {% for r in recent %}
+                <div class="list-row">
+                    <div>
+                        <div class="list-title">{{ r.date|date:"d M Y" }}</div>
+                        <div class="list-meta">{{ r.rainfall_mm|default:"0" }} mm · {{ r.temp_min_c|default:"—" }}–{{ r.temp_max_c|default:"—" }}°C</div>
+                    </div>
+                    <a href="{% url 'climate:weatherrecord_detail' r.pk %}" class="row-action"><i class="bi bi-arrow-right"></i></a>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-clock-history"></i><p style="margin: 0;">No recent data</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .lbl { color: var(--ink-500); font-weight: 500; width: 40%; }
+    .font-mono { font-family: var(--font-mono); font-size: 12.5px; }
+    .list-row { display: flex; gap: 12px; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .list-row:last-child { border-bottom: 0; }
+    .list-title { font-size: 13px; font-weight: 600; color: var(--ink-900); }
+    .list-meta { font-size: 11px; color: var(--ink-500); margin-top: 2px; }
+    .row-action { width: 30px; height: 30px; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); text-decoration: none; font-size: 14px; transition: all .12s; }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+</style>
+
+{% endblock %}

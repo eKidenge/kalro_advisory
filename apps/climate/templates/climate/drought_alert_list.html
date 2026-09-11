@@ -1,0 +1,85 @@
+{% extends "climate/base_climate.html" %}
+{% load static %}
+
+{% block title %}Drought Alerts — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Drought Alerts</h1>
+        <div class="page-header-sub">Active and past drought warnings</div>
+    </div>
+    {% if request.user.is_kalro_staff %}
+    <div class="page-header-actions">
+        <a href="{% url 'climate:climate_alert_create' %}" class="btn btn-primary">
+            <i class="bi bi-exclamation-triangle"></i> Issue Alert
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if alerts %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr><th>Title</th><th>Severity</th><th>County</th><th>Issued</th><th>Valid until</th><th>Status</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for a in alerts %}
+                    <tr>
+                        <td>
+                            <div class="user-name" style="font-size:13px;">{{ a.title|truncatechars:60 }}</div>
+                            <div class="user-meta">{{ a.description|truncatechars:70 }}</div>
+                        </td>
+                        <td>
+                            {% if a.severity == 'EMERG' %}<span class="pill pill-red">Emergency</span>
+                            {% elif a.severity == 'WARN' %}<span class="pill pill-red">Warning</span>
+                            {% elif a.severity == 'WATCH' %}<span class="pill pill-gold">Watch</span>
+                            {% else %}<span class="pill pill-grey">{{ a.get_severity_display }}</span>{% endif %}
+                        </td>
+                        <td>{{ a.county.name|default:"—" }}{% if a.sub_county %} · {{ a.sub_county }}{% endif %}</td>
+                        <td><span class="font-mono fs-12">{{ a.issued_at|date:"d M Y" }}</span></td>
+                        <td><span class="font-mono fs-12">{{ a.valid_until|date:"d M Y"|default:"—" }}</span></td>
+                        <td>
+                            {% if a.status == 'ACTIVE' %}<span class="pill pill-red">Active</span>
+                            {% elif a.status == 'RESOLVED' %}<span class="pill pill-green">Resolved</span>
+                            {% else %}<span class="pill pill-grey">{{ a.get_status_display }}</span>{% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <a href="{% url 'climate:weatherrecord_list' %}" class="row-action" title="View records"><i class="bi bi-list-ul"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-sun"></i>
+            <h5>No drought alerts</h5>
+            <p>Drought warnings will appear here when issued.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .user-name { font-weight: 600; color: var(--ink-900); line-height: 1.2; }
+    .user-meta { font-size: 11px; color: var(--ink-500); margin-top: 1px; }
+    .action-bar { display: inline-flex; gap: 4px; }
+    .row-action { width: 30px; height: 30px; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); text-decoration: none; font-size: 14px; }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .text-end { text-align: right; }
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+</style>
+
+{% endblock %}

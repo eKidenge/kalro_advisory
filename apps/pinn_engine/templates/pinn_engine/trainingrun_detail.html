@@ -1,0 +1,170 @@
+{% extends "pinn_engine/base_pinn.html" %}
+{% load static %}
+
+{% block title %}Training Run {{ run.pk }} — PINN{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Training Run {{ run.run_label|default:run.pk }}</h1>
+        <div class="page-header-sub">
+            {{ run.model.name }} v{{ run.model.version }} ·
+            <span class="pill {% if run.status == 'SUCCESS' %}pill-green{% elif run.status == 'RUNNING' %}pill-blue{% elif run.status == 'FAILED' %}pill-red{% else %}pill-grey{% endif %}">{{ run.get_status_display }}</span>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'pinn_engine:trainingrun_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Back</a>
+        <a href="{% url 'pinn_engine:trainingrun_logs' run.pk %}" class="btn btn-primary"><i class="bi bi-terminal"></i> View Logs</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-gear me-2"></i> Configuration</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Model</td><td><a href="{% url 'pinn_engine:model_detail' run.model.pk %}">{{ run.model.name }}</a></td></tr>
+                        <tr><td class="lbl">Epochs</td><td>{{ run.epochs }}</td></tr>
+                        <tr><td class="lbl">Batch size</td><td>{{ run.batch_size }}</td></tr>
+                        <tr><td class="lbl">Learning rate</td><td><span class="font-mono fs-12">{{ run.learning_rate }}</span></td></tr>
+                        <tr><td class="lbl">Train split</td><td>{{ run.train_split }}</td></tr>
+                        <tr><td class="lbl">Duration</td><td>{% if run.duration_seconds %}{{ run.duration_seconds }}s{% else %}—{% endif %}</td></tr>
+                        <tr><td class="lbl">Started</td><td>{{ run.started_at|date:"d M Y H:i"|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Finished</td><td>{{ run.finished_at|date:"d M Y H:i"|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Triggered by</td><td>{{ run.triggered_by.get_full_name|default:"—" }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% if run.final_metrics %}
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-speedometer2 me-2"></i> Final Metrics</h5></div>
+            <div class="card-body">
+                <div class="metrics-grid">
+                    {% for k, v in run.final_metrics.items %}
+                    <div class="metric-tile">
+                        <div class="metric-key">{{ k }}</div>
+                        <div class="metric-val">{{ v }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if run.error_text %}
+        <div class="card" style="border-left: 4px solid var(--kalro-red);">
+            <div class="card-header"><h5><i class="bi bi-exclamation-octagon me-2"></i> Error</h5></div>
+            <div class="card-body"><pre style="margin:0; font-size:12px; white-space:pre-wrap; color: var(--kalro-red);">{{ run.error_text }}</pre></div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-graph-up me-2"></i> Loss Curves</h5></div>
+            <div class="card-body">
+                <canvas id="lossChart" height="110"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-table me-2"></i> Recent Metrics</h5></div>
+            <div class="card-body p-0">
+                {% if metrics %}
+                <div class="table-wrap">
+                    <table class="table-kalro">
+                        <thead>
+                            <tr>
+                                <th>Epoch</th>
+                                <th>Data loss</th>
+                                <th>Physics loss</th>
+                                <th>Total loss</th>
+                                <th>RMSE</th>
+                                <th>R²</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in metrics|slice:"-30:" reversed %}
+                            <tr>
+                                <td><span class="font-mono fs-12">{{ m.epoch }}</span></td>
+                                <td><span class="font-mono fs-12">{{ m.data_loss|floatformat:5|default:"—" }}</span></td>
+                                <td><span class="font-mono fs-12">{{ m.physics_loss|floatformat:5|default:"—" }}</span></td>
+                                <td><span class="font-mono fs-12">{{ m.total_loss|floatformat:5|default:"—" }}</span></td>
+                                <td><span class="font-mono fs-12">{{ m.rmse|floatformat:5|default:"—" }}</span></td>
+                                <td><span class="font-mono fs-12">{{ m.r2|floatformat:4|default:"—" }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;">
+                    <i class="bi bi-table"></i>
+                    <p style="margin: 0;">No metrics recorded yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if metrics %}
+{{ metrics.0.epoch|json_script:"first-epoch" }}
+{% endif %}
+
+<script>
+(function () {
+    const canvas = document.getElementById('lossChart');
+    if (!canvas) return;
+
+    const rows = [
+        {% for m in metrics|slice:"-200:" %}
+        { epoch: {{ m.epoch|default:0 }}, data: {{ m.data_loss|default:0 }}, phys: {{ m.physics_loss|default:0 }}, total: {{ m.total_loss|default:0 }} },
+        {% endfor %}
+    ];
+
+    if (!rows.length) {
+        canvas.parentNode.innerHTML = '<div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-graph-up"></i><p style="margin:0;">No loss data recorded</p></div>';
+        return;
+    }
+
+    new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: rows.map(r => r.epoch),
+            datasets: [
+                { label: 'Total loss', data: rows.map(r => r.total), borderColor: '#0b3d2e', backgroundColor: 'rgba(11,61,46,.08)', tension: .3, pointRadius: 0, borderWidth: 2 },
+                { label: 'Data loss', data: rows.map(r => r.data), borderColor: '#27876a', tension: .3, pointRadius: 0, borderWidth: 1.5 },
+                { label: 'Physics loss', data: rows.map(r => r.phys), borderColor: '#c99d16', tension: .3, pointRadius: 0, borderWidth: 1.5 }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: true, position: 'bottom' } },
+            scales: {
+                y: { type: 'logarithmic', grid: { color: '#e0e5e1' }, ticks: { color: '#4a5b51' } },
+                x: { grid: { display: false }, ticks: { color: '#6b7a70', maxTicksLimit: 10 } }
+            }
+        }
+    });
+})();
+</script>
+
+<style>
+    .lbl { color: var(--ink-500); font-weight: 500; width: 45%; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .metric-tile { background: var(--ink-50); border-radius: 8px; padding: 12px 14px; border-left: 3px solid var(--kalro-green); }
+    .metric-key { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: var(--ink-500); margin-bottom: 4px; }
+    .metric-val { font-family: var(--font-serif); font-size: 20px; font-weight: 700; color: var(--ink-900); line-height: 1; }
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+    .pill-blue { background: #dbeafe; color: #1e40af; }
+</style>
+
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "advisories/base_advisories.html" %}
+{% load static %}
+
+{% block title %}{% if object %}Edit Advisory{% else %}Add Advisory{% endif %} — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{% if object %}Edit Advisory{% else %}Add Advisory{% endif %}</h1>
+        <div class="page-header-sub">{% if object %}Update the advisory content and audience{% else %}Create a new advisory manually{% endif %}</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% if object %}{% url 'advisories:advisory_detail' object.pk %}{% else %}{% url 'advisories:advisory_list' %}{% endif %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Cancel</a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-10">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert-kalro alert-danger"><i class="bi bi-exclamation-octagon"></i><div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div></div>{% endif %}
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-people me-2"></i> Audience</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Farmer</label>{{ form.farmer }}</div>
+                        <div class="col-md-6"><label class="form-label">Farm</label>{{ form.farm }}</div>
+                        <div class="col-md-6"><label class="form-label">Crop</label>{{ form.crop }}</div>
+                        <div class="col-md-6"><label class="form-label">Growth stage</label>{{ form.growth_stage }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-tag me-2"></i> Classification</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3"><label class="form-label">Type</label>{{ form.kind }}</div>
+                        <div class="col-md-3"><label class="form-label">Priority</label>{{ form.priority }}</div>
+                        <div class="col-md-3"><label class="form-label">Status</label>{{ form.status }}</div>
+                        <div class="col-md-3"><label class="form-label">Source</label>{{ form.source }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-chat-quote me-2"></i> Message</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-12"><label class="form-label">Title <span class="req">*</span></label>{{ form.title }}{% if form.title.errors %}<div class="field-error">{{ form.title.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-12"><label class="form-label">Body <span class="req">*</span></label>{{ form.body }}{% if form.body.errors %}<div class="field-error">{{ form.body.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-12"><label class="form-label">Short message (SMS, ≤320)</label>{{ form.short_message }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-lightbulb me-2"></i> Explainability</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-12"><label class="form-label">Reasoning</label>{{ form.explanation }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-calendar-check me-2"></i> Validity</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Valid from</label>{{ form.valid_from }}</div>
+                        <div class="col-md-6"><label class="form-label">Valid until</label>{{ form.valid_until }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions-bar">
+                <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check2"></i> Save</button>
+                <a href="{% if object %}{% url 'advisories:advisory_detail' object.pk %}{% else %}{% url 'advisories:advisory_list' %}{% endif %}" class="btn btn-outline btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error { font-size: 12px; color: var(--kalro-red); margin-top: 6px; }
+    .form-actions-bar { display: flex; gap: 10px; padding: 20px 0 8px; flex-wrap: wrap; }
+</style>
+
+{% endblock %}

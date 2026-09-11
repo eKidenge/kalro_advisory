@@ -1,0 +1,38 @@
+{% extends "farmers/base_farmers.html" %}
+{% load static %}
+
+{% block title %}Delete {{ object.full_name }} — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card" style="border-left: 4px solid var(--kalro-red);">
+            <div class="card-body" style="padding: 40px; text-align: center;">
+                <div class="danger-icon"><i class="bi bi-exclamation-triangle"></i></div>
+                <h2 style="font-family: var(--font-serif); font-size: 22px; font-weight: 700; margin: 0 0 12px;">Delete this farmer?</h2>
+                <p style="font-size: 14px; color: var(--ink-600); line-height: 1.6; margin: 0 0 24px;">
+                    You're about to permanently delete <strong>{{ object.full_name }}</strong>
+                    (National ID: {{ object.national_id }}). This will also remove all their
+                    farms, soil tests, and advisories. <strong>This cannot be undone.</strong>
+                </p>
+
+                <form method="post" style="display: inline-flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    {% csrf_token %}
+                    <a href="{% url 'farmers:farmer_detail' object.pk %}" class="btn btn-outline btn-lg">
+                        <i class="bi bi-x"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-lg" style="background: var(--kalro-red); color: #fff; border-color: var(--kalro-red);">
+                        <i class="bi bi-trash"></i> Delete Farmer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .danger-icon { width: 72px; height: 72px; border-radius: 50%; background: var(--kalro-red-100); color: var(--kalro-red); display: grid; place-items: center; font-size: 34px; margin: 0 auto 20px; }
+</style>
+
+{% endblock %}

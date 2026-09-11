@@ -1,0 +1,127 @@
+{% extends "advisories/base_advisories.html" %}
+{% load static %}
+
+{% block title %}Advisory Feedback — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Farmer Feedback</h1>
+        <div class="page-header-sub">Ratings and outcomes reported by farmers and extension officers</div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-4">
+        <div class="stat-card">
+            <div class="stat-label">Total Feedback</div>
+            <div class="stat-value">{{ page_obj.paginator.count|default:0 }}</div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="stat-card stat-gold">
+            <div class="stat-label">Average Rating</div>
+            <div class="stat-value">
+                {% if aggregate.avg_rating %}
+                    {{ aggregate.avg_rating|floatformat:2 }} / 5
+                {% else %}—{% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="stat-card">
+            <div class="stat-label">This Page</div>
+            <div class="stat-value">{{ page_obj.object_list|length }}</div>
+        </div>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field">
+        <label class="form-label">Rating</label>
+        <select name="rating" class="form-select">
+            <option value="">All ratings</option>
+            {% for val, label in ratings %}<option value="{{ val }}" {% if current.rating == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Outcome</label>
+        <select name="outcome" class="form-select">
+            <option value="">All outcomes</option>
+            {% for val, label in outcomes %}<option value="{{ val }}" {% if current.outcome == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'advisories:advisory_feedback_list' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if feedback_list %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>Advisory</th>
+                        <th>Rating</th>
+                        <th>Outcome</th>
+                        <th>Comment</th>
+                        <th>Reported by</th>
+                        <th>When</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fb in feedback_list %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'advisories:advisory_detail' fb.advisory.pk %}" style="color: var(--kalro-green); font-weight: 500; font-size: 13px;">
+                                {{ fb.advisory.title|truncatechars:50 }}
+                            </a>
+                        </td>
+                        <td>
+                            {% if fb.rating %}
+                                <span class="pill {% if fb.rating == '4' or fb.rating == '5' %}pill-green{% elif fb.rating == '3' %}pill-gold{% else %}pill-red{% endif %}">
+                                    <i class="bi bi-star-fill" style="font-size:9px;"></i> {{ fb.get_rating_display }}
+                                </span>
+                            {% else %}<span class="text-muted fs-12">—</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if fb.outcome == 'FOLLOWED' %}<span class="pill pill-green">Followed</span>
+                            {% elif fb.outcome == 'PARTIAL' %}<span class="pill pill-gold">Partially</span>
+                            {% elif fb.outcome == 'NOT' %}<span class="pill pill-red">Not followed</span>
+                            {% else %}<span class="pill pill-grey">Unknown</span>{% endif %}
+                        </td>
+                        <td style="max-width: 300px; font-size: 12.5px; color: var(--ink-600);">
+                            {{ fb.comment|truncatechars:100|default:"—" }}
+                        </td>
+                        <td>{{ fb.reported_by.get_full_name|default:fb.reported_by.username|default:"—" }}</td>
+                        <td><span class="font-mono fs-12">{{ fb.reported_at|date:"d M Y" }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-chat-square-text"></i>
+            <h5>No feedback recorded</h5>
+            <p>Farmer ratings and outcome reports will appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+</style>
+
+{% endblock %}

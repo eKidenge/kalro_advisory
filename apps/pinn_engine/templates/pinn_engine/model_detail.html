@@ -1,0 +1,125 @@
+{% extends "pinn_engine/base_pinn.html" %}
+{% load static %}
+
+{% block title %}{{ model.name }} — PINN Model{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{{ model.name }}</h1>
+        <div class="page-header-sub">
+            v{{ model.version }} · {{ model.get_architecture_display }} ·
+            <span class="pill {% if model.status == 'READY' %}pill-green{% elif model.status == 'TRAINING' %}pill-blue{% elif model.status == 'FAILED' %}pill-red{% else %}pill-grey{% endif %}">{{ model.get_status_display }}</span>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'pinn_engine:model_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Back</a>
+        {% if can_edit %}
+        <a href="{% url 'pinn_engine:trainingrun_create' %}?model={{ model.pk }}" class="btn btn-outline"><i class="bi bi-play-circle"></i> Train</a>
+        <a href="{% url 'pinn_engine:model_update' model.pk %}" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-info-circle me-2"></i> Configuration</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Architecture</td><td>{{ model.get_architecture_display }}</td></tr>
+                        <tr><td class="lbl">Activation</td><td><span class="font-mono fs-12">{{ model.activation }}</span></td></tr>
+                        <tr><td class="lbl">Hidden layers</td><td><span class="font-mono fs-12">{{ model.hidden_layers|default:"—" }}</span></td></tr>
+                        <tr><td class="lbl">Physics λ (weight)</td><td><strong>{{ model.physics_lambda }}</strong></td></tr>
+                        <tr><td class="lbl">Input features</td><td><span class="font-mono fs-12">{{ model.input_features|join:", "|default:"—" }}</span></td></tr>
+                        <tr><td class="lbl">Output targets</td><td><span class="font-mono fs-12">{{ model.output_targets|join:", "|default:"—" }}</span></td></tr>
+                        <tr><td class="lbl">Artifact path</td><td><span class="font-mono fs-12">{{ model.artifact_path|default:"—" }}</span></td></tr>
+                        <tr><td class="lbl">Created by</td><td>{{ model.created_by.get_full_name|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Created</td><td>{{ model.created_at|date:"d M Y H:i" }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-sliders me-2"></i> Physics Constraints ({{ constraints|length }})</h5></div>
+            <div class="card-body p-0">
+                {% if constraints %}
+                {% for c in constraints %}
+                <div class="list-row">
+                    <div style="flex: 1;">
+                        <div class="list-title">{{ c.name }}</div>
+                        <div class="list-meta">{{ c.get_kind_display }} · λ={{ c.weight }}{% if c.mathematical_form %} · <span class="font-mono">{{ c.mathematical_form|truncatechars:40 }}</span>{% endif %}</div>
+                    </div>
+                    {% if c.is_active %}<span class="pill pill-green">Active</span>{% else %}<span class="pill pill-grey">Off</span>{% endif %}
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-sliders"></i><p style="margin: 0;">No constraints linked</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        {% if model.metrics %}
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-speedometer2 me-2"></i> Final Metrics</h5></div>
+            <div class="card-body">
+                <div class="metrics-grid">
+                    {% for k, v in model.metrics.items %}
+                    <div class="metric-tile">
+                        <div class="metric-key">{{ k }}</div>
+                        <div class="metric-val">{{ v }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-play-circle me-2"></i> Recent Training Runs</h5>
+                <div class="card-header-actions">
+                    <a href="{% url 'pinn_engine:trainingrun_list' %}?model={{ model.pk }}" class="btn btn-ghost btn-sm">View all <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_runs %}
+                {% for r in recent_runs %}
+                <div class="list-row">
+                    <div style="flex: 1;">
+                        <div class="list-title">{{ r.run_label|default:r.pk }}</div>
+                        <div class="list-meta">{{ r.created_at|date:"d M H:i" }} · {{ r.epochs }} epochs</div>
+                    </div>
+                    <span class="pill {% if r.status == 'SUCCESS' %}pill-green{% elif r.status == 'RUNNING' %}pill-blue{% elif r.status == 'FAILED' %}pill-red{% else %}pill-grey{% endif %}">{{ r.get_status_display }}</span>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-play-circle"></i><p style="margin: 0;">No training runs yet</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .lbl { color: var(--ink-500); font-weight: 500; width: 40%; }
+    .list-row { display: flex; gap: 12px; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .list-row:last-child { border-bottom: 0; }
+    .list-title { font-size: 13px; font-weight: 600; color: var(--ink-900); }
+    .list-meta { font-size: 11px; color: var(--ink-500); margin-top: 2px; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+    .pill-blue { background: #dbeafe; color: #1e40af; }
+
+    .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .metric-tile { background: var(--ink-50); border-radius: 8px; padding: 12px 14px; border-left: 3px solid var(--kalro-green); }
+    .metric-key { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: var(--ink-500); margin-bottom: 4px; }
+    .metric-val { font-family: var(--font-serif); font-size: 20px; font-weight: 700; color: var(--ink-900); line-height: 1; }
+</style>
+
+{% endblock %}

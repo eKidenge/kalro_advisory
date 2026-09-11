@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block subheader_actions %}
+    <a href="{% url 'advisories:advisory_list' %}"
+       class="btn btn-sm {% if request.resolver_match.url_name == 'advisory_list' %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-megaphone"></i> Advisories
+    </a>
+    <a href="{% url 'advisories:advisory_delivery_log' %}"
+       class="btn btn-sm {% if 'delivery' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-send"></i> Deliveries
+    </a>
+    <a href="{% url 'advisories:advisory_feedback_list' %}"
+       class="btn btn-sm {% if 'feedback' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-chat-square-text"></i> Feedback
+    </a>
+    {% if request.user.is_kalro_staff or request.user.is_researcher %}
+    <a href="{% url 'advisories:advisory_generate' %}"
+       class="btn btn-sm btn-outline">
+        <i class="bi bi-magic"></i> Generate
+    </a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}{% endblock %}

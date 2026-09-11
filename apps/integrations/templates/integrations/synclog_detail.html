@@ -1,0 +1,97 @@
+{% extends "integrations/base_integrations.html" %}
+{% load static %}
+
+{% block title %}Sync #{{ log.pk }} — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Sync #{{ log.pk }}</h1>
+        <div class="page-header-sub">
+            {{ log.get_provider_display }} ·
+            {{ log.get_operation_display }} ·
+            <span class="pill {% if log.status == 'SUCCESS' %}pill-green{% elif log.status == 'PARTIAL' %}pill-gold{% elif log.status == 'FAILED' %}pill-red{% else %}pill-grey{% endif %}">{{ log.get_status_display }}</span>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'integrations:synclog_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-info-circle me-2"></i> Summary</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Provider</td><td>{{ log.get_provider_display }}</td></tr>
+                        <tr><td class="lbl">Operation</td><td>{{ log.get_operation_display }}</td></tr>
+                        <tr><td class="lbl">Status</td><td><span class="pill pill-grey">{{ log.get_status_display }}</span></td></tr>
+                        <tr><td class="lbl">Triggered by</td><td>{{ log.triggered_by.username|default:"System" }}</td></tr>
+                        <tr><td class="lbl">Started</td><td>{{ log.started_at|date:"d M Y H:i:s" }}</td></tr>
+                        <tr><td class="lbl">Finished</td><td>{{ log.finished_at|date:"d M Y H:i:s"|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Duration</td><td>{% if log.duration_ms %}{{ log.duration_ms }} ms{% else %}—{% endif %}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-bar-chart me-2"></i> Record Counts</h5></div>
+            <div class="card-body">
+                <div class="counts-grid">
+                    <div class="count-tile"><div class="count-lbl">Fetched</div><div class="count-val">{{ log.records_fetched }}</div></div>
+                    <div class="count-tile count-green"><div class="count-lbl">Created</div><div class="count-val">{{ log.records_created }}</div></div>
+                    <div class="count-tile count-gold"><div class="count-lbl">Updated</div><div class="count-val">{{ log.records_updated }}</div></div>
+                    <div class="count-tile count-red"><div class="count-lbl">Failed</div><div class="count-val">{{ log.records_failed }}</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        {% if log.error_text %}
+        <div class="card" style="border-left: 4px solid var(--kalro-red);">
+            <div class="card-header"><h5><i class="bi bi-exclamation-octagon me-2"></i> Error</h5></div>
+            <div class="card-body"><pre style="margin: 0; font-size: 12px; white-space: pre-wrap; color: var(--kalro-red);">{{ log.error_text }}</pre></div>
+        </div>
+        {% endif %}
+
+        {% if log.request_payload %}
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-send me-2"></i> Request Payload</h5></div>
+            <div class="card-body"><pre class="json-block">{{ log.request_payload|pprint }}</pre></div>
+        </div>
+        {% endif %}
+
+        {% if log.response_summary %}
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-inbox me-2"></i> Response Summary</h5></div>
+            <div class="card-body"><pre class="json-block">{{ log.response_summary|pprint }}</pre></div>
+        </div>
+        {% endif %}
+
+        {% if log.response_snippet %}
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-code-square me-2"></i> Response Snippet</h5></div>
+            <div class="card-body"><pre class="json-block">{{ log.response_snippet }}</pre></div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .lbl { color: var(--ink-500); font-weight: 500; width: 42%; }
+    .counts-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .count-tile { background: var(--ink-50); border-radius: 8px; padding: 14px 12px; text-align: center; border-left: 3px solid var(--ink-300); }
+    .count-tile.count-green { border-left-color: var(--kalro-green); }
+    .count-tile.count-gold { border-left-color: var(--kalro-gold-700); }
+    .count-tile.count-red { border-left-color: var(--kalro-red); }
+    .count-lbl { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: var(--ink-500); margin-bottom: 6px; }
+    .count-val { font-family: var(--font-serif); font-size: 22px; font-weight: 700; color: var(--ink-900); line-height: 1; }
+    .json-block { margin: 0; font-family: var(--font-mono); font-size: 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; background: #0f1a14; color: #d1fae5; padding: 16px; border-radius: 8px; max-height: 320px; overflow-y: auto; }
+</style>
+
+{% endblock %}

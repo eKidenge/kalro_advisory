@@ -1,0 +1,78 @@
+{% extends "integrations/base_integrations.html" %}
+{% load static %}
+
+{% block title %}{% if form_title %}{{ form_title }}{% elif object %}Edit Config{% else %}Add Config{% endif %} — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{% if form_title %}{{ form_title }}{% elif object %}Edit Integration{% else %}Add Integration{% endif %}</h1>
+        <div class="page-header-sub">Configure endpoints, credentials, and auth for an external provider</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'integrations:integrationconfig_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Cancel</a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-9">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert-kalro alert-danger"><i class="bi bi-exclamation-octagon"></i><div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div></div>{% endif %}
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-plug me-2"></i> Identity</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4"><label class="form-label">Provider <span class="req">*</span></label>{{ form.provider }}{% if form.provider.errors %}<div class="field-error">{{ form.provider.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-4"><label class="form-label">Display name</label>{{ form.display_name }}</div>
+                        <div class="col-md-4"><label class="form-label">Direction</label>{{ form.direction }}</div>
+                        <div class="col-md-12"><label class="form-label">Base URL</label>{{ form.base_url }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-key me-2"></i> Authentication</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Auth type</label>{{ form.auth_type }}</div>
+                        <div class="col-md-6"><label class="form-label">API key</label>{{ form.api_key }}</div>
+                        <div class="col-md-6"><label class="form-label">API secret</label>{{ form.api_secret }}</div>
+                        <div class="col-md-6"><label class="form-label">Bearer token</label>{{ form.bearer_token }}</div>
+                        <div class="col-md-4"><label class="form-label">Username</label>{{ form.username }}</div>
+                        <div class="col-md-4"><label class="form-label">Password</label>{{ form.password }}</div>
+                        <div class="col-md-4"><label class="form-label">OAuth token URL</label>{{ form.oauth_token_url }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-gear me-2"></i> Advanced</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Extra headers (JSON)</label>{{ form.extra_headers }}</div>
+                        <div class="col-md-6"><label class="form-label">Extra config (JSON)</label>{{ form.extra_config }}</div>
+                        <div class="col-md-6"><label class="checkbox-row">{{ form.is_active }} <span>Active</span></label></div>
+                        <div class="col-md-6"><label class="checkbox-row">{{ form.is_sandbox }} <span>Sandbox mode</span></label></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions-bar">
+                <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check2"></i> Save</button>
+                <a href="{% url 'integrations:integrationconfig_list' %}" class="btn btn-outline btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error { font-size: 12px; color: var(--kalro-red); margin-top: 6px; }
+    .form-actions-bar { display: flex; gap: 10px; padding: 20px 0 8px; flex-wrap: wrap; }
+    .checkbox-row { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; color: var(--ink-700); cursor: pointer; }
+</style>
+
+{% endblock %}

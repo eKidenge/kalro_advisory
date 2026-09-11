@@ -1,0 +1,92 @@
+{% extends "integrations/base_integrations.html" %}
+{% load static %}
+
+{% block title %}Webhook Events — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Webhook Events</h1>
+        <div class="page-header-sub">Inbound events from providers (delivery receipts, alerts, callbacks)</div>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field">
+        <label class="form-label">Provider</label>
+        <select name="provider" class="form-select">
+            <option value="">All</option>
+            {% for val, label in providers %}<option value="{{ val }}" {% if current.provider == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+            <option value="">All</option>
+            {% for val, label in statuses %}<option value="{{ val }}" {% if current.status == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'integrations:webhookevent_list' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if events %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Provider</th>
+                        <th>Event type</th>
+                        <th>Status</th>
+                        <th>External ID</th>
+                        <th>Signature</th>
+                        <th>Received</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in events %}
+                    <tr onclick="window.location='{% url 'integrations:webhookevent_detail' e.pk %}'" style="cursor: pointer;">
+                        <td><span class="font-mono fs-12">#{{ e.pk }}</span></td>
+                        <td><span class="pill pill-grey">{{ e.get_provider_display }}</span></td>
+                        <td><span class="fs-12">{{ e.event_type|default:"—" }}</span></td>
+                        <td>
+                            {% if e.status == 'PROCESSED' %}<span class="pill pill-green">Processed</span>
+                            {% elif e.status == 'RECEIVED' %}<span class="pill pill-gold">Received</span>
+                            {% elif e.status == 'FAILED' %}<span class="pill pill-red">Failed</span>
+                            {% elif e.status == 'IGNORED' %}<span class="pill pill-grey">Ignored</span>
+                            {% else %}<span class="pill pill-grey">{{ e.get_status_display }}</span>{% endif %}
+                        </td>
+                        <td><span class="font-mono fs-12">{{ e.external_id|default:"—" }}</span></td>
+                        <td>
+                            {% if e.signature_verified %}<span class="pill pill-green">Verified</span>
+                            {% else %}<span class="pill pill-gold">Unverified</span>{% endif %}
+                        </td>
+                        <td><span class="font-mono fs-12">{{ e.received_at|date:"d M H:i" }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-broadcast"></i><h5>No webhook events</h5><p>Inbound events from providers will appear here.</p></div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+</style>
+
+{% endblock %}

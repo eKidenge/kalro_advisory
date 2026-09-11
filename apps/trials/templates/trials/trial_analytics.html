@@ -1,0 +1,163 @@
+{% extends "trials/base_trials.html" %}
+{% load static %}
+
+{% block title %}Trial Analytics — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Trial Analytics</h1>
+        <div class="page-header-sub">
+            Aggregate yield, biomass, and nitrogen-use efficiency across published trials
+        </div>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label">Trial</label>
+        <select name="trial" class="form-select">
+            <option value="">All published trials</option>
+            {% for t in all_trials %}
+            <option value="{{ t.pk }}"
+                {% if current_trial == t.pk|stringformat:"s" %}selected{% endif %}>
+                {{ t.code }} — {{ t.title|truncatechars:50 }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search"></i> Filter
+        </button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'trials:trial_analytics' %}" class="btn btn-ghost">
+            <i class="bi bi-x-circle"></i> Clear
+        </a>
+    </div>
+</form>
+
+{% if summary %}
+    {% for block in summary %}
+    <div class="card">
+        <div class="card-header">
+            <h5>
+                <span class="font-mono">{{ block.trial.code }}</span>
+                <span style="color: var(--ink-400);">—</span>
+                {{ block.trial.title|truncatechars:70 }}
+            </h5>
+            <div class="card-header-actions">
+                {% if block.trial.crop %}<span class="pill pill-green">{{ block.trial.crop.name }}</span>{% endif %}
+                {% if block.trial.county %}<span class="pill pill-grey">{{ block.trial.county.name }}</span>{% endif %}
+                <a href="{% url 'trials:trial_detail' block.trial.pk %}" class="btn btn-ghost btn-sm">
+                    Open <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            {% if block.treatments %}
+            <div class="table-wrap">
+                <table class="table-kalro">
+                    <thead>
+                        <tr>
+                            <th>Treatment</th>
+                            <th>Control</th>
+                            <th>Avg yield</th>
+                            <th>Avg biomass</th>
+                            <th>Avg NUE</th>
+                            <th>Observations</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in block.treatments %}
+                        <tr>
+                            <td>
+                                <div class="treat-cell">
+                                    <div class="treat-code">{{ row.treatment__code }}</div>
+                                    <div class="treat-name">{{ row.treatment__name }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if row.treatment__is_control %}
+                                    <span class="pill pill-grey">Control</span>
+                                {% else %}
+                                    <span class="text-muted fs-12">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if row.avg_yield %}
+                                    <strong style="font-family: var(--font-mono);">{{ row.avg_yield|floatformat:0 }}</strong>
+                                    <span class="text-muted fs-12"> kg/ha</span>
+                                {% else %}—{% endif %}
+                            </td>
+                            <td>
+                                {% if row.avg_biomass %}
+                                    <span style="font-family: var(--font-mono);">{{ row.avg_biomass|floatformat:0 }}</span>
+                                    <span class="text-muted fs-12"> kg/ha</span>
+                                {% else %}—{% endif %}
+                            </td>
+                            <td>
+                                {% if row.avg_nue %}
+                                    <span style="font-family: var(--font-mono);">{{ row.avg_nue|floatformat:3 }}</span>
+                                {% else %}—{% endif %}
+                            </td>
+                            <td>
+                                <span class="pill pill-grey">{{ row.n }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state" style="padding: 40px 20px;">
+                <i class="bi bi-graph-up-arrow"></i>
+                <p style="margin: 0;">No results recorded for this trial yet</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="card">
+    <div class="empty-state">
+        <i class="bi bi-graph-up-arrow"></i>
+        <h5>No published trials with results</h5>
+        <p>
+            Publish trials and record results to see aggregated yield,
+            biomass, and nitrogen-use efficiency comparisons.
+        </p>
+        <a href="{% url 'trials:trial_list' %}" class="btn btn-primary">
+            <i class="bi bi-clipboard-data"></i> Go to Trials
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+    .text-muted { color: var(--ink-500); }
+
+    .treat-cell { display: flex; flex-direction: column; }
+    .treat-code {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--kalro-green);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        line-height: 1.2;
+        margin-bottom: 2px;
+    }
+    .treat-name {
+        font-size: 12.5px;
+        color: var(--ink-700);
+        line-height: 1.3;
+    }
+</style>
+
+{% endblock %}

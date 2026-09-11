@@ -1,0 +1,59 @@
+<header class="app-header">
+    <div class="container-fluid">
+
+        <a href="{% url 'advisories:advisory_dashboard' %}" class="brand">
+            <div class="brand-crest">K</div>
+            <div class="brand-text">
+                <div class="brand-title">KALRO Advisory</div>
+                <div class="brand-sub">Climate-Resilient Agriculture</div>
+            </div>
+        </a>
+
+        <div class="header-actions">
+
+            <button class="icon-btn" title="Climate alerts">
+                <i class="bi bi-cloud-sun"></i>
+            </button>
+
+            <button class="icon-btn" title="Notifications">
+                <i class="bi bi-bell"></i>
+                <span class="badge-dot">3</span>
+            </button>
+
+            <div class="divider-v" style="height: 32px;"></div>
+
+            {% if user.is_authenticated %}
+            <div class="dropdown">
+                <div class="user-menu" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="user-avatar">
+                        {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+                    </div>
+                    <div class="user-meta d-none d-md-block">
+                        <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+                        <div class="user-role">{{ user.get_role_display }}</div>
+                    </div>
+                    <i class="bi bi-chevron-down ms-1 fs-12 text-muted"></i>
+                </div>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li class="dropdown-header">Signed in as {{ user.username }}</li>
+                    <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person"></i> My Profile</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item text-danger">
+                                <i class="bi bi-box-arrow-right"></i> Sign Out
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+            {% else %}
+            <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-box-arrow-in-right"></i> Sign In
+            </a>
+            {% endif %}
+        </div>
+
+    </div>
+</header>

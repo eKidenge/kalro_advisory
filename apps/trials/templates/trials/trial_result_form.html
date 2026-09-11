@@ -1,0 +1,95 @@
+{% extends "trials/base_trials.html" %}
+{% load static %}
+
+{% block title %}Trial Analytics — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Trial Analytics</h1>
+        <div class="page-header-sub">Aggregate yield and treatment comparisons for published trials</div>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label">Trial</label>
+        <select name="trial" class="form-select">
+            <option value="">All published trials</option>
+            {% for t in all_trials %}
+            <option value="{{ t.pk }}" {% if current_trial == t.pk|stringformat:"s" %}selected{% endif %}>{{ t.code }} — {{ t.title|truncatechars:50 }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'trials:trial_analytics' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+{% if summary %}
+    {% for block in summary %}
+    <div class="card">
+        <div class="card-header">
+            <h5>
+                <span class="font-mono">{{ block.trial.code }}</span>
+                — {{ block.trial.title|truncatechars:60 }}
+            </h5>
+            <div class="card-header-actions">
+                <span class="pill pill-grey">{{ block.trial.crop.name|default:"—" }}</span>
+                <a href="{% url 'trials:trial_detail' block.trial.pk %}" class="btn btn-ghost btn-sm">Open <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            {% if block.treatments %}
+            <div class="table-wrap">
+                <table class="table-kalro">
+                    <thead>
+                        <tr>
+                            <th>Treatment</th>
+                            <th>Control?</th>
+                            <th>Avg yield (kg/ha)</th>
+                            <th>Avg biomass</th>
+                            <th>Avg NUE</th>
+                            <th>N</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in block.treatments %}
+                        <tr>
+                            <td><strong>{{ row.treatment__code }}</strong> — {{ row.treatment__name }}</td>
+                            <td>{% if row.treatment__is_control %}<span class="pill pill-grey">Control</span>{% else %}—{% endif %}</td>
+                            <td><strong>{{ row.avg_yield|floatformat:0|default:"—" }}</strong></td>
+                            <td>{{ row.avg_biomass|floatformat:0|default:"—" }}</td>
+                            <td>{{ row.avg_nue|floatformat:3|default:"—" }}</td>
+                            <td>{{ row.n }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-graph-up-arrow"></i><p style="margin: 0;">No results recorded for this trial</p></div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="card">
+    <div class="empty-state">
+        <i class="bi bi-graph-up-arrow"></i>
+        <h5>No published trials with results</h5>
+        <p>Publish trials and record results to see analytics.</p>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+</style>
+
+{% endblock %}

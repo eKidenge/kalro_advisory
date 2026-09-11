@@ -1,0 +1,114 @@
+{% extends "crops/base_crops.html" %}
+{% load static %}
+
+{% block title %}{{ crop.name }} Requirements — Crop{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{{ crop.name }} — Requirements</h1>
+        <div class="page-header-sub">PINN physics parameters and stage-by-stage breakdown</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'crops:crop_detail' crop.pk %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Back to Crop</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-droplet me-2"></i> Seasonal Totals</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Water requirement</td><td><strong>{{ crop.water_requirement_mm|default:"—" }}</strong> mm</td></tr>
+                        <tr><td class="lbl">Nitrogen</td><td><strong>{{ crop.n_requirement_kg_ha|default:"—" }}</strong> kg/ha</td></tr>
+                        <tr><td class="lbl">Phosphorus</td><td><strong>{{ crop.p_requirement_kg_ha|default:"—" }}</strong> kg/ha</td></tr>
+                        <tr><td class="lbl">Potassium</td><td><strong>{{ crop.k_requirement_kg_ha|default:"—" }}</strong> kg/ha</td></tr>
+                        <tr><td class="lbl">Optimal pH</td><td>{% if crop.optimal_ph_min and crop.optimal_ph_max %}{{ crop.optimal_ph_min }} – {{ crop.optimal_ph_max }}{% else %}—{% endif %}</td></tr>
+                        <tr><td class="lbl">Base temp</td><td>{{ crop.base_temp_c|default:"—" }} °C</td></tr>
+                        <tr><td class="lbl">Max temp</td><td>{{ crop.max_temp_c|default:"—" }} °C</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-sliders me-2"></i> Nutrient Profiles</h5></div>
+            <div class="card-body p-0">
+                {% if profiles %}
+                {% for p in profiles %}
+                <div class="list-row">
+                    <div>
+                        <div class="list-title">{{ p.name }}</div>
+                        <div class="list-meta">pH {{ p.ph_min|default:"—" }}–{{ p.ph_max|default:"—" }} · N {{ p.n_min_pct|default:"—" }}–{{ p.n_max_pct|default:"—" }}%</div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state" style="padding: 32px 20px;"><i class="bi bi-sliders"></i><p style="margin: 0;">No profiles defined</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-graph-up me-2"></i> Stage-by-Stage Requirements</h5></div>
+            <div class="card-body p-0">
+                {% if stages %}
+                <div class="table-wrap">
+                    <table class="table-kalro">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Stage</th>
+                                <th>Day range</th>
+                                <th>Kc</th>
+                                <th>Water</th>
+                                <th>N</th>
+                                <th>P</th>
+                                <th>K</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in stages %}
+                            <tr>
+                                <td><span class="pill pill-grey">{{ s.order }}</span></td>
+                                <td>
+                                    <div style="font-size:13px; font-weight:600; color:var(--ink-900);">{{ s.name }}</div>
+                                    {% if s.critical_notes %}<div class="user-meta" style="display:block;">{{ s.critical_notes|truncatechars:60 }}</div>{% endif %}
+                                </td>
+                                <td><span class="font-mono fs-12">{{ s.start_day }}–{{ s.end_day }}</span></td>
+                                <td>{{ s.kc_coefficient|default:"—" }}</td>
+                                <td>{{ s.water_requirement_mm|default:"—" }} mm</td>
+                                <td>{{ s.n_requirement_kg_ha|default:"—" }}</td>
+                                <td>{{ s.p_requirement_kg_ha|default:"—" }}</td>
+                                <td>{{ s.k_requirement_kg_ha|default:"—" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state"><i class="bi bi-graph-up"></i><h5>No stages defined</h5><p>Add growth stages to see per-stage requirements.</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .lbl { color: var(--ink-500); font-weight: 500; width: 45%; }
+    .list-row { display: flex; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .list-row:last-child { border-bottom: 0; }
+    .list-title { font-size: 13px; font-weight: 600; color: var(--ink-900); }
+    .list-meta { font-size: 11px; color: var(--ink-500); margin-top: 2px; }
+    .user-meta { font-size: 11px; color: var(--ink-500); margin-top: 2px; }
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+</style>
+
+{% endblock %}

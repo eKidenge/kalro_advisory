@@ -1,0 +1,74 @@
+{% extends "soil/base_soil.html" %}
+{% load static %}
+
+{% block title %}{% if object %}Edit {{ object.name }}{% else %}Add Nutrient Profile{% endif %} — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{% if object %}Edit Nutrient Profile{% else %}Add Nutrient Profile{% endif %}</h1>
+        <div class="page-header-sub">Define baseline nutrient ranges for a crop and soil type</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'soil:nutrient_profile' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Cancel</a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-8">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert-kalro alert-danger"><i class="bi bi-exclamation-octagon"></i><div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div></div>{% endif %}
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-info-circle me-2"></i> Profile Info</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-12"><label class="form-label">Name <span class="req">*</span></label>{{ form.name }}{% if form.name.errors %}<div class="field-error">{{ form.name.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Crop</label>{{ form.crop }}</div>
+                        <div class="col-md-6"><label class="form-label">Soil texture</label>{{ form.soil_texture }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-droplet-half me-2"></i> pH Range</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Min pH</label>{{ form.ph_min }}</div>
+                        <div class="col-md-6"><label class="form-label">Max pH</label>{{ form.ph_max }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-minecart me-2"></i> Nutrient Ranges</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">N min (%)</label>{{ form.n_min_pct }}</div>
+                        <div class="col-md-6"><label class="form-label">N max (%)</label>{{ form.n_max_pct }}</div>
+                        <div class="col-md-6"><label class="form-label">P min (ppm)</label>{{ form.p_min_ppm }}</div>
+                        <div class="col-md-6"><label class="form-label">P max (ppm)</label>{{ form.p_max_ppm }}</div>
+                        <div class="col-md-6"><label class="form-label">K min (ppm)</label>{{ form.k_min_ppm }}</div>
+                        <div class="col-md-6"><label class="form-label">K max (ppm)</label>{{ form.k_max_ppm }}</div>
+                        <div class="col-md-12"><label class="form-label">Notes</label>{{ form.notes }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions-bar">
+                <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check2"></i> Save</button>
+                <a href="{% url 'soil:nutrient_profile' %}" class="btn btn-outline btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error { font-size: 12px; color: var(--kalro-red); margin-top: 6px; }
+    .form-actions-bar { display: flex; gap: 10px; padding: 20px 0 8px; flex-wrap: wrap; }
+</style>
+
+{% endblock %}

@@ -1,0 +1,806 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KALRO Advisory — Climate-Resilient Agriculture for Kenya</title>
+    <meta name="description" content="Physics-informed AI advisories for Kenyan farmers. Powered by KALRO research.">
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230b3d2e'/><text y='72' x='50%25' text-anchor='middle' font-size='60' fill='%23f4c430' font-family='Georgia'>K</text></svg>">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --kalro-green: #0b3d2e;
+            --kalro-green-700: #14543f;
+            --kalro-green-600: #1b6a4f;
+            --kalro-green-500: #27876a;
+            --kalro-green-100: #e6f2ec;
+            --kalro-green-50: #f3f9f6;
+            --kalro-gold: #f4c430;
+            --kalro-gold-700: #c99d16;
+            --kalro-gold-100: #fdf4d4;
+            --kalro-red: #bb1e10;
+            --ink-900: #0f1a14;
+            --ink-800: #1c2a22;
+            --ink-700: #2d3d34;
+            --ink-600: #4a5b51;
+            --ink-500: #6b7a70;
+            --ink-300: #c4cbc6;
+            --ink-200: #e0e5e1;
+            --ink-100: #f0f3f1;
+            --font-serif: 'Source Serif 4', Georgia, serif;
+            --font-sans: 'Inter', sans-serif;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: var(--font-sans);
+            color: var(--ink-800);
+            background: #fff;
+        }
+        h1, h2, h3, h4 {
+            font-family: var(--font-serif);
+            color: var(--ink-900);
+            letter-spacing: -0.015em;
+        }
+
+        /* ============================================================ */
+        /* TOP NAV                                                       */
+        /* ============================================================ */
+        .top-nav {
+            position: sticky; top: 0; z-index: 1030;
+            background: rgba(255,255,255,.96);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--ink-200);
+        }
+        .top-nav .wrap {
+            max-width: 1280px; margin: 0 auto; padding: 0 24px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+        .brand {
+            display: flex; align-items: center; gap: 12px;
+            text-decoration: none; color: inherit;
+            flex-shrink: 0;
+        }
+        .brand:hover { text-decoration: none; }
+        .brand-logo {
+            height: 44px; width: auto; max-width: 120px;
+            object-fit: contain; flex-shrink: 0;
+        }
+        .brand-crest {
+            width: 44px; height: 44px;
+            background: var(--kalro-green);
+            border-radius: 7px;
+            display: grid; place-items: center;
+            color: var(--kalro-gold);
+            font-family: var(--font-serif);
+            font-weight: 700; font-size: 22px;
+            border: 2px solid var(--kalro-gold);
+            flex-shrink: 0;
+        }
+        .brand-text { line-height: 1.1; }
+        .brand-title {
+            font-family: var(--font-serif);
+            font-weight: 700; font-size: 16.5px;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            color: var(--ink-900);
+            white-space: nowrap;
+        }
+        .brand-sub {
+            font-size: 10px; color: var(--ink-500);
+            text-transform: uppercase; letter-spacing: 0.1em;
+            white-space: nowrap;
+        }
+
+        /* Desktop nav links */
+        .top-nav .nav-links {
+            display: flex; gap: 30px;
+            margin-left: auto;
+        }
+        .top-nav .nav-links a {
+            font-size: 12px; font-weight: 600;
+            color: var(--ink-700); text-decoration: none;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            padding: 6px 0;
+            border-bottom: 2px solid transparent;
+            transition: all .15s;
+        }
+        .top-nav .nav-links a:hover {
+            color: var(--kalro-green);
+            border-bottom-color: var(--kalro-green);
+        }
+
+        /* Desktop CTA */
+        .top-nav .nav-cta {
+            display: flex; gap: 10px;
+            flex-shrink: 0;
+        }
+
+        /* Mobile hamburger */
+        .nav-toggle {
+            display: none;
+            margin-left: auto;
+            width: 44px; height: 44px;
+            border: 1px solid var(--ink-200);
+            background: #fff;
+            border-radius: 7px;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--ink-800);
+            cursor: pointer;
+        }
+
+        /* Mobile drawer */
+        .mobile-drawer {
+            display: none;
+            position: fixed;
+            top: 72px; left: 0; right: 0; bottom: 0;
+            background: #fff;
+            z-index: 1025;
+            padding: 24px;
+            border-top: 1px solid var(--ink-200);
+            overflow-y: auto;
+        }
+        .mobile-drawer.open { display: block; }
+        .mobile-drawer a {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 4px;
+            font-size: 13px; font-weight: 600;
+            color: var(--ink-800); text-decoration: none;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            border-bottom: 1px solid var(--ink-100);
+        }
+        .mobile-drawer a:hover { color: var(--kalro-green); }
+        .mobile-drawer .mobile-cta {
+            display: flex; flex-direction: column; gap: 10px;
+            margin-top: 24px;
+        }
+
+        /* Buttons */
+        .btn {
+            font-family: var(--font-sans);
+            font-weight: 500; font-size: 13px;
+            padding: 9px 18px;
+            border-radius: 6px; border: 1px solid transparent;
+            display: inline-flex; align-items: center; gap: 7px;
+            text-decoration: none; cursor: pointer;
+            transition: all .12s; white-space: nowrap;
+            text-transform: uppercase; letter-spacing: 0.06em;
+        }
+        .btn-primary { background: var(--kalro-green); color: #fff; }
+        .btn-primary:hover { background: var(--kalro-green-700); color: #fff; }
+        .btn-outline {
+            background: transparent; color: var(--ink-700);
+            border-color: var(--ink-300);
+        }
+        .btn-outline:hover { border-color: var(--kalro-green); color: var(--kalro-green); }
+        .btn-gold { background: var(--kalro-gold); color: var(--ink-900); }
+        .btn-gold:hover { background: var(--kalro-gold-700); color: var(--ink-900); }
+        .btn-lg { padding: 13px 26px; font-size: 14px; }
+
+        /* ============================================================ */
+        /* HERO — CENTRED                                                */
+        /* ============================================================ */
+        .hero {
+            background: linear-gradient(160deg, var(--kalro-green) 0%, var(--kalro-green-700) 60%, var(--kalro-green-600) 100%);
+            color: #fff;
+            padding: 96px 0 108px;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+        .hero::before {
+            content: '';
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(circle at 90% 10%, rgba(244,196,48,.18), transparent 40%),
+                radial-gradient(circle at 10% 80%, rgba(244,196,48,.10), transparent 45%);
+            pointer-events: none;
+        }
+        .hero .wrap {
+            max-width: 900px; margin: 0 auto; padding: 0 24px;
+            position: relative; z-index: 2;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .hero .eyebrow {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 12px; font-weight: 600;
+            color: var(--kalro-gold);
+            text-transform: uppercase; letter-spacing: 0.12em;
+            background: rgba(244,196,48,.12);
+            padding: 6px 14px; border-radius: 20px;
+            border: 1px solid rgba(244,196,48,.35);
+            margin-bottom: 28px;
+        }
+        .hero h1 {
+            font-size: 54px; line-height: 1.08;
+            color: #fff; margin: 0 auto 24px;
+            max-width: 880px;
+            font-weight: 700;
+        }
+        .hero h1 .accent { color: var(--kalro-gold); font-style: italic; }
+        .hero p.lead {
+            font-size: 18px; line-height: 1.6;
+            color: rgba(255,255,255,.85);
+            max-width: 680px; margin: 0 auto 40px;
+        }
+        .hero-cta {
+            display: flex; gap: 14px; flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 72px;
+        }
+
+        /* HERO STATS — centred grid */
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0;
+            border-top: 1px solid rgba(255,255,255,.18);
+            padding-top: 40px;
+            width: 100%;
+            max-width: 980px;
+        }
+        .hero-stat {
+            padding: 0 20px;
+            border-right: 1px solid rgba(255,255,255,.14);
+            text-align: center;
+        }
+        .hero-stat:last-child { border-right: 0; }
+        .hero-stat .num {
+            font-family: var(--font-serif);
+            font-size: 34px; font-weight: 700;
+            color: var(--kalro-gold);
+            line-height: 1; margin-bottom: 8px;
+        }
+        .hero-stat .lbl {
+            font-size: 11.5px; color: rgba(255,255,255,.75);
+            text-transform: uppercase; letter-spacing: 0.08em;
+            line-height: 1.4;
+        }
+
+        /* SECTION */
+        section { padding: 88px 0; }
+        section .wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+        .section-head {
+            text-align: center;
+            max-width: 720px; margin: 0 auto 56px;
+        }
+        .section-head .eyebrow {
+            font-size: 12px; font-weight: 700;
+            color: var(--kalro-green);
+            text-transform: uppercase; letter-spacing: 0.14em;
+            margin-bottom: 14px;
+        }
+        .section-head h2 {
+            font-size: 38px; line-height: 1.15;
+            margin: 0 0 16px;
+        }
+        .section-head p {
+            font-size: 16px; line-height: 1.6;
+            color: var(--ink-600); margin: 0;
+        }
+
+        /* FEATURES */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .feature-card {
+            background: #fff;
+            border: 1px solid var(--ink-200);
+            border-radius: 10px;
+            padding: 32px 28px;
+            transition: all .2s;
+            position: relative;
+        }
+        .feature-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--kalro-green);
+            border-radius: 10px 10px 0 0;
+            opacity: 0; transition: opacity .2s;
+        }
+        .feature-card:hover {
+            border-color: var(--kalro-green);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(11,61,46,.10);
+        }
+        .feature-card:hover::before { opacity: 1; }
+        .feature-icon {
+            width: 52px; height: 52px;
+            background: var(--kalro-green-100);
+            color: var(--kalro-green);
+            border-radius: 10px;
+            display: grid; place-items: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .feature-card h3 {
+            font-size: 20px; margin: 0 0 12px;
+            font-family: var(--font-serif);
+        }
+        .feature-card p {
+            font-size: 14px; line-height: 1.6;
+            color: var(--ink-600); margin: 0;
+        }
+
+        /* HOW IT WORKS */
+        .how-section { background: var(--kalro-green-50); }
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+        }
+        .step { text-align: center; padding: 0 16px; }
+        .step-num {
+            width: 56px; height: 56px;
+            background: var(--kalro-green);
+            color: var(--kalro-gold);
+            border-radius: 50%;
+            display: grid; place-items: center;
+            font-family: var(--font-serif);
+            font-size: 24px; font-weight: 700;
+            margin: 0 auto 22px;
+            border: 3px solid var(--kalro-green-100);
+        }
+        .step h4 {
+            font-size: 18px; margin: 0 0 10px;
+            font-family: var(--font-serif);
+        }
+        .step p {
+            font-size: 14px; line-height: 1.65;
+            color: var(--ink-600); margin: 0;
+        }
+
+        /* INTEGRATIONS */
+        .integrations { background: var(--ink-900); color: #fff; }
+        .integrations h2 { color: #fff; }
+        .integrations .section-head p { color: rgba(255,255,255,.65); }
+        .integration-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        .integration-card {
+            background: rgba(255,255,255,.04);
+            border: 1px solid rgba(255,255,255,.10);
+            border-radius: 10px;
+            padding: 28px 22px;
+            text-align: center;
+        }
+        .integration-card i {
+            font-size: 32px; color: var(--kalro-gold);
+            margin-bottom: 14px; display: block;
+        }
+        .integration-card .name {
+            font-family: var(--font-serif);
+            font-size: 17px; font-weight: 600; margin-bottom: 6px;
+        }
+        .integration-card .desc {
+            font-size: 12.5px; line-height: 1.55;
+            color: rgba(255,255,255,.55);
+        }
+
+        /* CTA */
+        .cta-section {
+            background: linear-gradient(135deg, var(--kalro-green) 0%, var(--kalro-green-700) 100%);
+            text-align: center; color: #fff;
+        }
+        .cta-section h2 {
+            color: #fff; font-size: 36px; margin: 0 0 16px;
+        }
+        .cta-section p {
+            font-size: 17px; color: rgba(255,255,255,.8);
+            max-width: 600px; margin: 0 auto 32px;
+        }
+        .cta-buttons {
+            display: flex; gap: 14px;
+            justify-content: center; flex-wrap: wrap;
+        }
+
+        /* FOOTER */
+        footer {
+            background: var(--ink-900);
+            color: var(--ink-300);
+            padding: 48px 0 24px;
+            border-top: 3px solid var(--kalro-gold);
+            font-size: 13px;
+        }
+        footer .wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+        footer .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px; margin-bottom: 40px;
+        }
+        footer h6 {
+            color: #fff; font-size: 11.5px;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            margin: 0 0 16px; font-family: var(--font-sans);
+        }
+        footer a { color: var(--ink-300); text-decoration: none; }
+        footer a:hover { color: var(--kalro-gold); }
+        footer ul { list-style: none; padding: 0; margin: 0; }
+        footer li { margin-bottom: 8px; }
+        footer .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,.12);
+            padding-top: 20px;
+            display: flex; justify-content: space-between;
+            gap: 20px; flex-wrap: wrap;
+            font-size: 12px; color: var(--ink-500);
+        }
+
+        /* Responsive */
+        @media (max-width: 1100px) {
+            .top-nav .nav-links { gap: 20px; }
+            .top-nav .nav-links a { font-size: 11px; }
+        }
+        @media (max-width: 991.98px) {
+            .top-nav .wrap { gap: 16px; height: 64px; padding: 0 18px; }
+            .top-nav .nav-links { display: none; }
+            .top-nav .nav-cta { display: none; }
+            .nav-toggle { display: flex; }
+            .mobile-drawer { top: 64px; }
+            .brand-title { font-size: 14px; }
+            .brand-sub { display: none; }
+            .brand-logo { height: 38px; }
+
+            .hero { padding: 68px 0 80px; }
+            .hero h1 { font-size: 36px; }
+            .hero p.lead { font-size: 15px; }
+            .hero-cta { margin-bottom: 48px; }
+
+            .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 24px 0; }
+            .hero-stat { padding: 0 10px; }
+            .hero-stat:nth-child(2) { border-right: 0; }
+            .hero-stat:nth-child(3),
+            .hero-stat:nth-child(4) { border-top: 0; }
+            .hero-stat:nth-child(odd) { border-right: 1px solid rgba(255,255,255,.14); }
+            .hero-stat:nth-child(even) { border-right: 0; }
+
+            section { padding: 60px 0; }
+            .section-head h2 { font-size: 28px; }
+            .features, .steps { grid-template-columns: 1fr; }
+            .integration-grid { grid-template-columns: repeat(2, 1fr); }
+            .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+        }
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 28px; }
+            .hero-stats { grid-template-columns: 1fr; }
+            .hero-stat { border-right: 0 !important; padding: 12px 0; }
+        }
+
+        /* Hide empty stat blocks gracefully */
+        .hero-stat.empty { opacity: .4; }
+    </style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- TOP NAV                                                       -->
+<!-- ============================================================ -->
+<nav class="top-nav">
+    <div class="wrap">
+
+        <!-- BRAND -->
+        <a href="/" class="brand">
+            <img src="{% static 'img/kalro-logo.png' %}"
+                 alt="KALRO"
+                 class="brand-logo"
+                 onerror="this.style.display='none'; document.getElementById('brandFallback').style.display='grid';">
+            <div class="brand-crest" id="brandFallback" style="display:none;">K</div>
+
+            <div class="brand-text">
+                <div class="brand-title">KALRO ADVISORY</div>
+                <div class="brand-sub">Climate-Resilient Agriculture</div>
+            </div>
+        </a>
+
+        <!-- DESKTOP NAV LINKS -->
+        <div class="nav-links">
+            <a href="{% url 'features' %}">Features</a>
+            <a href="{% url 'how_it_works' %}">How it works</a>
+            <a href="{% url 'integrations:integrationconfig_list' %}">Integrations</a>
+        </div>
+
+        <!-- DESKTOP CTA -->
+        <div class="nav-cta">
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline">
+                <i class="bi bi-box-arrow-in-right"></i> Sign In
+            </a>
+            <a href="{% url 'accounts:register' %}" class="btn btn-primary">
+                <i class="bi bi-person-plus"></i> Register
+            </a>
+        </div>
+
+        <!-- HAMBURGER (mobile) -->
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+            <i class="bi bi-list" id="navToggleIcon"></i>
+        </button>
+
+    </div>
+</nav>
+
+<!-- ============================================================ -->
+<!-- MOBILE DRAWER                                                 -->
+<!-- ============================================================ -->
+<div class="mobile-drawer" id="mobileDrawer">
+    <a href="{% url 'features' %}"><i class="bi bi-star"></i> Features</a>
+    <a href="{% url 'how_it_works' %}"><i class="bi bi-diagram-3"></i> How it works</a>
+    <a href="{% url 'integrations:integrationconfig_list' %}"><i class="bi bi-plug"></i> Integration
+
+    <div class="mobile-cta">
+        <a href="{% url 'accounts:login' %}" class="btn btn-outline">
+            <i class="bi bi-box-arrow-in-right"></i> Sign In
+        </a>
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Register
+        </a>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- HERO — CENTRED                                                -->
+<!-- ============================================================ -->
+<section class="hero">
+    <div class="wrap">
+        <div class="eyebrow">
+            <i class="bi bi-broadcast"></i> Physics-Informed AI · Powered by KALRO
+        </div>
+
+        <h1>
+            Climate-resilient agriculture advisories for <span class="accent">every Kenyan farmer</span>.
+        </h1>
+
+        <p class="lead">
+            A physics-informed neural network that turns climate data into farm-level decisions —
+            accurate, explainable, and physically consistent.
+        </p>
+
+        <div class="hero-cta">
+            <a href="{% url 'accounts:register' %}" class="btn btn-gold btn-lg">
+                <i class="bi bi-person-plus"></i> Create Account
+            </a>
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline btn-lg" style="border-color: rgba(255,255,255,.4); color: #fff;">
+                <i class="bi bi-box-arrow-in-right"></i> Sign In to Portal
+            </a>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- HERO STATS — live from database                                -->
+        <!-- ============================================================ -->
+        <div class="hero-stats">
+            <div class="hero-stat {% if not stats.counties %}empty{% endif %}">
+                <div class="num">{{ stats.counties|default:"—" }}</div>
+                <div class="lbl">Counties Covered</div>
+            </div>
+            <div class="hero-stat {% if not stats.farmers %}empty{% endif %}">
+                <div class="num">{{ stats.farmers|default:"—" }}</div>
+                <div class="lbl">Farmers Registered</div>
+            </div>
+            <div class="hero-stat {% if not stats.trials %}empty{% endif %}">
+                <div class="num">{{ stats.trials|default:"—" }}</div>
+                <div class="lbl">Field Trials</div>
+            </div>
+            <div class="hero-stat {% if not stats.advisories %}empty{% endif %}">
+                <div class="num">{{ stats.advisories|default:"—" }}</div>
+                <div class="lbl">Advisories Issued</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+    <div class="wrap">
+        <div class="section-head">
+            <div class="eyebrow">What makes it different</div>
+            <h2>Not another black-box model.</h2>
+            <p>Traditional machine learning fails where data is sparse and answers are opaque. We embed physical laws directly into the AI.</p>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="bi bi-sliders"></i></div>
+                <h3>Physics-Informed AI</h3>
+                <p>Water balance, nutrient cycling, and energy conservation are constraints in the loss function — not afterthoughts.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="bi bi-lightbulb"></i></div>
+                <h3>Explainable Reasoning</h3>
+                <p>Every advisory comes with the factors that drove it. Farmers and extension officers can see <em>why</em>, not just <em>what</em>.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="bi bi-cloud-sun"></i></div>
+                <h3>Climate-Smart</h3>
+                <p>Optimized for drought, flood, and variable rainfall — the realities Kenyan farmers face every season.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="bi bi-geo"></i></div>
+                <h3>Sparse-Data Ready</h3>
+                <p>Works in regions with limited historical records. Physics fills the gaps where data can't.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="bi bi-phone"></i></div>
+                <h3>Reaches Every Farmer</h3>
+                <p>Delivered via iShamba SMS and the Selector Platform. No smartphone required.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                <h3>Measurable Impact</h3>
+                <p>Targeting 15–20% yield increase through improved fertilizer efficiency and timely advisories.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+    <div class="wrap">
+        <div class="section-head">
+            <div class="eyebrow">How it works</div>
+            <h2>From climate data to farm decisions.</h2>
+        </div>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <h4>Ingest</h4>
+                <p>Weather from KAOP, soil and market data from AgData Hub, fertilizer trials from KALRO's database.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <h4>Infer</h4>
+                <p>The PINN engine blends machine learning with physical constraints to produce farm-level recommendations with full explainability.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <h4>Deliver</h4>
+                <p>Advisories go out via SMS, Selector Platform, and county extension officers — with a feedback loop that keeps improving the model.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- INTEGRATIONS -->
+<section class="integrations" id="integrations">
+    <div class="wrap">
+        <div class="section-head">
+            <div class="eyebrow" style="color: var(--kalro-gold);">Connected systems</div>
+            <h2>Built on KALRO's existing infrastructure.</h2>
+            <p>Direct integrations with the platforms already serving Kenyan farmers.</p>
+        </div>
+
+        <div class="integration-grid">
+            <div class="integration-card">
+                <i class="bi bi-cloud-sun"></i>
+                <div class="name">KAOP</div>
+                <div class="desc">Kenya Agricultural Observatory Platform — weather &amp; forecasts</div>
+            </div>
+            <div class="integration-card">
+                <i class="bi bi-database"></i>
+                <div class="name">AgData Hub</div>
+                <div class="desc">Soil tests, nutrient profiles, market prices</div>
+            </div>
+            <div class="integration-card">
+                <i class="bi bi-diagram-3"></i>
+                <div class="name">Selector</div>
+                <div class="desc">Advisory delivery across county networks</div>
+            </div>
+            <div class="integration-card">
+                <i class="bi bi-chat-dots"></i>
+                <div class="name">iShamba SMS</div>
+                <div class="desc">Direct-to-farmer SMS delivery, no app required</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+    <div class="wrap">
+        <h2>Ready to see it in action?</h2>
+        <p>Sign in to access advisories, farmer records, climate data, and the PINN engine — or register as a farmer to receive advisories directly.</p>
+        <div class="cta-buttons">
+            <a href="{% url 'accounts:register' %}" class="btn btn-gold btn-lg">
+                <i class="bi bi-person-plus"></i> Register
+            </a>
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline btn-lg" style="border-color: rgba(255,255,255,.4); color: #fff;">
+                <i class="bi bi-box-arrow-in-right"></i> Sign In
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="wrap">
+        <div class="footer-grid">
+            <div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <img src="{% static 'img/kalro-logo.png' %}" alt="KALRO" style="height: 38px; width: auto;"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+                    <div class="brand-crest" style="width: 38px; height: 38px; font-size: 18px; display:none;">K</div>
+                    <div>
+                        <div style="color: #fff; font-family: var(--font-serif); font-weight: 700; font-size: 14px; letter-spacing: 0.02em;">KALRO ADVISORY</div>
+                        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-500);">Climate-Resilient Agriculture</div>
+                    </div>
+                </div>
+                <p style="max-width: 340px; line-height: 1.6; color: var(--ink-500);">
+                    A physics-informed AI advisory platform. Powered by KALRO research, delivered to every farmer in Kenya.
+                </p>
+            </div>
+            <div>
+                <h6>Platform</h6>
+                <ul>
+                    <li><a href="{% url 'accounts:login' %}">Sign In</a></li>
+                    <li><a href="{% url 'accounts:register' %}">Register</a></li>
+                    <li><a href="{% url 'admin:index' %}">Admin Console</a></li>
+                </ul>
+            </div>
+            <div>
+                <h6>About</h6>
+                <ul>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#how">How it works</a></li>
+                    <li><a href="#integrations">Integrations</a></li>
+                </ul>
+            </div>
+            <div>
+                <h6>Contact</h6>
+                <ul>
+                    <li><a href="#">KALRO Headquarters</a></li>
+                    <li><a href="#">Report an Issue</a></li>
+                    <li><a href="#">Data Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div>© {% now "Y" %} Kenya Agricultural and Livestock Research Organization. All rights reserved.</div>
+            <div>Privacy · Terms · Data Policy</div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    (function () {
+        'use strict';
+
+        const navToggle = document.getElementById('navToggle');
+        const navToggleIcon = document.getElementById('navToggleIcon');
+        const mobileDrawer = document.getElementById('mobileDrawer');
+
+        if (navToggle && mobileDrawer) {
+            navToggle.addEventListener('click', () => {
+                const open = mobileDrawer.classList.toggle('open');
+                navToggleIcon.className = open ? 'bi bi-x-lg' : 'bi bi-list';
+                document.body.style.overflow = open ? 'hidden' : '';
+            });
+
+            // Close drawer on link click
+            document.querySelectorAll('.drawer-close-link').forEach(a => {
+                a.addEventListener('click', () => {
+                    mobileDrawer.classList.remove('open');
+                    navToggleIcon.className = 'bi bi-list';
+                    document.body.style.overflow = '';
+                });
+            });
+        }
+    })();
+</script>
+
+</body>
+</html>

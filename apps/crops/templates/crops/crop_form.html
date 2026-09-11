@@ -1,0 +1,81 @@
+{% extends "crops/base_crops.html" %}
+{% load static %}
+
+{% block title %}{% if object %}Edit {{ object.name }}{% else %}Add Crop{% endif %} — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{% if object %}Edit Crop{% else %}Add Crop{% endif %}</h1>
+        <div class="page-header-sub">{% if object %}Update crop details and physics parameters{% else %}Add a new crop to the catalog{% endif %}</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% if object %}{% url 'crops:crop_detail' object.pk %}{% else %}{% url 'crops:crop_list' %}{% endif %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Cancel</a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-9">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert-kalro alert-danger"><i class="bi bi-exclamation-octagon"></i><div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div></div>{% endif %}
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-info-circle me-2"></i> Identity</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Name <span class="req">*</span></label>{{ form.name }}{% if form.name.errors %}<div class="field-error">{{ form.name.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Scientific name</label>{{ form.scientific_name }}</div>
+                        <div class="col-md-4"><label class="form-label">Code</label>{{ form.code }}</div>
+                        <div class="col-md-4"><label class="form-label">Category</label>{{ form.category }}</div>
+                        <div class="col-md-4"><label class="form-label">Season</label>{{ form.season }}</div>
+                        <div class="col-md-4"><label class="form-label">Growth habit</label>{{ form.growth_habit }}</div>
+                        <div class="col-md-4"><label class="form-label">Days to maturity</label>{{ form.days_to_maturity }}</div>
+                        <div class="col-md-4"><label class="form-label d-block">Active</label><label class="checkbox-row">{{ form.is_active }} <span>Yes</span></label></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-thermometer-half me-2"></i> Agronomy</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4"><label class="form-label">Expected yield (kg/ha)</label>{{ form.expected_yield_kg_ha }}</div>
+                        <div class="col-md-4"><label class="form-label">Optimal pH min</label>{{ form.optimal_ph_min }}</div>
+                        <div class="col-md-4"><label class="form-label">Optimal pH max</label>{{ form.optimal_ph_max }}</div>
+                        <div class="col-md-6"><label class="form-label">Base temp (°C)</label>{{ form.base_temp_c }}</div>
+                        <div class="col-md-6"><label class="form-label">Max temp (°C)</label>{{ form.max_temp_c }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-sliders me-2"></i> PINN Physics Parameters</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Water requirement (mm)</label>{{ form.water_requirement_mm }}</div>
+                        <div class="col-md-6"><label class="form-label">Nitrogen (kg/ha)</label>{{ form.n_requirement_kg_ha }}</div>
+                        <div class="col-md-6"><label class="form-label">Phosphorus (kg/ha)</label>{{ form.p_requirement_kg_ha }}</div>
+                        <div class="col-md-6"><label class="form-label">Potassium (kg/ha)</label>{{ form.k_requirement_kg_ha }}</div>
+                        <div class="col-md-12"><label class="form-label">Notes</label>{{ form.notes }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions-bar">
+                <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check2"></i> Save</button>
+                <a href="{% if object %}{% url 'crops:crop_detail' object.pk %}{% else %}{% url 'crops:crop_list' %}{% endif %}" class="btn btn-outline btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error { font-size: 12px; color: var(--kalro-red); margin-top: 6px; }
+    .form-actions-bar { display: flex; gap: 10px; padding: 20px 0 8px; flex-wrap: wrap; }
+    .checkbox-row { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; color: var(--ink-700); cursor: pointer; }
+</style>
+
+{% endblock %}

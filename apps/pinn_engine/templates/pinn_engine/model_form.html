@@ -1,0 +1,83 @@
+{% extends "pinn_engine/base_pinn.html" %}
+{% load static %}
+
+{% block title %}{% if object %}Edit {{ object.name }}{% else %}Add PINN Model{% endif %} — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{% if object %}Edit PINN Model{% else %}Add PINN Model{% endif %}</h1>
+        <div class="page-header-sub">Configure architecture, physics constraints, and initial state</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% if object %}{% url 'pinn_engine:model_detail' object.pk %}{% else %}{% url 'pinn_engine:model_list' %}{% endif %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Cancel</a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-9">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert-kalro alert-danger"><i class="bi bi-exclamation-octagon"></i><div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div></div>{% endif %}
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-info-circle me-2"></i> Identity</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Name <span class="req">*</span></label>{{ form.name }}{% if form.name.errors %}<div class="field-error">{{ form.name.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Version</label>{{ form.version }}</div>
+                        <div class="col-md-12"><label class="form-label">Description</label>{{ form.description }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-diagram-3 me-2"></i> Architecture</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4"><label class="form-label">Architecture</label>{{ form.architecture }}</div>
+                        <div class="col-md-4"><label class="form-label">Activation</label>{{ form.activation }}</div>
+                        <div class="col-md-4"><label class="form-label">Hidden layers (JSON list)</label>{{ form.hidden_layers }}</div>
+                        <div class="col-md-6"><label class="form-label">Input features (JSON list)</label>{{ form.input_features }}</div>
+                        <div class="col-md-6"><label class="form-label">Output targets (JSON list)</label>{{ form.output_targets }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-sliders me-2"></i> Physics</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-8"><label class="form-label">Physics constraints</label>{{ form.physics_constraints }}<div class="form-text">Hold Ctrl/Cmd to select multiple.</div></div>
+                        <div class="col-md-4"><label class="form-label">Physics λ</label>{{ form.physics_lambda }}<div class="form-text">Weight on the composite physics loss.</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-gear me-2"></i> State</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Status</label>{{ form.status }}</div>
+                        <div class="col-md-6"><label class="form-label">Artifact path</label>{{ form.artifact_path }}</div>
+                        <div class="col-md-12"><label class="form-label">Metrics (JSON)</label>{{ form.metrics }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions-bar">
+                <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check2"></i> Save</button>
+                <a href="{% if object %}{% url 'pinn_engine:model_detail' object.pk %}{% else %}{% url 'pinn_engine:model_list' %}{% endif %}" class="btn btn-outline btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error { font-size: 12px; color: var(--kalro-red); margin-top: 6px; }
+    .form-actions-bar { display: flex; gap: 10px; padding: 20px 0 8px; flex-wrap: wrap; }
+</style>
+
+{% endblock %}

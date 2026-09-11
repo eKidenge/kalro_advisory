@@ -1,0 +1,96 @@
+{% extends "soil/base_soil.html" %}
+{% load static %}
+
+{% block title %}Nutrient Profiles — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Nutrient Profiles</h1>
+        <div class="page-header-sub">Baseline and recommended nutrient ranges for crops and soil types</div>
+    </div>
+    {% if request.user.is_kalro_staff %}
+    <div class="page-header-actions">
+        <a href="{% url 'soil:nutrient_profile_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Profile
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label">Crop</label>
+        <select name="crop" class="form-select">
+            <option value="">All crops</option>
+            {% for c in crops %}
+            <option value="{{ c.pk }}" {% if current_crop == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'soil:nutrient_profile' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if profiles %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>Profile</th>
+                        <th>Crop</th>
+                        <th>Soil texture</th>
+                        <th>pH range</th>
+                        <th>N range (%)</th>
+                        <th>P range (ppm)</th>
+                        <th>K range (ppm)</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in profiles %}
+                    <tr>
+                        <td><strong>{{ p.name }}</strong></td>
+                        <td>{{ p.crop.name|default:"—" }}</td>
+                        <td>{{ p.soil_texture|default:"—" }}</td>
+                        <td>{% if p.ph_min and p.ph_max %}<span class="font-mono fs-12">{{ p.ph_min }} – {{ p.ph_max }}</span>{% else %}—{% endif %}</td>
+                        <td>{% if p.n_min_pct and p.n_max_pct %}<span class="font-mono fs-12">{{ p.n_min_pct }} – {{ p.n_max_pct }}</span>{% else %}—{% endif %}</td>
+                        <td>{% if p.p_min_ppm and p.p_max_ppm %}<span class="font-mono fs-12">{{ p.p_min_ppm }} – {{ p.p_max_ppm }}</span>{% else %}—{% endif %}</td>
+                        <td>{% if p.k_min_ppm and p.k_max_ppm %}<span class="font-mono fs-12">{{ p.k_min_ppm }} – {{ p.k_max_ppm }}</span>{% else %}—{% endif %}</td>
+                        <td class="text-end">
+                            <a href="{% url 'soil:nutrient_profile_update' p.pk %}" class="row-action" title="Edit"><i class="bi bi-pencil"></i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-sliders"></i>
+            <h5>No nutrient profiles</h5>
+            <p>Create baseline profiles to guide the PINN engine.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .row-action { width: 30px; height: 30px; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); text-decoration: none; font-size: 14px; }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .text-end { text-align: right; }
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+</style>
+
+{% endblock %}

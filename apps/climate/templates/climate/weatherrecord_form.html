@@ -1,0 +1,88 @@
+{% extends "climate/base_climate.html" %}
+{% load static %}
+
+{% block title %}{% if form_title %}{{ form_title }}{% elif object %}Edit Weather Record{% else %}Add Weather Record{% endif %} — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{% if form_title %}{{ form_title }}{% elif object %}Edit Weather Record{% else %}Add Weather Record{% endif %}</h1>
+        <div class="page-header-sub">{% if object %}Update observation data{% elif form_title %}Issue an alert{% else %}Record a new weather observation{% endif %}</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'climate:weatherrecord_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Cancel</a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-9">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div class="alert-kalro alert-danger"><i class="bi bi-exclamation-octagon"></i><div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div></div>
+            {% endif %}
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-cloud-sun me-2"></i> Observation Data</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Station <span class="req">*</span></label>
+                            {{ form.station }}{% if form.station.errors %}<div class="field-error">{{ form.station.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date <span class="req">*</span></label>
+                            {{ form.date }}{% if form.date.errors %}<div class="field-error">{{ form.date.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Rainfall (mm)</label>
+                            {{ form.rainfall_mm }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Humidity (%)</label>
+                            {{ form.humidity_pct }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Temp min (°C)</label>
+                            {{ form.temp_min_c }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Temp max (°C)</label>
+                            {{ form.temp_max_c }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Wind speed (m/s)</label>
+                            {{ form.wind_speed_ms }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Solar radiation (MJ/m²)</label>
+                            {{ form.solar_rad_mj }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Evapotranspiration (mm)</label>
+                            {{ form.evapotranspiration_mm }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Quality</label>
+                            {{ form.quality }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions-bar">
+                <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check2"></i> Save</button>
+                <a href="{% url 'climate:weatherrecord_list' %}" class="btn btn-outline btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error { font-size: 12px; color: var(--kalro-red); margin-top: 6px; }
+    .form-actions-bar { display: flex; gap: 10px; padding: 20px 0 8px; flex-wrap: wrap; }
+</style>
+
+{% endblock %}

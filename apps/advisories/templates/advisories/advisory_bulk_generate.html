@@ -1,0 +1,57 @@
+{% extends "advisories/base_advisories.html" %}
+{% load static %}
+
+{% block title %}Bulk Generate Advisories — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Bulk Generate Advisories</h1>
+        <div class="page-header-sub">Queue draft advisories for all active farms in a county and crop</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'advisories:advisory_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Cancel</a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-7">
+        <div class="alert-kalro alert-warning">
+            <i class="bi bi-exclamation-triangle"></i>
+            <div>
+                <strong>Heads up:</strong> this creates one draft advisory per active farm in the selected
+                county and crop. Use <em>max farms</em> to limit the batch size.
+            </div>
+        </div>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert-kalro alert-danger"><i class="bi bi-exclamation-octagon"></i><div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div></div>{% endif %}
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-stack me-2"></i> Batch Configuration</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">County <span class="req">*</span></label>{{ form.county }}{% if form.county.errors %}<div class="field-error">{{ form.county.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Crop <span class="req">*</span></label>{{ form.crop }}{% if form.crop.errors %}<div class="field-error">{{ form.crop.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Type</label>{{ form.kind }}</div>
+                        <div class="col-md-6"><label class="form-label">Priority</label>{{ form.priority }}</div>
+                        <div class="col-md-6"><label class="form-label">Max farms</label>{{ form.max_farms }}<div class="form-text">Cap the number of advisories created in this batch.</div></div>
+                    </div>
+                </div>
+                <div class="card-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <a href="{% url 'advisories:advisory_list' %}" class="btn btn-outline">Cancel</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-stack"></i> Create Drafts</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error { font-size: 12px; color: var(--kalro-red); margin-top: 6px; }
+</style>
+
+{% endblock %}

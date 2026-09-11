@@ -1,0 +1,105 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Denied — KALRO Advisory</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230b3d2e'/><text y='72' x='50%25' text-anchor='middle' font-size='60' fill='%23f4c430' font-family='Georgia'>K</text></svg>">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --kalro-green: #0b3d2e;
+            --kalro-green-700: #14543f;
+            --kalro-gold: #f4c430;
+            --kalro-red: #bb1e10;
+            --ink-900: #0f1a14;
+            --ink-800: #1c2a22;
+            --ink-600: #4a5b51;
+            --ink-500: #6b7a70;
+            --ink-100: #f0f3f1;
+            --font-serif: 'Source Serif 4', Georgia, serif;
+            --font-sans: 'Inter', sans-serif;
+        }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; margin: 0; }
+        body {
+            font-family: var(--font-sans);
+            color: var(--ink-800);
+            background: linear-gradient(160deg, var(--kalro-green) 0%, var(--kalro-green-700) 100%);
+            display: grid; place-items: center;
+            padding: 24px;
+        }
+        .err-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 56px 48px;
+            max-width: 560px; width: 100%;
+            text-align: center;
+            box-shadow: 0 24px 64px rgba(0,0,0,.25);
+        }
+        .err-code {
+            font-family: var(--font-serif);
+            font-size: 96px; font-weight: 700;
+            color: var(--kalro-red); line-height: 1;
+            margin-bottom: 8px;
+        }
+        .err-icon {
+            width: 72px; height: 72px;
+            background: #fbe4e1;
+            color: var(--kalro-red);
+            border-radius: 50%;
+            display: grid; place-items: center;
+            font-size: 34px;
+            margin: 0 auto 24px;
+        }
+        h1 {
+            font-family: var(--font-serif);
+            font-size: 26px; font-weight: 700;
+            color: var(--ink-900);
+            margin: 0 0 12px;
+        }
+        p {
+            font-size: 14.5px; line-height: 1.6;
+            color: var(--ink-600);
+            margin: 0 0 32px;
+            max-width: 420px; margin-left: auto; margin-right: auto;
+        }
+        .actions {
+            display: flex; gap: 10px; justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            font-family: var(--font-sans);
+            font-weight: 500; font-size: 13.5px;
+            padding: 11px 20px;
+            border-radius: 7px;
+            border: 1px solid transparent;
+            display: inline-flex; align-items: center; gap: 8px;
+            text-decoration: none; cursor: pointer;
+            transition: all .12s;
+        }
+        .btn-primary { background: var(--kalro-green); color: #fff; }
+        .btn-primary:hover { background: var(--kalro-green-700); color: #fff; }
+        .btn-outline { background: transparent; color: var(--ink-800); border-color: #c1cac4; }
+        .btn-outline:hover { border-color: var(--kalro-green); color: var(--kalro-green); }
+    </style>
+</head>
+<body>
+    <div class="err-card">
+        <div class="err-icon"><i class="bi bi-shield-lock"></i></div>
+        <div class="err-code">403</div>
+        <h1>Access Denied</h1>
+        <p>
+            You don't have permission to view this page. If you believe this is a mistake,
+            contact your KALRO administrator or extension officer.
+        </p>
+        <div class="actions">
+            <a href="/" class="btn btn-primary"><i class="bi bi-house-door"></i> Go Home</a>
+            <a href="javascript:history.back()" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Go Back</a>
+        </div>
+    </div>
+</body>
+</html>

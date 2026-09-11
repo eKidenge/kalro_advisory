@@ -1,0 +1,40 @@
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{% url 'advisories:advisory_dashboard' %}">
+        <i class="bi bi-house-door"></i> Home
+    </a>
+
+    {% block breadcrumb_items %}
+        {% if request.resolver_match.namespace %}
+            <i class="bi bi-chevron-right"></i>
+
+            {% if request.resolver_match.namespace == 'advisories' %}
+                <a href="{% url 'advisories:advisory_list' %}">Advisories</a>
+            {% elif request.resolver_match.namespace == 'farmers' %}
+                <a href="{% url 'farmers:farmer_list' %}">Farmers</a>
+            {% elif request.resolver_match.namespace == 'climate' %}
+                <a href="{% url 'climate:weatherrecord_list' %}">Climate</a>
+            {% elif request.resolver_match.namespace == 'soil' %}
+                <a href="{% url 'soil:soiltest_list' %}">Soil</a>
+            {% elif request.resolver_match.namespace == 'crops' %}
+                <a href="{% url 'crops:crop_list' %}">Crops</a>
+            {% elif request.resolver_match.namespace == 'trials' %}
+                <a href="{% url 'trials:trial_list' %}">Trials</a>
+            {% elif request.resolver_match.namespace == 'pinn_engine' %}
+                <a href="{% url 'pinn_engine:model_list' %}">PINN Engine</a>
+            {% elif request.resolver_match.namespace == 'integrations' %}
+                <a href="{% url 'integrations:integrationconfig_list' %}">Integrations</a>
+            {% elif request.resolver_match.namespace == 'accounts' %}
+                <span>{{ request.resolver_match.namespace|title }}</span>
+            {% endif %}
+
+            {% if request.resolver_match.url_name %}
+                {% if request.resolver_match.url_name != 'advisory_list' and request.resolver_match.url_name != 'farmer_list' and request.resolver_match.url_name != 'weatherrecord_list' and request.resolver_match.url_name != 'soiltest_list' and request.resolver_match.url_name != 'crop_list' and request.resolver_match.url_name != 'trial_list' and request.resolver_match.url_name != 'model_list' and request.resolver_match.url_name != 'integrationconfig_list' %}
+                    <i class="bi bi-chevron-right"></i>
+                    <span class="text-muted">
+                        {{ request.resolver_match.url_name|title|cut:"_" }}
+                    </span>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    {% endblock %}
+</nav>

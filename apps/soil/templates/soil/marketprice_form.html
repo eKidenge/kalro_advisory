@@ -1,0 +1,54 @@
+{% extends "soil/base_soil.html" %}
+{% load static %}
+
+{% block title %}{% if object %}Edit Market Price{% else %}Add Market Price{% endif %} — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{% if object %}Edit Market Price{% else %}Add Market Price{% endif %}</h1>
+        <div class="page-header-sub">Record a commodity price observation</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'soil:marketprice_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Cancel</a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-7">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert-kalro alert-danger"><i class="bi bi-exclamation-octagon"></i><div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div></div>{% endif %}
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-currency-exchange me-2"></i> Price Details</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Commodity <span class="req">*</span></label>{{ form.commodity }}{% if form.commodity.errors %}<div class="field-error">{{ form.commodity.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Custom label</label>{{ form.commodity_label }}</div>
+                        <div class="col-md-6"><label class="form-label">County</label>{{ form.county }}</div>
+                        <div class="col-md-6"><label class="form-label">Market name</label>{{ form.market_name }}</div>
+                        <div class="col-md-6"><label class="form-label">Price (KES) <span class="req">*</span></label>{{ form.price_ksh }}{% if form.price_ksh.errors %}<div class="field-error">{{ form.price_ksh.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Unit</label>{{ form.unit }}</div>
+                        <div class="col-md-6"><label class="form-label">Observed on <span class="req">*</span></label>{{ form.observed_on }}{% if form.observed_on.errors %}<div class="field-error">{{ form.observed_on.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Source</label>{{ form.source }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions-bar">
+                <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check2"></i> Save</button>
+                <a href="{% url 'soil:marketprice_list' %}" class="btn btn-outline btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error { font-size: 12px; color: var(--kalro-red); margin-top: 6px; }
+    .form-actions-bar { display: flex; gap: 10px; padding: 20px 0 8px; flex-wrap: wrap; }
+</style>
+
+{% endblock %}

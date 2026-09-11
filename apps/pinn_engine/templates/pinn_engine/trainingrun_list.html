@@ -1,0 +1,147 @@
+﻿{% extends "pinn_engine/base_pinn.html" %}
+{% load static %}
+
+{% block title %}Training Runs — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Training Runs</h1>
+        <div class="page-header-sub">Loss curves, epochs, and final metrics</div>
+    </div>
+    {% if can_edit %}
+    <div class="page-header-actions">
+        <a href="{% url 'pinn_engine:trainingrun_create' %}" class="btn btn-primary">
+            <i class="bi bi-play-circle"></i> Start Training
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label">Model</label>
+        <select name="model" class="form-select">
+            <option value="">All models</option>
+            {% for m in models %}
+                <option value="{{ m.pk }}" {% if current.model == m.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ m.name }} v{{ m.version }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+            <option value="">All</option>
+            {% for val, label in statuses %}
+                <option value="{{ val }}" {% if current.status == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search"></i> Filter
+        </button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'pinn_engine:trainingrun_list' %}" class="btn btn-ghost">
+            <i class="bi bi-x-circle"></i> Clear
+        </a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if runs %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>Run</th>
+                        <th>Model</th>
+                        <th>Epochs</th>
+                        <th>LR</th>
+                        <th>Status</th>
+                        <th>Duration</th>
+                        <th>Started</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in runs %}
+                    <tr>
+                        <td><span class="font-mono fs-12">{{ r.run_label|default:r.pk }}</span></td>
+                        <td>
+                            <a href="{% url 'pinn_engine:model_detail' r.model.pk %}" style="color: var(--kalro-green); font-weight: 500; font-size: 13px;">
+                                {{ r.model.name }}
+                            </a>
+                            <div class="user-meta">v{{ r.model.version }}</div>
+                        </td>
+                        <td>{{ r.epochs }}</td>
+                        <td><span class="font-mono fs-12">{{ r.learning_rate }}</span></td>
+                        <td>
+                            {% if r.status == 'SUCCESS' %}<span class="pill pill-green">Success</span>
+                            {% elif r.status == 'RUNNING' %}<span class="pill pill-blue">Running</span>
+                            {% elif r.status == 'FAILED' %}<span class="pill pill-red">Failed</span>
+                            {% elif r.status == 'QUEUED' %}<span class="pill pill-gold">Queued</span>
+                            {% else %}<span class="pill pill-grey">{{ r.get_status_display }}</span>{% endif %}
+                        </td>
+                        <td>{% if r.duration_seconds %}{{ r.duration_seconds }}s{% else %}—{% endif %}</td>
+                        <td><span class="font-mono fs-12">{{ r.created_at|date:"d M H:i" }}</span></td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <a href="{% url 'pinn_engine:trainingrun_detail' r.pk %}" class="row-action" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'pinn_engine:trainingrun_logs' r.pk %}" class="row-action" title="Logs">
+                                    <i class="bi bi-terminal"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-play-circle"></i>
+            <h5>No training runs yet</h5>
+            <p>Start training a PINN model.</p>
+            {% if can_edit %}
+            <a href="{% url 'pinn_engine:trainingrun_create' %}" class="btn btn-primary">
+                <i class="bi bi-play-circle"></i> Start Training
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .user-meta { font-size: 11px; color: var(--ink-500); margin-top: 1px; }
+    .action-bar { display: inline-flex; gap: 4px; }
+    .row-action {
+        width: 30px; height: 30px;
+        border: 1px solid transparent;
+        background: transparent;
+        border-radius: 5px;
+        display: grid; place-items: center;
+        color: var(--ink-500);
+        text-decoration: none;
+        font-size: 14px;
+        transition: all .12s;
+    }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .text-end { text-align: right; }
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+    .pill-blue { background: #dbeafe; color: #1e40af; }
+</style>
+
+{% endblock %}

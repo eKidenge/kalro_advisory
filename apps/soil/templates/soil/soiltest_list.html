@@ -1,0 +1,124 @@
+{% extends "soil/base_soil.html" %}
+{% load static %}
+
+{% block title %}Soil Tests — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Soil Tests</h1>
+        <div class="page-header-sub">Soil sample results across registered farms</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'soil:soiltest_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Soil Test
+        </a>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" class="form-control" value="{{ current.q }}" placeholder="Sample ID, farm, farmer…">
+    </div>
+    <div class="filter-field">
+        <label class="form-label">County</label>
+        <select name="county" class="form-select">
+            <option value="">All counties</option>
+            {% for c in counties %}
+            <option value="{{ c.pk }}" {% if current.county == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Lab</label>
+        <select name="lab" class="form-select">
+            <option value="">All labs</option>
+            {% for val, label in labs %}
+            <option value="{{ val }}" {% if current.lab == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'soil:soiltest_list' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if tests %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>Sample</th>
+                        <th>Farm</th>
+                        <th>Farmer</th>
+                        <th>Sampled</th>
+                        <th>Lab</th>
+                        <th>pH</th>
+                        <th>N (%)</th>
+                        <th>P (ppm)</th>
+                        <th>K (ppm)</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in tests %}
+                    <tr>
+                        <td><span class="font-mono fs-12">{{ t.sample_id }}</span></td>
+                        <td>{{ t.farm.name|default:"—" }}</td>
+                        <td style="font-size:12.5px;">{{ t.farm.farmer.full_name|default:"—" }}</td>
+                        <td><span class="font-mono fs-12">{{ t.sampled_on|date:"d M Y" }}</span></td>
+                        <td><span class="pill pill-grey">{{ t.get_lab_display }}</span></td>
+                        <td>
+                            {% if t.ph %}
+                                <span class="pill {% if t.ph_status == 'optimal' %}pill-green{% elif t.ph_status == 'acidic' %}pill-red{% else %}pill-gold{% endif %}">{{ t.ph }}</span>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td>
+                            {% if t.nitrogen_pct %}
+                                <span class="pill {% if t.nitrogen_status == 'adequate' %}pill-green{% elif t.nitrogen_status == 'low' %}pill-red{% else %}pill-gold{% endif %}">{{ t.nitrogen_pct }}</span>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td>{{ t.phosphorus_ppm|default:"—" }}</td>
+                        <td>{{ t.potassium_ppm|default:"—" }}</td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <a href="{% url 'soil:soiltest_detail' t.pk %}" class="row-action" title="View"><i class="bi bi-eye"></i></a>
+                                <a href="{% url 'soil:soiltest_update' t.pk %}" class="row-action" title="Edit"><i class="bi bi-pencil"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-droplet-half"></i>
+            <h5>No soil tests yet</h5>
+            <p>Add the first soil test to get started.</p>
+            <a href="{% url 'soil:soiltest_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Soil Test</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .action-bar { display: inline-flex; gap: 4px; }
+    .row-action { width: 30px; height: 30px; border: 1px solid transparent; background: transparent; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); text-decoration: none; font-size: 14px; transition: all .12s; }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .text-end { text-align: right; }
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+</style>
+
+{% endblock %}

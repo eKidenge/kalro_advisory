@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}User Management — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================ -->
+<!-- PAGE HEADER                                                   -->
+<!-- ============================================================ -->
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>User Management</h1>
+        <div class="page-header-sub">
+            Manage accounts, verify privileged roles, and monitor access
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'admin:accounts_user_add' %}" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Add User
+        </a>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ALERT: PENDING VERIFICATIONS                                  -->
+<!-- ============================================================ -->
+{% if pending_verification > 0 %}
+<div class="alert-kalro alert-warning">
+    <i class="bi bi-exclamation-triangle"></i>
+    <div>
+        <strong>{{ pending_verification }}</strong> user{{ pending_verification|pluralize }}
+        awaiting verification.
+        <a href="?verified=0" style="color: inherit; text-decoration: underline;">Review them</a>.
+    </div>
+</div>
+{% endif %}
+
+<!-- ============================================================ -->
+<!-- STATS                                                         -->
+<!-- ============================================================ -->
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value">{{ total }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card stat-gold">
+            <div class="stat-label">Pending Verification</div>
+            <div class="stat-value">{{ pending_verification }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Roles</div>
+            <div class="stat-value">{{ roles|length }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card stat-ink">
+            <div class="stat-label">This Page</div>
+            <div class="stat-value">{{ page_obj.object_list|length }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- FILTER BAR                                                    -->
+<!-- ============================================================ -->
+<form method="get" class="filter-bar">
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label" for="q">Search</label>
+        <input type="text" name="q" id="q" class="form-control"
+               placeholder="Name, email, phone…"
+               value="{{ filter_form.q.value|default:'' }}">
+    </div>
+
+    <div class="filter-field">
+        <label class="form-label" for="role">Role</label>
+        <select name="role" id="role" class="form-select">
+            <option value="">All roles</option>
+            {% for value, label in roles %}
+                <option value="{{ value }}"
+                    {% if filter_form.role.value == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="filter-field">
+        <label class="form-label" for="verified">Verification</label>
+        <select name="verified" id="verified" class="form-select">
+            <option value="">All</option>
+            <option value="1" {% if filter_form.verified.value == '1' %}selected{% endif %}>Verified only</option>
+            <option value="0" {% if filter_form.verified.value == '0' %}selected{% endif %}>Unverified only</option>
+        </select>
+    </div>
+
+    <div class="filter-field">
+        <label class="form-label" for="county">County</label>
+        <input type="text" name="county" id="county" class="form-control"
+               placeholder="County"
+               value="{{ filter_form.county.value|default:'' }}">
+    </div>
+
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search"></i> Filter
+        </button>
+    </div>
+
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'accounts:user_list' %}" class="btn btn-ghost">
+            <i class="bi bi-x-circle"></i> Clear
+        </a>
+    </div>
+</form>
+
+<!-- ============================================================ -->
+<!-- TABLE                                                         -->
+<!-- ============================================================ -->
+<div class="card">
+    <div class="card-body p-0">
+        {% if users %}
+        <table class="table-kalro">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Last Login</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-cell-avatar">
+                                {{ u.get_full_name|default:u.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <div class="user-cell-name">
+                                    {{ u.get_full_name|default:u.username }}
+                                </div>
+                                <div class="user-cell-meta">{{ u.email|default:u.username }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="pill pill-grey">{{ u.get_role_display }}</span>
+                    </td>
+                    <td>
+                        {% if u.county %}
+                            {{ u.county }}{% if u.sub_county %}, {{ u.sub_county }}{% endif %}
+                        {% else %}—{% endif %}
+                    </td>
+                    <td>
+                        {% if not u.is_active %}
+                            <span class="pill pill-red">Inactive</span>
+                        {% elif u.is_verified %}
+                            <span class="pill pill-green">Verified</span>
+                        {% else %}
+                            <span class="pill pill-gold">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if u.last_login %}
+                            <span style="font-size: 12px; color: var(--ink-600);">
+                                {{ u.last_login|date:"d M Y" }}
+                            </span>
+                        {% else %}
+                            <span style="font-size: 12px; color: var(--ink-400);">Never</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right;">
+                        <div class="row-actions">
+                            <a href="{% url 'accounts:user_detail' u.pk %}"
+                               class="row-action" title="View profile">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'accounts:user_admin_update' u.pk %}"
+                               class="row-action" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% if u.is_verified %}
+                            <form method="post" action="{% url 'accounts:user_unverify' u.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="row-action row-action-warn"
+                                        title="Unverify"
+                                        data-confirm="Unverify this user?">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </form>
+                            {% else %}
+                            <form method="post" action="{% url 'accounts:user_verify' u.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="row-action row-action-ok"
+                                        title="Verify">
+                                    <i class="bi bi-patch-check"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-people"></i>
+            <h5>No users found</h5>
+            <p>Try adjusting your filters or add a new user.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .user-cell {
+        display: flex; gap: 12px; align-items: center;
+    }
+    .user-cell-avatar {
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        background: var(--kalro-green-100);
+        color: var(--kalro-green);
+        display: grid; place-items: center;
+        font-family: var(--font-serif);
+        font-weight: 700; font-size: 15px;
+        flex-shrink: 0;
+    }
+    .user-cell-name {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--ink-900);
+    }
+    .user-cell-meta {
+        font-size: 11.5px;
+        color: var(--ink-500);
+    }
+    .row-actions {
+        display: inline-flex; gap: 4px;
+    }
+    .row-action {
+        width: 30px; height: 30px;
+        border: 1px solid transparent;
+        background: transparent;
+        border-radius: 5px;
+        display: grid; place-items: center;
+        color: var(--ink-500);
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all .12s;
+    }
+    .row-action:hover {
+        background: var(--ink-100);
+        color: var(--ink-900);
+        border-color: var(--border);
+    }
+    .row-action-warn:hover { color: var(--kalro-red); background: var(--kalro-red-100); }
+    .row-action-ok:hover { color: var(--kalro-green); background: var(--kalro-green-100); }
+</style>
+
+{% endblock %}

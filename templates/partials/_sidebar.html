@@ -1,0 +1,261 @@
+{% load static %}
+
+<nav aria-label="Main navigation">
+
+    {# ============================================================ #}
+    {# WORKSPACE                                                     #}
+    {# ============================================================ #}
+    <div class="nav-section">
+        <div class="nav-section-title">Workspace</div>
+
+        <a href="{% url 'advisories:advisory_dashboard' %}"
+           class="nav-item {% if request.resolver_match.namespace == 'advisories' and request.resolver_match.url_name == 'advisory_dashboard' %}active{% endif %}">
+            <i class="bi bi-grid-1x2"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="{% url 'advisories:advisory_list' %}"
+           class="nav-item {% if request.resolver_match.namespace == 'advisories' and request.resolver_match.url_name == 'advisory_list' %}active{% endif %}">
+            <i class="bi bi-megaphone"></i>
+            <span>Advisories</span>
+        </a>
+
+        {% if user.is_kalro_staff or user.is_researcher %}
+        <a href="{% url 'advisories:advisory_generate' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'advisory_generate' %}active{% endif %}">
+            <i class="bi bi-magic"></i>
+            <span>Generate Advisory</span>
+        </a>
+        {% endif %}
+    </div>
+
+    {# ============================================================ #}
+    {# FIELD DATA                                                    #}
+    {# ============================================================ #}
+    {% if user.is_kalro_staff or user.is_field_agent or user.is_researcher %}
+    <div class="nav-section">
+        <div class="nav-section-title">Field Data</div>
+
+        <a href="{% url 'farmers:farmer_list' %}"
+           class="nav-item {% if request.resolver_match.namespace == 'farmers' and 'farmer' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-people"></i>
+            <span>Farmers</span>
+        </a>
+
+        <a href="{% url 'farmers:farm_list' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'farm_list' %}active{% endif %}">
+            <i class="bi bi-geo-alt"></i>
+            <span>Farms</span>
+        </a>
+
+        <a href="{% url 'farmers:farm_map' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'farm_map' %}active{% endif %}">
+            <i class="bi bi-map"></i>
+            <span>Farm Map</span>
+        </a>
+
+        <a href="{% url 'soil:soiltest_list' %}"
+           class="nav-item {% if request.resolver_match.namespace == 'soil' and 'soiltest' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-droplet-half"></i>
+            <span>Soil Tests</span>
+        </a>
+    </div>
+    {% endif %}
+
+    {# ============================================================ #}
+    {# CLIMATE & CROPS                                               #}
+    {# ============================================================ #}
+    <div class="nav-section">
+        <div class="nav-section-title">Climate &amp; Crops</div>
+
+        <a href="{% url 'climate:weatherrecord_list' %}"
+           class="nav-item {% if request.resolver_match.namespace == 'climate' and 'weatherrecord' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-cloud-sun"></i>
+            <span>Weather</span>
+        </a>
+
+        <a href="{% url 'climate:forecast_list' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'forecast_list' %}active{% endif %}">
+            <i class="bi bi-cloud-drizzle"></i>
+            <span>Forecasts</span>
+        </a>
+
+        <a href="{% url 'climate:drought_alert_list' %}"
+           class="nav-item {% if 'alert_list' in request.resolver_match.url_name and 'drought' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span>Climate Alerts</span>
+        </a>
+
+        <a href="{% url 'crops:crop_list' %}"
+           class="nav-item {% if request.resolver_match.namespace == 'crops' and 'crop' in request.resolver_match.url_name and 'calendar' not in request.resolver_match.url_name and 'growthstage' not in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-flower1"></i>
+            <span>Crops</span>
+        </a>
+
+        <a href="{% url 'crops:crop_calendar' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'crop_calendar' %}active{% endif %}">
+            <i class="bi bi-calendar3"></i>
+            <span>Crop Calendar</span>
+        </a>
+    </div>
+
+    {# ============================================================ #}
+    {# RESEARCH                                                      #}
+    {# ============================================================ #}
+    {% if user.is_kalro_staff or user.is_researcher %}
+    <div class="nav-section">
+        <div class="nav-section-title">Research</div>
+
+        <a href="{% url 'trials:trial_list' %}"
+           class="nav-item {% if request.resolver_match.namespace == 'trials' and 'trial' in request.resolver_match.url_name and 'result' not in request.resolver_match.url_name and 'analytics' not in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-clipboard-data"></i>
+            <span>Field Trials</span>
+        </a>
+
+        <a href="{% url 'trials:trial_result_list' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'trial_result_list' %}active{% endif %}">
+            <i class="bi bi-table"></i>
+            <span>Trial Results</span>
+        </a>
+
+        <a href="{% url 'trials:trial_analytics' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'trial_analytics' %}active{% endif %}">
+            <i class="bi bi-graph-up-arrow"></i>
+            <span>Analytics</span>
+        </a>
+
+        <a href="{% url 'pinn_engine:model_list' %}"
+           class="nav-item {% if request.resolver_match.namespace == 'pinn_engine' and 'model' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-cpu"></i>
+            <span>PINN Models</span>
+        </a>
+
+        <a href="{% url 'pinn_engine:trainingrun_list' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'trainingrun_list' %}active{% endif %}">
+            <i class="bi bi-play-circle"></i>
+            <span>Training Runs</span>
+        </a>
+
+        <a href="{% url 'pinn_engine:inference_list' %}"
+           class="nav-item {% if 'inference' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-lightning-charge"></i>
+            <span>Inference</span>
+        </a>
+
+        <a href="{% url 'pinn_engine:physics_constraint_list' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'physics_constraint_list' %}active{% endif %}">
+            <i class="bi bi-sliders"></i>
+            <span>Physics Constraints</span>
+        </a>
+
+        <a href="{% url 'pinn_engine:metrics_dashboard' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'metrics_dashboard' %}active{% endif %}">
+            <i class="bi bi-speedometer2"></i>
+            <span>Metrics</span>
+        </a>
+    </div>
+    {% endif %}
+
+    {# ============================================================ #}
+    {# FARMER SELF-SERVICE                                           #}
+    {# ============================================================ #}
+    {% if user.is_farmer %}
+    <div class="nav-section">
+        <div class="nav-section-title">My Farm</div>
+
+        <a href="{% url 'farmers:my_profile' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
+            <i class="bi bi-house-door"></i>
+            <span>My Profile</span>
+        </a>
+
+        <a href="{% url 'advisories:advisory_list' %}"
+           class="nav-item">
+            <i class="bi bi-megaphone"></i>
+            <span>My Advisories</span>
+        </a>
+    </div>
+    {% endif %}
+
+    {# ============================================================ #}
+    {# INTEGRATIONS (KALRO admin)                                    #}
+    {# ============================================================ #}
+    {% if user.is_kalro_staff %}
+    <div class="nav-section">
+        <div class="nav-section-title">Integrations</div>
+
+        <a href="{% url 'integrations:integrationconfig_list' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'integrationconfig_list' %}active{% endif %}">
+            <i class="bi bi-plug"></i>
+            <span>Configuration</span>
+        </a>
+
+        <a href="{% url 'integrations:synclog_list' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'synclog_list' %}active{% endif %}">
+            <i class="bi bi-arrow-repeat"></i>
+            <span>Sync Logs</span>
+        </a>
+
+        <a href="{% url 'integrations:webhookevent_list' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'webhookevent_list' %}active{% endif %}">
+            <i class="bi bi-broadcast"></i>
+            <span>Webhook Events</span>
+        </a>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">Providers</div>
+
+        <a href="{% url 'integrations:kaop_dashboard' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'kaop_dashboard' %}active{% endif %}">
+            <i class="bi bi-cloud-sun"></i>
+            <span>KAOP</span>
+        </a>
+
+        <a href="{% url 'integrations:agdata_dashboard' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'agdata_dashboard' %}active{% endif %}">
+            <i class="bi bi-database"></i>
+            <span>AgData Hub</span>
+        </a>
+
+        <a href="{% url 'integrations:selector_dashboard' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'selector_dashboard' %}active{% endif %}">
+            <i class="bi bi-diagram-3"></i>
+            <span>Selector</span>
+        </a>
+
+        <a href="{% url 'integrations:ishamba_dashboard' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'ishamba_dashboard' %}active{% endif %}">
+            <i class="bi bi-chat-dots"></i>
+            <span>iShamba SMS</span>
+        </a>
+    </div>
+    {% endif %}
+
+    {# ============================================================ #}
+    {# ACCOUNT                                                       #}
+    {# ============================================================ #}
+    <div class="nav-section">
+        <div class="nav-section-title">Account</div>
+
+        <a href="{% url 'accounts:profile' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+            <i class="bi bi-person-circle"></i>
+            <span>My Profile</span>
+        </a>
+
+        {% if user.is_kalro_staff %}
+        <a href="{% url 'accounts:user_list' %}"
+           class="nav-item {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}">
+            <i class="bi bi-people-fill"></i>
+            <span>Manage Users</span>
+        </a>
+        {% endif %}
+
+        <a href="{% url 'admin:index' %}" class="nav-item">
+            <i class="bi bi-shield-lock"></i>
+            <span>Admin Console</span>
+        </a>
+    </div>
+
+</nav>

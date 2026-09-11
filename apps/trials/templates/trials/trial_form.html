@@ -1,0 +1,94 @@
+{% extends "trials/base_trials.html" %}
+{% load static %}
+
+{% block title %}{% if object %}Edit {{ object.code }}{% else %}Add Trial{% endif %} — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{% if object %}Edit Trial{% else %}Add Trial{% endif %}</h1>
+        <div class="page-header-sub">Define a new field trial or update its design</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% if object %}{% url 'trials:trial_detail' object.pk %}{% else %}{% url 'trials:trial_list' %}{% endif %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Cancel</a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-9">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert-kalro alert-danger"><i class="bi bi-exclamation-octagon"></i><div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div></div>{% endif %}
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-info-circle me-2"></i> Identity</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4"><label class="form-label">Code <span class="req">*</span></label>{{ form.code }}{% if form.code.errors %}<div class="field-error">{{ form.code.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-8"><label class="form-label">Title <span class="req">*</span></label>{{ form.title }}{% if form.title.errors %}<div class="field-error">{{ form.title.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-12"><label class="form-label">Objective</label>{{ form.objective }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-geo-alt me-2"></i> Location &amp; Crop</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Site</label>{{ form.site }}</div>
+                        <div class="col-md-6"><label class="form-label">County</label>{{ form.county }}</div>
+                        <div class="col-md-6"><label class="form-label">Crop</label>{{ form.crop }}</div>
+                        <div class="col-md-6"><label class="form-label">Season</label>{{ form.season }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-diagram-3 me-2"></i> Design</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4"><label class="form-label">Status</label>{{ form.status }}</div>
+                        <div class="col-md-4"><label class="form-label">Design</label>{{ form.design }}</div>
+                        <div class="col-md-4"><label class="form-label">Replications</label>{{ form.replications }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-people me-2"></i> People &amp; Dates</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Lead researcher</label>{{ form.lead_researcher }}</div>
+                        <div class="col-md-3"><label class="form-label">Started on</label>{{ form.started_on }}</div>
+                        <div class="col-md-3"><label class="form-label">Ended on</label>{{ form.ended_on }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-check2-square me-2"></i> Publishing</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-12"><label class="checkbox-row">{{ form.is_published }} <span>Publish trial (contributes to public database)</span></label></div>
+                        <div class="col-md-12"><label class="form-label">Notes</label>{{ form.notes }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions-bar">
+                <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check2"></i> Save</button>
+                <a href="{% if object %}{% url 'trials:trial_detail' object.pk %}{% else %}{% url 'trials:trial_list' %}{% endif %}" class="btn btn-outline btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error { font-size: 12px; color: var(--kalro-red); margin-top: 6px; }
+    .form-actions-bar { display: flex; gap: 10px; padding: 20px 0 8px; flex-wrap: wrap; }
+    .checkbox-row { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; color: var(--ink-700); cursor: pointer; }
+</style>
+
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "pinn_engine/base_pinn.html" %}
+{% load static %}
+
+{% block title %}Physics Constraints — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Physics Constraints</h1>
+        <div class="page-header-sub">Laws and empirical constraints embedded in PINN training</div>
+    </div>
+    {% if can_edit %}
+    <div class="page-header-actions">
+        <a href="{% url 'pinn_engine:physics_constraint_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Constraint</a>
+    </div>
+    {% endif %}
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field">
+        <label class="form-label">Kind</label>
+        <select name="kind" class="form-select">
+            <option value="">All kinds</option>
+            {% for val, label in kinds %}<option value="{{ val }}" {% if current.kind == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Domain</label>
+        <select name="domain" class="form-select">
+            <option value="">All domains</option>
+            {% for val, label in domains %}<option value="{{ val }}" {% if current.domain == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label d-block">Active only</label>
+        <label class="checkbox-row"><input type="checkbox" name="active" value="1" {% if current.active == '1' %}checked{% endif %}> <span>Show only active</span></label>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'pinn_engine:physics_constraint_list' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if constraints %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Kind</th>
+                        <th>Domain</th>
+                        <th>Formula</th>
+                        <th>Weight</th>
+                        <th>Active</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in constraints %}
+                    <tr>
+                        <td><strong>{{ c.name }}</strong>{% if c.crop %} <span class="pill pill-grey" style="font-size:10px;">{{ c.crop.name }}</span>{% endif %}</td>
+                        <td><span class="pill pill-grey">{{ c.get_kind_display }}</span></td>
+                        <td><span class="pill pill-grey">{{ c.get_domain_display }}</span></td>
+                        <td><span class="font-mono fs-12">{{ c.mathematical_form|truncatechars:45 }}</span></td>
+                        <td><span class="font-mono fs-12">{{ c.weight }}</span></td>
+                        <td>{% if c.is_active %}<span class="pill pill-green">Yes</span>{% else %}<span class="pill pill-grey">Off</span>{% endif %}</td>
+                        <td class="text-end">
+                            {% if can_edit %}<a href="{% url 'pinn_engine:physics_constraint_update' c.pk %}" class="row-action" title="Edit"><i class="bi bi-pencil"></i></a>{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-sliders"></i><h5>No physics constraints</h5><p>Define constraints like water balance or nutrient cycling.</p></div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .row-action { width: 30px; height: 30px; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); text-decoration: none; font-size: 14px; }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .text-end { text-align: right; }
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+    .checkbox-row { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-700); cursor: pointer; }
+</style>
+
+{% endblock %}

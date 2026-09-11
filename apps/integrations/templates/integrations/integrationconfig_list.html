@@ -1,0 +1,89 @@
+{% extends "integrations/base_integrations.html" %}
+{% load static %}
+
+{% block title %}Integrations — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Integration Configs</h1>
+        <div class="page-header-sub">KAOP · AgData Hub · Selector · iShamba and other external systems</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'integrations:trigger_sync' %}" class="btn btn-outline"><i class="bi bi-lightning"></i> Trigger Sync</a>
+        <a href="{% url 'integrations:integrationconfig_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Config</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if configs %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>Provider</th>
+                        <th>Display name</th>
+                        <th>Direction</th>
+                        <th>Auth</th>
+                        <th>Base URL</th>
+                        <th>Health</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in configs %}
+                    <tr>
+                        <td>
+                            <div class="prov-cell">
+                                <div class="prov-icon"><i class="bi bi-plug"></i></div>
+                                <div>
+                                    <div class="prov-name">{{ c.get_provider_display }}</div>
+                                    {% if c.is_sandbox %}<span class="pill pill-gold" style="font-size:10px;">Sandbox</span>{% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ c.display_name|default:"—" }}</td>
+                        <td><span class="pill pill-grey">{{ c.get_direction_display }}</span></td>
+                        <td><span class="pill pill-grey">{{ c.get_auth_type_display }}</span></td>
+                        <td><span class="font-mono fs-12">{{ c.base_url|truncatechars:40|default:"—" }}</span></td>
+                        <td>
+                            {% if c.is_healthy %}<span class="pill pill-green"><i class="bi bi-check-circle" style="font-size:9px;"></i> OK</span>
+                            {% elif c.last_error %}<span class="pill pill-red"><i class="bi bi-x-circle" style="font-size:9px;"></i> Error</span>
+                            {% else %}<span class="pill pill-grey">Unknown</span>{% endif %}
+                        </td>
+                        <td>{% if c.is_active %}<span class="pill pill-green">Active</span>{% else %}<span class="pill pill-grey">Off</span>{% endif %}</td>
+                        <td class="text-end">
+                            <a href="{% url 'integrations:integrationconfig_update' c.pk %}" class="row-action" title="Edit"><i class="bi bi-pencil"></i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-plug"></i>
+            <h5>No integration configs</h5>
+            <p>Add KAOP, AgData Hub, Selector, or iShamba to begin.</p>
+            <a href="{% url 'integrations:integrationconfig_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Config</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .prov-cell { display: flex; gap: 10px; align-items: center; }
+    .prov-icon { width: 34px; height: 34px; border-radius: 8px; background: var(--kalro-green-100); color: var(--kalro-green); display: grid; place-items: center; font-size: 15px; flex-shrink: 0; }
+    .prov-name { font-size: 13px; font-weight: 600; color: var(--ink-900); line-height: 1.2; }
+    .row-action { width: 30px; height: 30px; border: 1px solid transparent; background: transparent; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); text-decoration: none; font-size: 14px; transition: all .12s; }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .text-end { text-align: right; }
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+</style>
+
+{% endblock %}

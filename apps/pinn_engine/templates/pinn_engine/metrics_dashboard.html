@@ -1,0 +1,139 @@
+{% extends "pinn_engine/base_pinn.html" %}
+{% load static %}
+
+{% block title %}PINN Metrics — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>PINN Metrics</h1>
+        <div class="page-header-sub">Model performance across all training runs</div>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label">Model</label>
+        <select name="model" class="form-select" onchange="this.form.submit()">
+            <option value="">All models</option>
+            {% for m in models %}<option value="{{ m.pk }}" {% if current_model == m.pk|stringformat:"s" %}selected{% endif %}>{{ m.name }} v{{ m.version }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label">Training run</label>
+        <input type="text" name="training_run" class="form-control" value="{{ current_run }}" placeholder="Run ID">
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'pinn_engine:metrics_dashboard' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-label">Total Snapshots</div>
+            <div class="stat-value">{{ total_snapshots|default:0 }}</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card stat-gold">
+            <div class="stat-label">Avg RMSE</div>
+            <div class="stat-value">{{ aggregate.avg_rmse|floatformat:4|default:"—" }}</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-label">Avg R²</div>
+            <div class="stat-value">{{ aggregate.avg_r2|floatformat:4|default:"—" }}</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card stat-red">
+            <div class="stat-label">Best R²</div>
+            <div class="stat-value">{{ aggregate.best_r2|floatformat:4|default:"—" }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-graph-up me-2"></i> Loss Curves</h5></div>
+            <div class="card-body"><canvas id="lossChart" height="120"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-speedometer2 me-2"></i> RMSE &amp; R²</h5></div>
+            <div class="card-body"><canvas id="metricsChart" height="220"></canvas></div>
+        </div>
+    </div>
+</div>
+
+{{ epochs|json_script:"chart-epochs" }}
+{{ data_loss|json_script:"chart-data" }}
+{{ physics_loss|json_script:"chart-phys" }}
+{{ total_loss|json_script:"chart-total" }}
+{{ rmse|json_script:"chart-rmse" }}
+{{ r2|json_script:"chart-r2" }}
+
+<script>
+(function () {
+    const epochs = JSON.parse(document.getElementById('chart-epochs').textContent || '[]');
+    const data   = JSON.parse(document.getElementById('chart-data').textContent || '[]');
+    const phys   = JSON.parse(document.getElementById('chart-phys').textContent || '[]');
+    const total  = JSON.parse(document.getElementById('chart-total').textContent || '[]');
+    const rmse   = JSON.parse(document.getElementById('chart-rmse').textContent || '[]');
+    const r2     = JSON.parse(document.getElementById('chart-r2').textContent || '[]');
+
+    const lossCanvas = document.getElementById('lossChart');
+    const metricCanvas = document.getElementById('metricsChart');
+
+    if (lossCanvas && epochs.length) {
+        new Chart(lossCanvas, {
+            type: 'line',
+            data: {
+                labels: epochs,
+                datasets: [
+                    { label: 'Total', data: total, borderColor: '#0b3d2e', tension: .3, pointRadius: 0, borderWidth: 2 },
+                    { label: 'Data', data: data, borderColor: '#27876a', tension: .3, pointRadius: 0, borderWidth: 1.5 },
+                    { label: 'Physics', data: phys, borderColor: '#c99d16', tension: .3, pointRadius: 0, borderWidth: 1.5 }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: true, position: 'bottom' } },
+                scales: { y: { type: 'logarithmic', grid: { color: '#e0e5e1' } }, x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } } }
+            }
+        });
+    }
+
+    if (metricCanvas && epochs.length) {
+        new Chart(metricCanvas, {
+            type: 'line',
+            data: {
+                labels: epochs,
+                datasets: [
+                    { label: 'RMSE', data: rmse, borderColor: '#bb1e10', yAxisID: 'y', tension: .3, pointRadius: 0 },
+                    { label: 'R²', data: r2, borderColor: '#0b3d2e', yAxisID: 'y1', tension: .3, pointRadius: 0 }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: true, position: 'bottom' } },
+                scales: {
+                    y:  { type: 'linear', position: 'left', grid: { color: '#e0e5e1' } },
+                    y1: { type: 'linear', position: 'right', min: 0, max: 1, grid: { display: false } },
+                    x:  { grid: { display: false }, ticks: { maxTicksLimit: 6 } }
+                }
+            }
+        });
+    }
+})();
+</script>
+
+{% endblock %}

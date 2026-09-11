@@ -1,0 +1,99 @@
+{% extends "integrations/base_integrations.html" %}
+{% load static %}
+
+{% block title %}AgData Hub — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>AgData Hub Dashboard</h1>
+        <div class="page-header-sub">Soil tests, nutrient profiles, and market prices</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'integrations:trigger_sync' %}" class="btn btn-primary"><i class="bi bi-arrow-repeat"></i> Trigger Sync</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card"><div class="stat-label">Soil Tests</div><div class="stat-value">{{ soil_test_count|default:0 }}</div></div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card stat-gold"><div class="stat-label">Market Prices</div><div class="stat-value">{{ market_price_count|default:0 }}</div></div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-label">Config Status</div>
+            <div class="stat-value">{% if config and config.is_active %}Active{% else %}Off{% endif %}</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card stat-ink">
+            <div class="stat-label">Last OK</div>
+            <div class="stat-value" style="font-size:18px;">{% if config.last_ok_at %}{{ config.last_ok_at|date:"d M H:i" }}{% else %}—{% endif %}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-plug me-2"></i> Configuration</h5></div>
+            <div class="card-body p-0">
+                {% if config %}
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Base URL</td><td><span class="font-mono fs-12">{{ config.base_url|default:"—" }}</span></td></tr>
+                        <tr><td class="lbl">Auth</td><td>{{ config.get_auth_type_display }}</td></tr>
+                        <tr><td class="lbl">Active</td><td>{% if config.is_active %}<span class="pill pill-green">Yes</span>{% else %}<span class="pill pill-grey">No</span>{% endif %}</td></tr>
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;">
+                    <i class="bi bi-plug"></i>
+                    <p style="margin: 0;">AgData Hub not configured</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-clock-history me-2"></i> Recent AgData Syncs</h5></div>
+            <div class="card-body p-0">
+                {% if recent_syncs %}
+                <table class="table-kalro">
+                    <thead><tr><th>When</th><th>Status</th><th>Soil</th><th>Prices</th></tr></thead>
+                    <tbody>
+                        {% for s in recent_syncs %}
+                        <tr>
+                            <td><span class="font-mono fs-12">{{ s.started_at|date:"d M H:i" }}</span></td>
+                            <td>
+                                {% if s.status == 'SUCCESS' %}<span class="pill pill-green">Success</span>
+                                {% elif s.status == 'PARTIAL' %}<span class="pill pill-gold">Partial</span>
+                                {% elif s.status == 'FAILED' %}<span class="pill pill-red">Failed</span>
+                                {% else %}<span class="pill pill-grey">{{ s.get_status_display }}</span>{% endif %}
+                            </td>
+                            <td>{{ s.soil_records_fetched }}</td>
+                            <td>{{ s.price_records_fetched }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-arrow-repeat"></i><p style="margin: 0;">No syncs recorded yet</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .lbl { color: var(--ink-500); font-weight: 500; width: 42%; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+</style>
+
+{% endblock %}

@@ -1,0 +1,763 @@
+{% extends "accounts/base_auth.html" %}
+{% load static %}
+
+{% block title %}Create Account — KALRO Advisory{% endblock %}
+
+{% block auth_content %}
+
+<div class="auth-panel">
+
+    <!-- ============================================================ -->
+    <!-- HEADER                                                        -->
+    <!-- ============================================================ -->
+    <div class="auth-header">
+        <div class="auth-eyebrow">
+            <i class="bi bi-shield-check"></i>
+            <span>Official Registration · Republic of Kenya</span>
+        </div>
+        <h1 class="auth-title">Create your account</h1>
+        <p class="auth-subtitle">
+            Join the climate-resilient agriculture advisory platform.
+            Farmers get instant access. Extension officers, researchers, and
+            KALRO administrators are verified by an authorized officer.
+        </p>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ROLE SELECTOR (visual, informative)                           -->
+    <!-- ============================================================ -->
+    <div class="role-picker" role="group" aria-label="Choose your role">
+        <div class="role-option" data-role="FARMER">
+            <div class="role-icon"><i class="bi bi-tree"></i></div>
+            <div class="role-name">Farmer</div>
+            <div class="role-note">Instant access</div>
+        </div>
+        <div class="role-option" data-role="EXT_OFFICER">
+            <div class="role-icon"><i class="bi bi-clipboard-check"></i></div>
+            <div class="role-name">Extension Officer</div>
+            <div class="role-note">Requires verification</div>
+        </div>
+        <div class="role-option" data-role="RESEARCHER">
+            <div class="role-icon"><i class="bi bi-mortarboard"></i></div>
+            <div class="role-name">Researcher</div>
+            <div class="role-note">Requires verification</div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- FORM                                                          -->
+    <!-- ============================================================ -->
+    <form method="post" novalidate class="auth-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="alert-kalro alert-danger">
+            <i class="bi bi-exclamation-octagon"></i>
+            <div>
+                {% for err in form.non_field_errors %}{{ err }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ===== SECTION: Identity ===== -->
+        <div class="form-section">
+            <div class="form-section-head">
+                <span class="section-num">01</span>
+                <div>
+                    <h6 class="section-title">Identity</h6>
+                    <p class="section-desc">Your official name and account credentials.</p>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="field field-full">
+                    <label class="form-label" for="{{ form.username.id_for_label }}">
+                        Username <span class="required-mark">*</span>
+                    </label>
+                    {{ form.username }}
+                    {% if form.username.help_text %}
+                        <div class="form-text">{{ form.username.help_text }}</div>
+                    {% endif %}
+                    {% if form.username.errors %}
+                        <div class="field-error">{{ form.username.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="form-label" for="{{ form.first_name.id_for_label }}">
+                        First name <span class="required-mark">*</span>
+                    </label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <div class="field-error">{{ form.first_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="form-label" for="{{ form.last_name.id_for_label }}">
+                        Last name <span class="required-mark">*</span>
+                    </label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <div class="field-error">{{ form.last_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="field field-full">
+                    <label class="form-label" for="{{ form.email.id_for_label }}">
+                        Email address <span class="required-mark">*</span>
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div class="field-error">{{ form.email.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SECTION: Contact ===== -->
+        <div class="form-section">
+            <div class="form-section-head">
+                <span class="section-num">02</span>
+                <div>
+                    <h6 class="section-title">Contact &amp; Location</h6>
+                    <p class="section-desc">Used for SMS advisories and county-level assignment.</p>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="field">
+                    <label class="form-label" for="{{ form.phone_number.id_for_label }}">
+                        Phone number
+                    </label>
+                    <div class="input-with-prefix">
+                        <span class="prefix">+254</span>
+                        {{ form.phone_number }}
+                    </div>
+                    {% if form.phone_number.help_text %}
+                        <div class="form-text">{{ form.phone_number.help_text }}</div>
+                    {% endif %}
+                    {% if form.phone_number.errors %}
+                        <div class="field-error">{{ form.phone_number.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="form-label" for="{{ form.preferred_language.id_for_label }}">
+                        Preferred language
+                    </label>
+                    {{ form.preferred_language }}
+                </div>
+
+                <div class="field">
+                    <label class="form-label" for="{{ form.county.id_for_label }}">
+                        County
+                    </label>
+                    {{ form.county }}
+                </div>
+
+                <div class="field">
+                    <label class="form-label" for="{{ form.sub_county.id_for_label }}">
+                        Sub-county
+                    </label>
+                    {{ form.sub_county }}
+                </div>
+
+                <div class="field field-full">
+                    <label class="form-label" for="{{ form.ward.id_for_label }}">
+                        Ward
+                    </label>
+                    {{ form.ward }}
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SECTION: Role ===== -->
+        <div class="form-section">
+            <div class="form-section-head">
+                <span class="section-num">03</span>
+                <div>
+                    <h6 class="section-title">Role</h6>
+                    <p class="section-desc">Determines your access level and dashboard.</p>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="field field-full">
+                    <label class="form-label" for="{{ form.role.id_for_label }}">
+                        Select your role <span class="required-mark">*</span>
+                    </label>
+                    {{ form.role }}
+                    {% if form.role.help_text %}
+                        <div class="form-text">{{ form.role.help_text }}</div>
+                    {% endif %}
+                    {% if form.role.errors %}
+                        <div class="field-error">{{ form.role.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Role explanation card (JS-driven) -->
+            <div class="role-info" id="roleInfo">
+                <div class="role-info-inner">
+                    <i class="bi bi-info-circle"></i>
+                    <div>
+                        <strong id="roleInfoTitle">Farmer</strong>
+                        <span id="roleInfoText">Instant access to the farmer dashboard and advisories.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SECTION: Password ===== -->
+        <div class="form-section">
+            <div class="form-section-head">
+                <span class="section-num">04</span>
+                <div>
+                    <h6 class="section-title">Password</h6>
+                    <p class="section-desc">Minimum 8 characters. Mix letters, numbers, and symbols.</p>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="field field-full">
+                    <label class="form-label" for="{{ form.password1.id_for_label }}">
+                        Password <span class="required-mark">*</span>
+                    </label>
+                    <div class="input-with-toggle">
+                        {{ form.password1 }}
+                        <button type="button" class="pw-toggle" data-target="{{ form.password1.id_for_label }}" aria-label="Toggle password visibility">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password1.errors %}
+                        <div class="field-error">{{ form.password1.errors.0 }}</div>
+                    {% endif %}
+
+                    <!-- Password strength meter -->
+                    <div class="pw-meter" id="pwMeter" data-empty="true">
+                        <div class="pw-meter-bar"><span id="pwMeterFill"></span></div>
+                        <div class="pw-meter-label" id="pwMeterLabel">Strength</div>
+                    </div>
+                </div>
+
+                <div class="field field-full">
+                    <label class="form-label" for="{{ form.password2.id_for_label }}">
+                        Confirm password <span class="required-mark">*</span>
+                    </label>
+                    <div class="input-with-toggle">
+                        {{ form.password2 }}
+                        <button type="button" class="pw-toggle" data-target="{{ form.password2.id_for_label }}" aria-label="Toggle password visibility">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password2.errors %}
+                        <div class="field-error">{{ form.password2.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TERMS ===== -->
+        <div class="terms-row">
+            <label class="checkbox-row">
+                {{ form.terms_accepted }}
+                <span>
+                    I confirm the information provided is accurate and I accept the
+                    <a href="#" target="_blank">Terms of Use</a> and
+                    <a href="#" target="_blank">Data Policy</a>.
+                </span>
+            </label>
+            {% if form.terms_accepted.errors %}
+                <div class="field-error">{{ form.terms_accepted.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <!-- ===== SUBMIT ===== -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg btn-block">
+                <i class="bi bi-person-check"></i>
+                Create account
+            </button>
+        </div>
+
+        <div class="form-alt">
+            Already have an account?
+            <a href="{% url 'accounts:login' %}">Sign in instead</a>
+        </div>
+
+    </form>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- PAGE-SPECIFIC CSS                                             -->
+<!-- ============================================================ -->
+<style>
+    /* ---- Panel ---- */
+    .auth-panel {
+        width: 100%;
+        max-width: 640px;
+    }
+
+    .auth-header { margin-bottom: 28px; }
+
+    .auth-eyebrow {
+        display: inline-flex; align-items: center; gap: 8px;
+        font-size: 11.5px; font-weight: 600;
+        color: var(--kalro-green);
+        text-transform: uppercase; letter-spacing: 0.1em;
+        background: var(--kalro-green-100);
+        padding: 5px 12px; border-radius: 4px;
+        margin-bottom: 18px;
+    }
+    .auth-eyebrow i { font-size: 13px; }
+
+    .auth-title {
+        font-family: var(--font-serif);
+        font-size: 32px; font-weight: 700;
+        color: var(--ink-900);
+        margin: 0 0 10px;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+    }
+    .auth-subtitle {
+        font-size: 14.5px;
+        color: var(--ink-600);
+        line-height: 1.6;
+        margin: 0;
+        max-width: 540px;
+    }
+
+    /* ---- Role picker (visual) ---- */
+    .role-picker {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 28px;
+        padding: 4px;
+        background: var(--ink-50);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+    }
+    .role-option {
+        padding: 14px 12px;
+        text-align: center;
+        border-radius: 7px;
+        border: 1px solid transparent;
+        background: transparent;
+        transition: all .15s;
+        cursor: default;
+    }
+    .role-option.active {
+        background: #fff;
+        border-color: var(--kalro-green-500);
+        box-shadow: 0 2px 8px rgba(11,61,46,.08);
+    }
+    .role-icon {
+        width: 34px; height: 34px;
+        margin: 0 auto 8px;
+        border-radius: 8px;
+        background: var(--kalro-green-100);
+        color: var(--kalro-green);
+        display: grid; place-items: center;
+        font-size: 16px;
+    }
+    .role-option.active .role-icon {
+        background: var(--kalro-green);
+        color: var(--kalro-gold);
+    }
+    .role-name {
+        font-size: 12.5px; font-weight: 600;
+        color: var(--ink-800);
+        line-height: 1.2;
+        margin-bottom: 3px;
+    }
+    .role-note {
+        font-size: 10.5px;
+        color: var(--ink-500);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    /* ---- Form sections ---- */
+    .auth-form { display: block; }
+
+    .form-section {
+        margin-bottom: 32px;
+        padding-bottom: 28px;
+        border-bottom: 1px solid var(--border);
+    }
+    .form-section:last-of-type { border-bottom: 0; }
+
+    .form-section-head {
+        display: flex; align-items: flex-start; gap: 12px;
+        margin-bottom: 20px;
+    }
+    .section-num {
+        font-family: var(--font-serif);
+        font-size: 20px; font-weight: 700;
+        color: var(--kalro-gold-700);
+        line-height: 1;
+        padding-top: 3px;
+        letter-spacing: -0.02em;
+    }
+    .section-title {
+        font-family: var(--font-sans);
+        font-size: 12px; font-weight: 700;
+        color: var(--ink-700);
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        margin: 0 0 3px;
+    }
+    .section-desc {
+        font-size: 12.5px;
+        color: var(--ink-500);
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    /* ---- Grid ---- */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    .field-full { grid-column: 1 / -1; }
+
+    .field { display: flex; flex-direction: column; }
+
+    .form-label {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--ink-700);
+        margin-bottom: 6px;
+        letter-spacing: 0.01em;
+    }
+
+    .required-mark { color: var(--kalro-red); margin-left: 2px; }
+
+    /* Inputs — inherits Bootstrap .form-control from base, but we theme them */
+    .auth-form input[type="text"],
+    .auth-form input[type="email"],
+    .auth-form input[type="password"],
+    .auth-form select,
+    .auth-form textarea {
+        font-family: var(--font-sans);
+        font-size: 13.5px;
+        padding: 9px 12px;
+        border-radius: 6px;
+        border: 1px solid var(--border-strong);
+        background: #fff;
+        color: var(--ink-900);
+        transition: all .12s;
+        width: 100%;
+    }
+    .auth-form input:focus,
+    .auth-form select:focus {
+        outline: none;
+        border-color: var(--kalro-green-500);
+        box-shadow: 0 0 0 3px var(--kalro-green-100);
+    }
+    .auth-form input.is-invalid { border-color: var(--kalro-red); }
+
+    .form-text {
+        font-size: 11.5px;
+        color: var(--ink-500);
+        margin-top: 5px;
+        line-height: 1.5;
+    }
+    .field-error {
+        font-size: 12px;
+        color: var(--kalro-red);
+        margin-top: 5px;
+        display: flex; align-items: flex-start; gap: 5px;
+    }
+    .field-error::before {
+        content: '\F33A';
+        font-family: 'bootstrap-icons';
+        font-size: 11px;
+        padding-top: 2px;
+    }
+
+    /* ---- Input with prefix ---- */
+    .input-with-prefix {
+        display: flex;
+        border: 1px solid var(--border-strong);
+        border-radius: 6px;
+        overflow: hidden;
+        background: #fff;
+        transition: all .12s;
+    }
+    .input-with-prefix:focus-within {
+        border-color: var(--kalro-green-500);
+        box-shadow: 0 0 0 3px var(--kalro-green-100);
+    }
+    .input-with-prefix .prefix {
+        padding: 9px 12px;
+        background: var(--ink-50);
+        color: var(--ink-600);
+        font-size: 13px;
+        font-weight: 600;
+        border-right: 1px solid var(--border);
+        display: grid; place-items: center;
+    }
+    .input-with-prefix input {
+        border: 0 !important;
+        box-shadow: none !important;
+        padding-left: 12px;
+    }
+
+    /* ---- Password toggle ---- */
+    .input-with-toggle {
+        position: relative;
+    }
+    .input-with-toggle input {
+        padding-right: 40px;
+    }
+    .pw-toggle {
+        position: absolute;
+        right: 4px; top: 50%;
+        transform: translateY(-50%);
+        width: 32px; height: 32px;
+        border: 0; background: transparent;
+        border-radius: 5px;
+        color: var(--ink-500);
+        cursor: pointer;
+        display: grid; place-items: center;
+        font-size: 15px;
+    }
+    .pw-toggle:hover {
+        background: var(--ink-100);
+        color: var(--kalro-green);
+    }
+
+    /* ---- Password strength ---- */
+    .pw-meter {
+        margin-top: 8px;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .pw-meter-bar {
+        flex: 1;
+        height: 4px;
+        background: var(--ink-100);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+    .pw-meter-bar span {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: var(--ink-300);
+        border-radius: 2px;
+        transition: all .25s;
+    }
+    .pw-meter-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--ink-500);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        min-width: 60px;
+        text-align: right;
+    }
+    .pw-meter[data-score="1"] .pw-meter-bar span { width: 25%; background: #dc2626; }
+    .pw-meter[data-score="2"] .pw-meter-bar span { width: 50%; background: #f97316; }
+    .pw-meter[data-score="3"] .pw-meter-bar span { width: 75%; background: var(--kalro-gold-700); }
+    .pw-meter[data-score="4"] .pw-meter-bar span { width: 100%; background: var(--kalro-green-500); }
+    .pw-meter[data-score="1"] .pw-meter-label { color: #dc2626; }
+    .pw-meter[data-score="2"] .pw-meter-label { color: #f97316; }
+    .pw-meter[data-score="3"] .pw-meter-label { color: var(--kalro-gold-700); }
+    .pw-meter[data-score="4"] .pw-meter-label { color: var(--kalro-green-600); }
+
+    /* ---- Role info card ---- */
+    .role-info {
+        margin-top: 14px;
+        padding: 12px 14px;
+        background: var(--kalro-green-50);
+        border: 1px solid var(--kalro-green-100);
+        border-radius: 7px;
+        font-size: 12.5px;
+        color: var(--ink-700);
+        line-height: 1.55;
+    }
+    .role-info-inner {
+        display: flex; gap: 10px;
+    }
+    .role-info i {
+        font-size: 15px;
+        color: var(--kalro-green);
+        flex-shrink: 0;
+        padding-top: 1px;
+    }
+    .role-info strong {
+        display: block;
+        color: var(--ink-900);
+        font-weight: 600;
+        margin-bottom: 2px;
+        font-size: 12.5px;
+    }
+
+    /* ---- Terms ---- */
+    .terms-row {
+        padding: 18px 0 24px;
+    }
+    .checkbox-row {
+        display: flex; align-items: flex-start; gap: 10px;
+        font-size: 13px;
+        color: var(--ink-700);
+        line-height: 1.55;
+        cursor: pointer;
+    }
+    .checkbox-row input[type="checkbox"] {
+        width: 17px; height: 17px;
+        margin-top: 1px;
+        accent-color: var(--kalro-green);
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+    .checkbox-row a { color: var(--kalro-green); font-weight: 500; }
+    .checkbox-row a:hover { text-decoration: underline; }
+
+    /* ---- Actions ---- */
+    .form-actions {
+        margin-bottom: 18px;
+    }
+    .btn-block {
+        width: 100%;
+        justify-content: center;
+    }
+    .form-alt {
+        text-align: center;
+        font-size: 13px;
+        color: var(--ink-500);
+        padding-top: 8px;
+    }
+    .form-alt a {
+        color: var(--kalro-green);
+        font-weight: 600;
+        margin-left: 4px;
+    }
+    .form-alt a:hover { text-decoration: underline; }
+
+    /* ---- Alerts ---- */
+    .alert-kalro {
+        padding: 12px 16px;
+        border-radius: 6px;
+        font-size: 13.5px;
+        display: flex; align-items: flex-start; gap: 10px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+    }
+    .alert-kalro.alert-danger {
+        background: #fbe4e1;
+        color: var(--kalro-red);
+        border-color: #f0a9a1;
+    }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 620px) {
+        .form-grid { grid-template-columns: 1fr; }
+        .role-picker { grid-template-columns: 1fr; }
+        .auth-title { font-size: 26px; }
+    }
+</style>
+
+
+<!-- ============================================================ -->
+<!-- PAGE-SPECIFIC JS                                              -->
+<!-- ============================================================ -->
+<script>
+    (function () {
+        'use strict';
+
+        // ====== Role descriptions ======
+        const roleInfo = {
+            'FARMER': {
+                title: 'Farmer',
+                text: 'Instant access to the farmer dashboard and personalized advisories. No verification required.',
+            },
+            'EXT_OFFICER': {
+                title: 'Extension Officer',
+                text: 'Manage farmers, register farms, and issue advisories in your county. Requires KALRO verification.',
+            },
+            'RESEARCHER': {
+                title: 'Researcher',
+                text: 'Access PINN models, training runs, trial analytics, and metrics dashboards. Requires KALRO verification.',
+            },
+        };
+
+        const roleSelect = document.getElementById('{{ form.role.id_for_label }}');
+        const roleInfoTitle = document.getElementById('roleInfoTitle');
+        const roleInfoText  = document.getElementById('roleInfoText');
+        const roleOptions   = document.querySelectorAll('.role-option');
+
+        function syncRole(role) {
+            // Update info card
+            const info = roleInfo[role] || roleInfo['FARMER'];
+            if (roleInfoTitle) roleInfoTitle.textContent = info.title;
+            if (roleInfoText)  roleInfoText.textContent  = info.text;
+
+            // Update visual picker
+            roleOptions.forEach(opt => {
+                opt.classList.toggle('active', opt.dataset.role === role);
+            });
+        }
+
+        if (roleSelect) {
+            syncRole(roleSelect.value);
+            roleSelect.addEventListener('change', e => syncRole(e.target.value));
+        }
+
+        // Click on a role card selects the corresponding role
+        roleOptions.forEach(opt => {
+            opt.style.cursor = 'pointer';
+            opt.addEventListener('click', () => {
+                if (roleSelect) {
+                    roleSelect.value = opt.dataset.role;
+                    roleSelect.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+
+        // ====== Password visibility toggles ======
+        document.querySelectorAll('.pw-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = document.getElementById(btn.dataset.target);
+                if (!target) return;
+                const showing = target.type === 'text';
+                target.type = showing ? 'password' : 'text';
+                btn.innerHTML = showing ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+            });
+        });
+
+        // ====== Password strength meter ======
+        const pw1 = document.getElementById('{{ form.password1.id_for_label }}');
+        const meter = document.getElementById('pwMeter');
+        const meterLabel = document.getElementById('pwMeterLabel');
+
+        function scorePassword(v) {
+            if (!v) return 0;
+            let score = 0;
+            if (v.length >= 8) score++;
+            if (/[A-Z]/.test(v) && /[a-z]/.test(v)) score++;
+            if (/\d/.test(v)) score++;
+            if (/[^A-Za-z0-9]/.test(v)) score++;
+            return score;
+        }
+
+        const labels = ['Strength', 'Weak', 'Fair', 'Good', 'Strong'];
+
+        if (pw1 && meter) {
+            pw1.addEventListener('input', e => {
+                const s = scorePassword(e.target.value);
+                meter.dataset.score = s;
+                meterLabel.textContent = labels[s] || 'Strength';
+            });
+        }
+
+    })();
+</script>
+
+{% endblock %}

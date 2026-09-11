@@ -1,0 +1,123 @@
+{% extends "crops/base_crops.html" %}
+{% load static %}
+
+{% block title %}Crops — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Crops</h1>
+        <div class="page-header-sub">{{ page_obj.paginator.count|default:0 }} crop{{ page_obj.paginator.count|pluralize }} in catalog</div>
+    </div>
+    {% if can_edit %}
+    <div class="page-header-actions">
+        <a href="{% url 'crops:crop_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Crop</a>
+    </div>
+    {% endif %}
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" class="form-control" value="{{ current.q }}" placeholder="Name, scientific name…">
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Category</label>
+        <select name="category" class="form-select">
+            <option value="">All categories</option>
+            {% for c in categories %}
+            <option value="{{ c.pk }}" {% if current.category == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Season</label>
+        <select name="season" class="form-select">
+            <option value="">All seasons</option>
+            {% for val, label in seasons %}
+            <option value="{{ val }}" {% if current.season == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'crops:crop_list' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if crops %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>Crop</th>
+                        <th>Category</th>
+                        <th>Season</th>
+                        <th>Water (mm)</th>
+                        <th>Days to maturity</th>
+                        <th>Active</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for crop in crops %}
+                    <tr>
+                        <td>
+                            <div class="crop-cell">
+                                <div class="crop-icon"><i class="bi bi-flower1"></i></div>
+                                <div>
+                                    <div class="crop-name">{{ crop.name }}</div>
+                                    {% if crop.scientific_name %}<div class="crop-meta">{{ crop.scientific_name }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ crop.category.name|default:"—" }}</td>
+                        <td><span class="pill pill-grey">{{ crop.get_season_display }}</span></td>
+                        <td>{{ crop.water_requirement_mm|default:"—" }}</td>
+                        <td>{{ crop.days_to_maturity|default:"—" }}</td>
+                        <td>{% if crop.is_active %}<span class="pill pill-green">Yes</span>{% else %}<span class="pill pill-grey">No</span>{% endif %}</td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <a href="{% url 'crops:crop_detail' crop.pk %}" class="row-action" title="View"><i class="bi bi-eye"></i></a>
+                                <a href="{% url 'crops:crop_requirements' crop.pk %}" class="row-action" title="Requirements"><i class="bi bi-sliders"></i></a>
+                                {% if can_edit %}
+                                <a href="{% url 'crops:crop_update' crop.pk %}" class="row-action" title="Edit"><i class="bi bi-pencil"></i></a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-flower1"></i>
+            <h5>No crops found</h5>
+            <p>Add the first crop to populate the catalog.</p>
+            {% if can_edit %}<a href="{% url 'crops:crop_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Crop</a>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .crop-cell { display: flex; gap: 10px; align-items: center; }
+    .crop-icon { width: 34px; height: 34px; border-radius: 8px; background: var(--kalro-green-100); color: var(--kalro-green); display: grid; place-items: center; font-size: 16px; flex-shrink: 0; }
+    .crop-name { font-size: 13px; font-weight: 600; color: var(--ink-900); line-height: 1.2; }
+    .crop-meta { font-size: 11px; color: var(--ink-500); font-style: italic; margin-top: 1px; }
+    .action-bar { display: inline-flex; gap: 4px; }
+    .row-action { width: 30px; height: 30px; border: 1px solid transparent; background: transparent; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); text-decoration: none; font-size: 14px; transition: all .12s; }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .text-end { text-align: right; }
+    .table-wrap { overflow-x: auto; }
+</style>
+
+{% endblock %}

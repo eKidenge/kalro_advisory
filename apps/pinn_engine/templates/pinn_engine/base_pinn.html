@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block subheader_actions %}
+    <a href="{% url 'pinn_engine:model_list' %}"
+       class="btn btn-sm {% if 'model' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-cpu"></i> Models
+    </a>
+    <a href="{% url 'pinn_engine:physics_constraint_list' %}"
+       class="btn btn-sm {% if 'physics' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-sliders"></i> Constraints
+    </a>
+    <a href="{% url 'pinn_engine:trainingrun_list' %}"
+       class="btn btn-sm {% if 'trainingrun' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-play-circle"></i> Training
+    </a>
+    <a href="{% url 'pinn_engine:inference_list' %}"
+       class="btn btn-sm {% if 'inference' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-lightning-charge"></i> Inference
+    </a>
+    <a href="{% url 'pinn_engine:metrics_dashboard' %}"
+       class="btn btn-sm {% if request.resolver_match.url_name == 'metrics_dashboard' %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-speedometer2"></i> Metrics
+    </a>
+{% endblock %}
+
+{% block content %}{% endblock %}

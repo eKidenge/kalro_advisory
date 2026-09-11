@@ -1,0 +1,101 @@
+{% extends "pinn_engine/base_pinn.html" %}
+{% load static %}
+
+{% block title %}Inference Runs — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Inference Runs</h1>
+        <div class="page-header-sub">All PINN predictions with feature attributions and physics residuals</div>
+    </div>
+    {% if can_edit %}
+    <div class="page-header-actions">
+        <a href="{% url 'pinn_engine:inference_run' %}" class="btn btn-primary"><i class="bi bi-lightning-charge"></i> Run Inference</a>
+    </div>
+    {% endif %}
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label">Model</label>
+        <select name="model" class="form-select">
+            <option value="">All models</option>
+            {% for m in models %}<option value="{{ m.pk }}" {% if current.model == m.pk|stringformat:"s" %}selected{% endif %}>{{ m.name }} v{{ m.version }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+            <option value="">All</option>
+            {% for val, label in statuses %}<option value="{{ val }}" {% if current.status == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'pinn_engine:inference_list' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if inferences %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Model</th>
+                        <th>Farm</th>
+                        <th>Crop</th>
+                        <th>Status</th>
+                        <th>Duration</th>
+                        <th>Requested by</th>
+                        <th>When</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inf in inferences %}
+                    <tr>
+                        <td><span class="font-mono fs-12">#{{ inf.pk }}</span></td>
+                        <td>{{ inf.model.name|default:"—" }}</td>
+                        <td>{{ inf.farm.name|default:"—" }}</td>
+                        <td>{{ inf.crop.name|default:"—" }}</td>
+                        <td>
+                            {% if inf.status == 'SUCCESS' %}<span class="pill pill-green">Success</span>
+                            {% elif inf.status == 'FAILED' %}<span class="pill pill-red">Failed</span>
+                            {% else %}<span class="pill pill-gold">Queued</span>{% endif %}
+                        </td>
+                        <td>{% if inf.duration_ms %}{{ inf.duration_ms }}ms{% else %}—{% endif %}</td>
+                        <td>{{ inf.requested_by.username|default:"—" }}</td>
+                        <td><span class="font-mono fs-12">{{ inf.created_at|date:"d M H:i" }}</span></td>
+                        <td class="text-end">
+                            <a href="{% url 'pinn_engine:inference_detail' inf.pk %}" class="row-action" title="View"><i class="bi bi-eye"></i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-lightning-charge"></i><h5>No inference runs</h5><p>Run a manual inference or generate an advisory.</p></div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .row-action { width: 30px; height: 30px; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); text-decoration: none; font-size: 14px; }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .text-end { text-align: right; }
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+</style>
+
+{% endblock %}

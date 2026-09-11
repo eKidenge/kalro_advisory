@@ -1,0 +1,103 @@
+{% extends "integrations/base_integrations.html" %}
+{% load static %}
+
+{% block title %}Sync Logs — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Sync Logs</h1>
+        <div class="page-header-sub">Every pull, push, and health check across integrations</div>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field">
+        <label class="form-label">Provider</label>
+        <select name="provider" class="form-select">
+            <option value="">All providers</option>
+            {% for val, label in providers %}<option value="{{ val }}" {% if current.provider == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Operation</label>
+        <select name="operation" class="form-select">
+            <option value="">All operations</option>
+            {% for val, label in operations %}<option value="{{ val }}" {% if current.operation == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+            <option value="">All statuses</option>
+            {% for val, label in statuses %}<option value="{{ val }}" {% if current.status == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'integrations:synclog_list' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if logs %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Provider</th>
+                        <th>Operation</th>
+                        <th>Status</th>
+                        <th>Fetched</th>
+                        <th>Created</th>
+                        <th>Updated</th>
+                        <th>Failed</th>
+                        <th>Duration</th>
+                        <th>Started</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr onclick="window.location='{% url 'integrations:synclog_detail' log.pk %}'" style="cursor: pointer;">
+                        <td><span class="font-mono fs-12">#{{ log.pk }}</span></td>
+                        <td><span class="pill pill-grey">{{ log.get_provider_display }}</span></td>
+                        <td><span class="fs-12">{{ log.get_operation_display }}</span></td>
+                        <td>
+                            {% if log.status == 'SUCCESS' %}<span class="pill pill-green">Success</span>
+                            {% elif log.status == 'PARTIAL' %}<span class="pill pill-gold">Partial</span>
+                            {% elif log.status == 'FAILED' %}<span class="pill pill-red">Failed</span>
+                            {% elif log.status == 'RUNNING' %}<span class="pill pill-blue">Running</span>
+                            {% else %}<span class="pill pill-grey">{{ log.get_status_display }}</span>{% endif %}
+                        </td>
+                        <td>{{ log.records_fetched }}</td>
+                        <td>{% if log.records_created %}<span class="pill pill-green">{{ log.records_created }}</span>{% else %}0{% endif %}</td>
+                        <td>{% if log.records_updated %}<span class="pill pill-gold">{{ log.records_updated }}</span>{% else %}0{% endif %}</td>
+                        <td>{% if log.records_failed %}<span class="pill pill-red">{{ log.records_failed }}</span>{% else %}0{% endif %}</td>
+                        <td>{% if log.duration_ms %}{{ log.duration_ms }}ms{% else %}—{% endif %}</td>
+                        <td><span class="font-mono fs-12">{{ log.started_at|date:"d M H:i" }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-arrow-repeat"></i><h5>No sync logs</h5><p>Runs of KAOP, AgData, and health checks will appear here.</p></div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+    .pill-blue { background: #dbeafe; color: #1e40af; }
+</style>
+
+{% endblock %}

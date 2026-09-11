@@ -1,0 +1,144 @@
+{% extends "advisories/base_advisories.html" %}
+{% load static %}
+
+{% block title %}Explanation — {{ advisory.title|truncatechars:50 }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Why this advisory?</h1>
+        <div class="page-header-sub">
+            {{ advisory.title|truncatechars:70 }} ·
+            {{ advisory.get_kind_display }}
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'advisories:advisory_detail' advisory.pk %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Back to Advisory</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-chat-quote me-2"></i> Human-Readable Reasoning</h5></div>
+            <div class="card-body">
+                {% if advisory.explanation %}
+                <p style="font-size: 14.5px; line-height: 1.75; color: var(--ink-800); margin: 0;">{{ advisory.explanation|linebreaksbr }}</p>
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;">
+                    <i class="bi bi-lightbulb"></i>
+                    <p style="margin: 0;">No textual explanation recorded for this advisory.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if factors %}
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-bar-chart me-2"></i> Feature Attributions</h5></div>
+            <div class="card-body">
+                <div class="attrib-list">
+                    {% for f in factors %}
+                    <div class="attrib-row">
+                        <div class="attrib-name">{{ f.name }}</div>
+                        <div class="attrib-bar-track">
+                            <div class="attrib-bar-fill" style="width: {% widthratio f.weight 1 100 %}%"></div>
+                        </div>
+                        <div class="attrib-value">{{ f.weight|floatformat:3 }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <p class="user-meta" style="margin-top: 14px;">
+                    Feature weights from the PINN inference that produced this advisory.
+                    Larger values indicate stronger influence on the recommendation.
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-5">
+        {% if residuals %}
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-check2-square me-2"></i> Physics Residuals</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <thead><tr><th>Constraint</th><th>Residual</th><th>Status</th></tr></thead>
+                    <tbody>
+                        {% for name, val in residuals.items %}
+                        <tr>
+                            <td>{{ name }}</td>
+                            <td><span class="font-mono fs-12">{{ val|floatformat:5 }}</span></td>
+                            <td>
+                                {% if val < 0.02 %}<span class="pill pill-green">OK</span>
+                                {% elif val < 0.05 %}<span class="pill pill-gold">Watch</span>
+                                {% else %}<span class="pill pill-red">High</span>{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer" style="font-size: 12px; color: var(--ink-600);">
+                Low residuals mean the prediction is consistent with physical laws.
+            </div>
+        </div>
+        {% endif %}
+
+        {% if inference %}
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-cpu me-2"></i> Inference Run</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Run #</td><td>#{{ inference.pk }}</td></tr>
+                        <tr><td class="lbl">Model</td><td>{{ inference.model.name|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Status</td><td><span class="pill pill-grey">{{ inference.get_status_display }}</span></td></tr>
+                        <tr><td class="lbl">Duration</td><td>{{ inference.duration_ms|default:"—" }} ms</td></tr>
+                        <tr><td class="lbl">Created</td><td>{{ inference.created_at|date:"d M Y H:i" }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'pinn_engine:inference_detail' inference.pk %}" class="btn btn-outline btn-sm btn-block">
+                    <i class="bi bi-eye"></i> Full Inference View
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-shield-check me-2"></i> Trust Notes</h5></div>
+            <div class="card-body">
+                <ul class="trust-list">
+                    <li><i class="bi bi-check2-circle"></i> Every advisory shows the factors that drove it — no black box.</li>
+                    <li><i class="bi bi-check2-circle"></i> Physics residuals are auditable and shown above.</li>
+                    <li><i class="bi bi-check2-circle"></i> Advisories are approved by KALRO staff before dispatch.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .lbl { color: var(--ink-500); font-weight: 500; width: 42%; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+    .user-meta { font-size: 12px; color: var(--ink-500); line-height: 1.55; }
+
+    .attrib-list { display: flex; flex-direction: column; gap: 12px; }
+    .attrib-row { display: grid; grid-template-columns: 140px 1fr 70px; gap: 14px; align-items: center; }
+    .attrib-name { font-size: 13px; color: var(--ink-700); font-weight: 500; }
+    .attrib-bar-track { height: 10px; background: var(--ink-100); border-radius: 5px; overflow: hidden; }
+    .attrib-bar-fill { height: 100%; background: linear-gradient(90deg, var(--kalro-green-500), var(--kalro-green)); border-radius: 5px; transition: width .4s; }
+    .attrib-value { font-family: var(--font-mono); font-size: 12px; text-align: right; color: var(--ink-700); }
+
+    .trust-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; font-size: 12.5px; line-height: 1.55; color: var(--ink-600); }
+    .trust-list li { display: flex; gap: 9px; align-items: flex-start; }
+    .trust-list i { color: var(--kalro-green); font-size: 14px; flex-shrink: 0; padding-top: 2px; }
+
+    .btn-block { width: 100%; justify-content: center; }
+</style>
+
+{% endblock %}

@@ -1,0 +1,26 @@
+# Core
+Django>=6.0,<6.1
+python-decouple>=3.8
+
+# REST API
+djangorestframework>=3.16.0
+
+# Database
+# SQLite is built into Django — no driver needed
+
+# HTTP
+requests>=2.32.4
+
+# Utilities
+python-dateutil>=2.9.0.post0
+
+# Server / deployment
+gunicorn>=23.0.0
+whitenoise>=6.9.0
+dj-database-url>=3.0.1
+psycopg2-binary>=2.9.10    # only installs when you switch to Postgres on Render
+
+# Optional — only if you actually use them
+# celery>=5.5.3
+# redis>=6.4.0
+# django-celery-results>=2.6.0

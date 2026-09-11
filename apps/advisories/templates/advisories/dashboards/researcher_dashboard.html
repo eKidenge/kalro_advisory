@@ -1,0 +1,704 @@
+{% extends "advisories/base_advisories.html" %}
+{% load static %}
+
+{% block title %}Research Dashboard — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================ -->
+<!-- WELCOME HEADER                                                -->
+<!-- ============================================================ -->
+<div class="res-hero">
+    <div class="res-hero-inner">
+        <div class="res-hero-badge">
+            <i class="bi bi-mortarboard"></i>
+        </div>
+        <div class="res-hero-text">
+            <div class="res-hero-eyebrow">
+                <i class="bi bi-cpu"></i> Researcher
+            </div>
+            <h1 class="res-hero-name">
+                {{ user.get_full_name|default:user.username }}
+            </h1>
+            <div class="res-hero-meta">
+                <span><i class="bi bi-bar-chart-line"></i> Nationwide analytics access</span>
+                {% if user.county %}<span><i class="bi bi-geo-alt"></i> {{ user.county }}</span>{% endif %}
+                <span><i class="bi bi-shield-check"></i> {{ user.get_role_display }}</span>
+            </div>
+        </div>
+        <div class="res-hero-actions">
+            <a href="{% url 'pinn_engine:metrics_dashboard' %}" class="btn btn-gold btn-sm">
+                <i class="bi bi-speedometer2"></i> PINN Metrics
+            </a>
+            <a href="{% url 'trials:trial_list' %}" class="btn btn-outline btn-sm" style="border-color: rgba(255,255,255,.4); color:#fff;">
+                <i class="bi bi-clipboard-data"></i> Trials
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- STATS — advisory + research-focused                            -->
+<!-- ============================================================ -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-label">Total Advisories</div>
+            <div class="stat-value">{{ stats.total|default:"0" }}</div>
+            <div class="stat-delta up">
+                <i class="bi bi-megaphone"></i> system-wide
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card stat-gold">
+            <div class="stat-label">Sent Today</div>
+            <div class="stat-value">{{ stats.sent_today|default:"0" }}</div>
+            <div class="stat-delta up">
+                <i class="bi bi-send"></i> delivery rate
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-label">Approved</div>
+            <div class="stat-value">{{ stats.approved|default:"0" }}</div>
+            <div class="stat-delta">
+                <i class="bi bi-check-circle"></i> ready
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card stat-red">
+            <div class="stat-label">Urgent</div>
+            <div class="stat-value">{{ stats.urgent|default:"0" }}</div>
+            <div class="stat-delta down">
+                <i class="bi bi-exclamation-octagon"></i> high priority
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- RESEARCH MODULES — quick access to research tools              -->
+<!-- ============================================================ -->
+<div class="row g-3 mb-4">
+
+    <div class="col-lg-3 col-md-6">
+        <a href="{% url 'pinn_engine:model_list' %}" class="module-card">
+            <div class="module-icon"><i class="bi bi-cpu"></i></div>
+            <div class="module-title">PINN Models</div>
+            <div class="module-desc">Architectures, physics constraints, artifacts</div>
+            <div class="module-link">
+                Explore models <i class="bi bi-arrow-right"></i>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <a href="{% url 'pinn_engine:trainingrun_list' %}" class="module-card">
+            <div class="module-icon"><i class="bi bi-play-circle"></i></div>
+            <div class="module-title">Training Runs</div>
+            <div class="module-desc">Loss curves, epochs, final metrics</div>
+            <div class="module-link">
+                View runs <i class="bi bi-arrow-right"></i>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <a href="{% url 'pinn_engine:inference_list' %}" class="module-card">
+            <div class="module-icon"><i class="bi bi-lightning-charge"></i></div>
+            <div class="module-title">Inference Runs</div>
+            <div class="module-desc">Outputs, feature attributions, residuals</div>
+            <div class="module-link">
+                Inspect inference <i class="bi bi-arrow-right"></i>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <a href="{% url 'trials:trial_analytics' %}" class="module-card">
+            <div class="module-icon"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="module-title">Trial Analytics</div>
+            <div class="module-desc">Yield response, NUE, treatment comparisons</div>
+            <div class="module-link">
+                View analytics <i class="bi bi-arrow-right"></i>
+            </div>
+        </a>
+    </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- TWO-COLUMN LAYOUT                                             -->
+<!-- ============================================================ -->
+<div class="row g-3">
+
+    <!-- ========================================================== -->
+    <!-- LEFT — RECENT ADVISORIES (system-wide)                      -->
+    <!-- ========================================================== -->
+    <div class="col-lg-8">
+
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-inbox me-2"></i> Recent Advisories — System-wide</h5>
+                <div class="card-header-actions">
+                    <a href="{% url 'advisories:advisory_list' %}" class="btn btn-ghost btn-sm">
+                        View all <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if recent %}
+                    <table class="table-kalro">
+                        <thead>
+                            <tr>
+                                <th>Advisory</th>
+                                <th>Farmer</th>
+                                <th>Type</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for adv in recent %}
+                            <tr onclick="window.location='{% url 'advisories:advisory_detail' adv.pk %}'" style="cursor: pointer;">
+                                <td>
+                                    <div class="adv-cell">
+                                        <div class="adv-cell-icon
+                                            {% if adv.kind == 'FERT' %}k-fert
+                                            {% elif adv.kind == 'PLANTING' %}k-plant
+                                            {% elif adv.kind == 'IRRIG' %}k-irrig
+                                            {% elif adv.kind == 'PEST' or adv.kind == 'DISEASE' %}k-pest
+                                            {% elif adv.kind == 'WEATHER' %}k-weather
+                                            {% elif adv.kind == 'HARVEST' %}k-harvest
+                                            {% elif adv.kind == 'MARKET' %}k-market
+                                            {% else %}k-gen{% endif %}">
+                                            {% if adv.kind == 'FERT' %}<i class="bi bi-droplet"></i>
+                                            {% elif adv.kind == 'PLANTING' %}<i class="bi bi-flower1"></i>
+                                            {% elif adv.kind == 'IRRIG' %}<i class="bi bi-water"></i>
+                                            {% elif adv.kind == 'PEST' or adv.kind == 'DISEASE' %}<i class="bi bi-bug"></i>
+                                            {% elif adv.kind == 'WEATHER' %}<i class="bi bi-cloud-sun"></i>
+                                            {% elif adv.kind == 'HARVEST' %}<i class="bi bi-basket"></i>
+                                            {% elif adv.kind == 'MARKET' %}<i class="bi bi-currency-exchange"></i>
+                                            {% else %}<i class="bi bi-info-circle"></i>{% endif %}
+                                        </div>
+                                        <div>
+                                            <div class="adv-cell-title">{{ adv.title|truncatechars:45 }}</div>
+                                            {% if adv.crop %}
+                                                <div class="adv-cell-meta">{{ adv.crop.name }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if adv.farmer %}
+                                        <div class="farmer-cell">
+                                            <div class="farmer-cell-name">{{ adv.farmer.full_name }}</div>
+                                            <div class="farmer-cell-meta">{{ adv.farmer.county.name|default:"" }}</div>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted fs-12">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="pill pill-grey">{{ adv.get_kind_display }}</span>
+                                </td>
+                                <td>
+                                    {% if adv.priority == 'URGENT' %}
+                                        <span class="pill pill-priority-urgent">Urgent</span>
+                                    {% elif adv.priority == 'HIGH' %}
+                                        <span class="pill pill-priority-high">High</span>
+                                    {% else %}
+                                        <span class="pill pill-priority-normal">Normal</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if adv.status == 'DRAFT' %}
+                                        <span class="pill pill-status-draft">Draft</span>
+                                    {% elif adv.status == 'APPROVED' %}
+                                        <span class="pill pill-status-approved">Approved</span>
+                                    {% elif adv.status == 'SENT' %}
+                                        <span class="pill pill-status-sent">Sent</span>
+                                    {% elif adv.status == 'FAILED' %}
+                                        <span class="pill pill-status-failed">Failed</span>
+                                    {% else %}
+                                        <span class="pill pill-grey">{{ adv.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="text-muted fs-12">{{ adv.created_at|date:"d M" }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h5>No advisories in the system yet</h5>
+                        <p>Advisories generated by the PINN engine will appear here.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ========================================================== -->
+        <!-- STATUS BREAKDOWN                                            -->
+        <!-- ========================================================== -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-bar-chart me-2"></i> Advisory Status Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="status-bars">
+                    <div class="status-bar-row">
+                        <div class="status-bar-label"><span class="pill pill-status-draft">Draft</span></div>
+                        <div class="status-bar-track">
+                            <div class="status-bar-fill fill-draft" style="width: {% widthratio stats.pending stats.total 100 %}%"></div>
+                        </div>
+                        <div class="status-bar-value">{{ stats.pending|default:"0" }}</div>
+                    </div>
+                    <div class="status-bar-row">
+                        <div class="status-bar-label"><span class="pill pill-status-approved">Approved</span></div>
+                        <div class="status-bar-track">
+                            <div class="status-bar-fill fill-approved" style="width: {% widthratio stats.approved stats.total 100 %}%"></div>
+                        </div>
+                        <div class="status-bar-value">{{ stats.approved|default:"0" }}</div>
+                    </div>
+                    <div class="status-bar-row">
+                        <div class="status-bar-label"><span class="pill pill-status-sent">Sent</span></div>
+                        <div class="status-bar-track">
+                            <div class="status-bar-fill fill-sent" style="width: {% widthratio stats.sent_today stats.total 100 %}%"></div>
+                        </div>
+                        <div class="status-bar-value">{{ stats.sent_today|default:"0" }}</div>
+                    </div>
+                    <div class="status-bar-row">
+                        <div class="status-bar-label"><span class="pill pill-priority-urgent">Urgent</span></div>
+                        <div class="status-bar-track">
+                            <div class="status-bar-fill fill-urgent" style="width: {% widthratio stats.urgent stats.total 100 %}%"></div>
+                        </div>
+                        <div class="status-bar-value">{{ stats.urgent|default:"0" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- RIGHT — SIDEBAR                                             -->
+    <!-- ========================================================== -->
+    <div class="col-lg-4">
+
+        <!-- ============ RESEARCH TOOLS ============ -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-tools me-2"></i> Research Tools</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="quick-links">
+                    <a href="{% url 'pinn_engine:physics_constraint_list' %}" class="quick-link">
+                        <div class="quick-link-icon"><i class="bi bi-sliders"></i></div>
+                        <div class="quick-link-body">
+                            <div class="quick-link-title">Physics Constraints</div>
+                            <div class="quick-link-desc">Water balance, nutrient cycling, energy</div>
+                        </div>
+                        <i class="bi bi-chevron-right quick-link-arrow"></i>
+                    </a>
+                    <a href="{% url 'pinn_engine:trainingrun_create' %}" class="quick-link">
+                        <div class="quick-link-icon"><i class="bi bi-play-circle"></i></div>
+                        <div class="quick-link-body">
+                            <div class="quick-link-title">Start Training Run</div>
+                            <div class="quick-link-desc">Configure &amp; queue a new run</div>
+                        </div>
+                        <i class="bi bi-chevron-right quick-link-arrow"></i>
+                    </a>
+                    <a href="{% url 'pinn_engine:inference_run' %}" class="quick-link">
+                        <div class="quick-link-icon"><i class="bi bi-lightning-charge"></i></div>
+                        <div class="quick-link-body">
+                            <div class="quick-link-title">Run Inference</div>
+                            <div class="quick-link-desc">Manual PINN prediction</div>
+                        </div>
+                        <i class="bi bi-chevron-right quick-link-arrow"></i>
+                    </a>
+                    <a href="{% url 'trials:trial_import' %}" class="quick-link">
+                        <div class="quick-link-icon"><i class="bi bi-upload"></i></div>
+                        <div class="quick-link-body">
+                            <div class="quick-link-title">Import Trial Data</div>
+                            <div class="quick-link-desc">CSV upload for fertilizer trials</div>
+                        </div>
+                        <i class="bi bi-chevron-right quick-link-arrow"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ CROSS-SYSTEM DATA ============ -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-database me-2"></i> Cross-System Data</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="quick-links">
+                    <a href="{% url 'farmers:farmer_list' %}" class="quick-link">
+                        <div class="quick-link-icon"><i class="bi bi-people"></i></div>
+                        <div class="quick-link-body">
+                            <div class="quick-link-title">Farmers</div>
+                            <div class="quick-link-desc">Nationwide registry</div>
+                        </div>
+                        <i class="bi bi-chevron-right quick-link-arrow"></i>
+                    </a>
+                    <a href="{% url 'crops:crop_list' %}" class="quick-link">
+                        <div class="quick-link-icon"><i class="bi bi-flower1"></i></div>
+                        <div class="quick-link-body">
+                            <div class="quick-link-title">Crops</div>
+                            <div class="quick-link-desc">Catalog &amp; growth stages</div>
+                        </div>
+                        <i class="bi bi-chevron-right quick-link-arrow"></i>
+                    </a>
+                    <a href="{% url 'soil:soiltest_list' %}" class="quick-link">
+                        <div class="quick-link-icon"><i class="bi bi-droplet-half"></i></div>
+                        <div class="quick-link-body">
+                            <div class="quick-link-title">Soil Tests</div>
+                            <div class="quick-link-desc">National soil dataset</div>
+                        </div>
+                        <i class="bi bi-chevron-right quick-link-arrow"></i>
+                    </a>
+                    <a href="{% url 'climate:rainfall_chart' %}" class="quick-link">
+                        <div class="quick-link-icon"><i class="bi bi-bar-chart"></i></div>
+                        <div class="quick-link-body">
+                            <div class="quick-link-title">Rainfall Charts</div>
+                            <div class="quick-link-desc">Time-series visualisation</div>
+                        </div>
+                        <i class="bi bi-chevron-right quick-link-arrow"></i>
+                    </a>
+                    <a href="{% url 'climate:forecast_list' %}" class="quick-link">
+                        <div class="quick-link-icon"><i class="bi bi-cloud-drizzle"></i></div>
+                        <div class="quick-link-body">
+                            <div class="quick-link-title">Forecasts</div>
+                            <div class="quick-link-desc">Seasonal &amp; short-range</div>
+                        </div>
+                        <i class="bi bi-chevron-right quick-link-arrow"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ BY TYPE ============ -->
+        {% if stats.by_kind %}
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-pie-chart me-2"></i> Advisories by Type</h5>
+            </div>
+            <div class="card-body p-0">
+                {% for row in stats.by_kind %}
+                <div class="kind-row">
+                    <div class="kind-row-name">{{ row.kind }}</div>
+                    <div class="kind-row-count">{{ row.n }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ============ FEEDBACK ============ -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-chat-square-text me-2"></i> Farmer Feedback</h5>
+                <div class="card-header-actions">
+                    <a href="{% url 'advisories:advisory_feedback_list' %}" class="btn btn-ghost btn-sm">
+                        Open <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="mb-2" style="font-size: 12.5px; color: var(--ink-600); line-height: 1.55;">
+                    Farmer ratings and outcomes feed back into the model to improve future advisories.
+                </p>
+                <a href="{% url 'advisories:advisory_feedback_list' %}" class="btn btn-outline btn-sm btn-block">
+                    <i class="bi bi-eye"></i> View All Feedback
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE-SCOPED STYLES                                            -->
+<!-- ============================================================ -->
+<style>
+    /* Hero */
+    .res-hero {
+        background: linear-gradient(135deg, #0b3d2e 0%, #14543f 55%, #1b6a4f 100%);
+        border-radius: 12px;
+        padding: 26px 28px;
+        margin-bottom: 24px;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+    .res-hero::after {
+        content: '';
+        position: absolute;
+        right: -60px; top: -60px;
+        width: 260px; height: 260px;
+        background: radial-gradient(circle, rgba(244,196,48,.18), transparent 70%);
+        pointer-events: none;
+    }
+    .res-hero-inner {
+        display: flex; align-items: center; gap: 20px;
+        flex-wrap: wrap;
+        position: relative; z-index: 2;
+    }
+    .res-hero-badge {
+        width: 68px; height: 68px;
+        border-radius: 14px;
+        background: rgba(255,255,255,.10);
+        border: 2px solid var(--kalro-gold);
+        color: var(--kalro-gold);
+        display: grid; place-items: center;
+        font-size: 28px;
+        flex-shrink: 0;
+    }
+    .res-hero-text { flex: 1; min-width: 240px; }
+    .res-hero-eyebrow {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: 11px; font-weight: 600;
+        text-transform: uppercase; letter-spacing: 0.1em;
+        color: var(--kalro-gold);
+        margin-bottom: 6px;
+    }
+    .res-hero-name {
+        font-family: var(--font-serif);
+        font-size: 26px; font-weight: 700;
+        color: #fff; margin: 0 0 8px;
+        line-height: 1.15; letter-spacing: -0.01em;
+    }
+    .res-hero-meta {
+        display: flex; gap: 20px; flex-wrap: wrap;
+        font-size: 12.5px;
+        color: rgba(255,255,255,.82);
+    }
+    .res-hero-meta span {
+        display: inline-flex; align-items: center; gap: 6px;
+    }
+    .res-hero-meta i { color: var(--kalro-gold); }
+    .res-hero-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* Module cards */
+    .module-card {
+        display: block;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 22px 22px 18px;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+        transition: all .18s;
+        position: relative;
+        overflow: hidden;
+    }
+    .module-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: var(--kalro-green);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .2s;
+    }
+    .module-card:hover {
+        border-color: var(--kalro-green);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(11,61,46,.10);
+        text-decoration: none;
+    }
+    .module-card:hover::before { transform: scaleX(1); }
+
+    .module-icon {
+        width: 46px; height: 46px;
+        background: var(--kalro-green-100);
+        color: var(--kalro-green);
+        border-radius: 10px;
+        display: grid; place-items: center;
+        font-size: 22px;
+        margin-bottom: 14px;
+    }
+    .module-title {
+        font-family: var(--font-serif);
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--ink-900);
+        margin-bottom: 5px;
+    }
+    .module-desc {
+        font-size: 12.5px;
+        color: var(--ink-600);
+        line-height: 1.5;
+        margin-bottom: 14px;
+        min-height: 38px;
+    }
+    .module-link {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--kalro-green);
+        display: inline-flex; align-items: center; gap: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+    .module-link i {
+        transition: transform .15s;
+    }
+    .module-card:hover .module-link i {
+        transform: translateX(3px);
+    }
+
+    /* Adv cell */
+    .adv-cell { display: flex; gap: 12px; align-items: center; }
+    .adv-cell-icon {
+        width: 36px; height: 36px;
+        border-radius: 8px;
+        display: grid; place-items: center;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+    .k-fert    { background: #dbeafe; color: #1e40af; }
+    .k-plant   { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .k-irrig   { background: #cffafe; color: #0e7490; }
+    .k-pest    { background: var(--kalro-red-100); color: var(--kalro-red); }
+    .k-weather { background: var(--kalro-gold-100); color: var(--kalro-gold-700); }
+    .k-harvest { background: #fef3c7; color: #92400e; }
+    .k-market  { background: #ede9fe; color: #5b21b6; }
+    .k-gen     { background: var(--ink-100); color: var(--ink-700); }
+
+    .adv-cell-title {
+        font-size: 13px; font-weight: 600;
+        color: var(--ink-900); line-height: 1.3;
+    }
+    .adv-cell-meta {
+        font-size: 11px; color: var(--ink-500);
+        margin-top: 1px;
+    }
+
+    /* Farmer cell */
+    .farmer-cell-name {
+        font-size: 13px; font-weight: 600;
+        color: var(--ink-800); line-height: 1.3;
+    }
+    .farmer-cell-meta {
+        font-size: 11px; color: var(--ink-500);
+        margin-top: 1px;
+    }
+
+    /* Status bars */
+    .status-bars {
+        display: flex; flex-direction: column; gap: 14px;
+    }
+    .status-bar-row {
+        display: grid;
+        grid-template-columns: 110px 1fr 44px;
+        align-items: center; gap: 14px;
+    }
+    .status-bar-track {
+        height: 8px;
+        background: var(--ink-100);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .status-bar-fill {
+        height: 100%; border-radius: 4px;
+        transition: width .4s;
+    }
+    .fill-draft    { background: var(--ink-500); }
+    .fill-approved { background: var(--kalro-gold-700); }
+    .fill-sent     { background: var(--kalro-green-500); }
+    .fill-urgent   { background: var(--kalro-red); }
+    .status-bar-value {
+        font-family: var(--font-mono);
+        font-size: 13px; font-weight: 600;
+        color: var(--ink-800);
+        text-align: right;
+    }
+
+    /* Quick links */
+    .quick-links { display: flex; flex-direction: column; }
+    .quick-link {
+        display: flex; gap: 14px; align-items: center;
+        padding: 14px 20px;
+        text-decoration: none; color: inherit;
+        border-bottom: 1px solid var(--border);
+        transition: background .12s;
+    }
+    .quick-link:last-child { border-bottom: 0; }
+    .quick-link:hover {
+        background: var(--kalro-green-50);
+        text-decoration: none;
+    }
+    .quick-link-icon {
+        width: 38px; height: 38px;
+        background: var(--kalro-green-100);
+        color: var(--kalro-green);
+        border-radius: 9px;
+        display: grid; place-items: center;
+        font-size: 17px;
+        flex-shrink: 0;
+    }
+    .quick-link-body { flex: 1; min-width: 0; }
+    .quick-link-title {
+        font-size: 13.5px; font-weight: 600;
+        color: var(--ink-900); line-height: 1.2;
+        margin-bottom: 2px;
+    }
+    .quick-link-desc {
+        font-size: 11.5px; color: var(--ink-500);
+        line-height: 1.4;
+    }
+    .quick-link-arrow {
+        color: var(--ink-300); font-size: 14px;
+        transition: transform .15s, color .15s;
+    }
+    .quick-link:hover .quick-link-arrow {
+        color: var(--kalro-green);
+        transform: translateX(2px);
+    }
+
+    /* Kind rows */
+    .kind-row {
+        display: flex; justify-content: space-between;
+        align-items: center;
+        padding: 11px 20px;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+    }
+    .kind-row:last-child { border-bottom: 0; }
+    .kind-row-name {
+        color: var(--ink-700); font-weight: 500;
+        text-transform: capitalize;
+    }
+    .kind-row-count {
+        font-family: var(--font-mono);
+        font-weight: 600; color: var(--ink-900);
+        background: var(--ink-100);
+        padding: 2px 10px; border-radius: 10px;
+        font-size: 12px; min-width: 32px;
+        text-align: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .res-hero { padding: 20px; }
+        .res-hero-name { font-size: 22px; }
+        .res-hero-badge { width: 56px; height: 56px; font-size: 22px; }
+        .status-bar-row { grid-template-columns: 90px 1fr 40px; gap: 10px; }
+        .module-desc { min-height: 0; }
+    }
+</style>
+
+{% endblock %}

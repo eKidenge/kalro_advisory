@@ -1,0 +1,135 @@
+{% extends "trials/base_trials.html" %}
+{% load static %}
+
+{% block title %}Field Trials — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Field Trials</h1>
+        <div class="page-header-sub">{{ page_obj.paginator.count|default:0 }} trial{{ page_obj.paginator.count|pluralize }} in the system</div>
+    </div>
+    <div class="page-header-actions">
+        {% if request.user.is_kalro_staff or request.user.is_researcher %}
+        <a href="{% url 'trials:trial_import' %}" class="btn btn-outline"><i class="bi bi-upload"></i> Import CSV</a>
+        <a href="{% url 'trials:trial_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Trial</a>
+        {% endif %}
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field" style="flex: 2;">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" class="form-control" value="{{ current.q }}" placeholder="Code, title…">
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+            <option value="">All statuses</option>
+            {% for val, label in statuses %}<option value="{{ val }}" {% if current.status == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">Crop</label>
+        <select name="crop" class="form-select">
+            <option value="">All crops</option>
+            {% for c in crops %}<option value="{{ c.pk }}" {% if current.crop == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">County</label>
+        <select name="county" class="form-select">
+            <option value="">All counties</option>
+            {% for c in counties %}<option value="{{ c.pk }}" {% if current.county == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label d-block">Published</label>
+        <label class="checkbox-row"><input type="checkbox" name="published" value="1" {% if current.published == '1' %}checked{% endif %}> <span>Only published</span></label>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'trials:trial_list' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if trials %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Title</th>
+                        <th>Crop</th>
+                        <th>Site / County</th>
+                        <th>Season</th>
+                        <th>Status</th>
+                        <th>Results</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in trials %}
+                    <tr>
+                        <td><span class="font-mono fs-12">{{ t.code }}</span></td>
+                        <td>
+                            <div style="font-size:13px; font-weight:600; color:var(--ink-900);">{{ t.title|truncatechars:60 }}</div>
+                            {% if t.is_published %}<span class="pill pill-green" style="font-size:10px;">Published</span>{% endif %}
+                        </td>
+                        <td>{{ t.crop.name|default:"—" }}</td>
+                        <td>
+                            <div style="font-size:12.5px;">{{ t.site.name|default:"—" }}</div>
+                            <div class="user-meta">{{ t.county.name|default:"—" }}</div>
+                        </td>
+                        <td>{{ t.season|default:"—" }}</td>
+                        <td>
+                            {% if t.status == 'ONGOING' %}<span class="pill pill-gold">Ongoing</span>
+                            {% elif t.status == 'DONE' %}<span class="pill pill-green">Completed</span>
+                            {% elif t.status == 'PLANNED' %}<span class="pill pill-grey">Planned</span>
+                            {% elif t.status == 'SUSP' %}<span class="pill pill-red">Suspended</span>
+                            {% else %}<span class="pill pill-grey">{{ t.get_status_display }}</span>{% endif %}
+                        </td>
+                        <td><span class="pill pill-grey">{{ t.result_count }}</span></td>
+                        <td class="text-end">
+                            <div class="action-bar">
+                                <a href="{% url 'trials:trial_detail' t.pk %}" class="row-action" title="View"><i class="bi bi-eye"></i></a>
+                                {% if can_edit %}<a href="{% url 'trials:trial_update' t.pk %}" class="row-action" title="Edit"><i class="bi bi-pencil"></i></a>{% endif %}
+                                {% if can_delete %}<a href="{% url 'trials:trial_delete' t.pk %}" class="row-action row-action-del" title="Delete"><i class="bi bi-trash"></i></a>{% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-clipboard-data"></i>
+            <h5>No trials found</h5>
+            <p>Create a new trial or import existing results.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .action-bar { display: inline-flex; gap: 4px; }
+    .row-action { width: 30px; height: 30px; border: 1px solid transparent; background: transparent; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); text-decoration: none; font-size: 14px; transition: all .12s; }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .row-action-del:hover { background: var(--kalro-red-100); color: var(--kalro-red); }
+    .text-end { text-align: right; }
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+    .user-meta { font-size: 11px; color: var(--ink-500); margin-top: 1px; }
+    .checkbox-row { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-700); cursor: pointer; }
+</style>
+
+{% endblock %}

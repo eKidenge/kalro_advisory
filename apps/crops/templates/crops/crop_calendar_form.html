@@ -1,0 +1,63 @@
+{% extends "crops/base_crops.html" %}
+{% load static %}
+
+{% block title %}{% if object %}Edit Calendar Entry{% else %}Add Calendar Entry{% endif %} — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{% if object %}Edit Calendar Entry{% else %}Add Calendar Entry{% endif %}</h1>
+        <div class="page-header-sub">Define planting and harvest windows for a crop</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'crops:crop_calendar' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Cancel</a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-8">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert-kalro alert-danger"><i class="bi bi-exclamation-octagon"></i><div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div></div>{% endif %}
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-calendar3 me-2"></i> Region</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Crop <span class="req">*</span></label>{{ form.crop }}{% if form.crop.errors %}<div class="field-error">{{ form.crop.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">County</label>{{ form.county }}</div>
+                        <div class="col-md-6"><label class="form-label">AEZ</label>{{ form.aez }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-calendar-week me-2"></i> Planting &amp; Harvest</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Planting start (month 1–12) <span class="req">*</span></label>{{ form.planting_start_month }}{% if form.planting_start_month.errors %}<div class="field-error">{{ form.planting_start_month.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Planting end (month 1–12) <span class="req">*</span></label>{{ form.planting_end_month }}{% if form.planting_end_month.errors %}<div class="field-error">{{ form.planting_end_month.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Harvest start</label>{{ form.harvest_start_month }}</div>
+                        <div class="col-md-6"><label class="form-label">Harvest end</label>{{ form.harvest_end_month }}</div>
+                        <div class="col-md-6"><label class="form-label">Expected rainfall (mm)</label>{{ form.expected_rainfall_mm }}</div>
+                        <div class="col-md-12"><label class="form-label">Notes</label>{{ form.notes }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions-bar">
+                <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check2"></i> Save</button>
+                <a href="{% url 'crops:crop_calendar' %}" class="btn btn-outline btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error { font-size: 12px; color: var(--kalro-red); margin-top: 6px; }
+    .form-actions-bar { display: flex; gap: 10px; padding: 20px 0 8px; flex-wrap: wrap; }
+</style>
+
+{% endblock %}

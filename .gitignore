@@ -1,0 +1,11 @@
+db.sqlite3
+.env
+*.pyc
+__pycache__/
+staticfiles/
+media/
+venv/
+.venv/
+*.log
+out.txt
+load_data_output.txt

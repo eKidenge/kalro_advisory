@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block subheader_actions %}
+    <a href="{% url 'soil:soiltest_list' %}"
+       class="btn btn-sm {% if 'soiltest' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-droplet-half"></i> Soil Tests
+    </a>
+    <a href="{% url 'soil:nutrient_profile' %}"
+       class="btn btn-sm {% if 'nutrient' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-sliders"></i> Profiles
+    </a>
+    <a href="{% url 'soil:marketprice_list' %}"
+       class="btn btn-sm {% if 'marketprice' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-currency-exchange"></i> Market
+    </a>
+    {% if request.user.is_kalro_staff %}
+    <a href="{% url 'soil:sync_agdata' %}"
+       class="btn btn-sm btn-outline">
+        <i class="bi bi-arrow-repeat"></i> Sync
+    </a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}{% endblock %}

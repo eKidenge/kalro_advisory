@@ -1,0 +1,50 @@
+{% extends "pinn_engine/base_pinn.html" %}
+{% load static %}
+
+{% block title %}Start Training Run — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Start Training Run</h1>
+        <div class="page-header-sub">Configure and queue a new training execution</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'pinn_engine:trainingrun_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Cancel</a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-7">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert-kalro alert-danger"><i class="bi bi-exclamation-octagon"></i><div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div></div>{% endif %}
+
+            <div class="card">
+                <div class="card-header"><h5><i class="bi bi-play-circle me-2"></i> Configuration</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Model <span class="req">*</span></label>{{ form.model }}{% if form.model.errors %}<div class="field-error">{{ form.model.errors.0 }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Run label</label>{{ form.run_label }}</div>
+                        <div class="col-md-4"><label class="form-label">Epochs</label>{{ form.epochs }}</div>
+                        <div class="col-md-4"><label class="form-label">Batch size</label>{{ form.batch_size }}</div>
+                        <div class="col-md-4"><label class="form-label">Learning rate</label>{{ form.learning_rate }}</div>
+                        <div class="col-md-4"><label class="form-label">Train split</label>{{ form.train_split }}</div>
+                    </div>
+                </div>
+                <div class="card-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <a href="{% url 'pinn_engine:trainingrun_list' %}" class="btn btn-outline">Cancel</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-play-circle"></i> Start Training</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error { font-size: 12px; color: var(--kalro-red); margin-top: 6px; }
+</style>
+
+{% endblock %}

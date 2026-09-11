@@ -1,0 +1,106 @@
+{% extends "crops/base_crops.html" %}
+{% load static %}
+
+{% block title %}{{ crop.name }} — Crop{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{{ crop.name }}</h1>
+        <div class="page-header-sub">
+            {{ crop.scientific_name|default:"—" }}
+            {% if crop.category %} · {{ crop.category.name }}{% endif %}
+            · {{ crop.get_season_display }}
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'crops:crop_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Back</a>
+        <a href="{% url 'crops:crop_requirements' crop.pk %}" class="btn btn-outline"><i class="bi bi-sliders"></i> Requirements</a>
+        {% if can_edit %}<a href="{% url 'crops:crop_update' crop.pk %}" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>{% endif %}
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-info-circle me-2"></i> Overview</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Category</td><td>{{ crop.category.name|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Season</td><td>{{ crop.get_season_display }}</td></tr>
+                        <tr><td class="lbl">Growth habit</td><td>{{ crop.get_growth_habit_display }}</td></tr>
+                        <tr><td class="lbl">Days to maturity</td><td>{{ crop.days_to_maturity|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Expected yield</td><td>{{ crop.expected_yield_kg_ha|default:"—" }} kg/ha</td></tr>
+                        <tr><td class="lbl">Optimal pH</td><td>{% if crop.optimal_ph_min and crop.optimal_ph_max %}{{ crop.optimal_ph_min }} – {{ crop.optimal_ph_max }}{% else %}—{% endif %}</td></tr>
+                        <tr><td class="lbl">Base temp</td><td>{{ crop.base_temp_c|default:"—" }} °C</td></tr>
+                        <tr><td class="lbl">Max temp</td><td>{{ crop.max_temp_c|default:"—" }} °C</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-minecart me-2"></i> PINN Physics Parameters</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Water requirement</td><td><strong>{{ crop.water_requirement_mm|default:"—" }}</strong> mm</td></tr>
+                        <tr><td class="lbl">Nitrogen (N)</td><td>{{ crop.n_requirement_kg_ha|default:"—" }} kg/ha</td></tr>
+                        <tr><td class="lbl">Phosphorus (P)</td><td>{{ crop.p_requirement_kg_ha|default:"—" }} kg/ha</td></tr>
+                        <tr><td class="lbl">Potassium (K)</td><td>{{ crop.k_requirement_kg_ha|default:"—" }} kg/ha</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-graph-up me-2"></i> Growth Stages ({{ crop.growth_stages.count }})</h5></div>
+            <div class="card-body p-0">
+                {% if crop.growth_stages.all %}
+                {% for stage in crop.growth_stages.all %}
+                <div class="list-row">
+                    <div>
+                        <div class="list-title">{{ stage.order }}. {{ stage.name }}</div>
+                        <div class="list-meta">Day {{ stage.start_day }}–{{ stage.end_day }}{% if stage.kc_coefficient %} · Kc {{ stage.kc_coefficient }}{% endif %}</div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-graph-up"></i><p style="margin: 0;">No stages defined</p></div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-calendar3 me-2"></i> Planting Calendar ({{ crop.calendars.count }})</h5></div>
+            <div class="card-body p-0">
+                {% if crop.calendars.all %}
+                {% for cal in crop.calendars.all %}
+                <div class="list-row">
+                    <div>
+                        <div class="list-title">{{ cal.county.name|default:cal.aez|default:"All regions" }}</div>
+                        <div class="list-meta">Plant M{{ cal.planting_start_month }}–M{{ cal.planting_end_month }}{% if cal.harvest_start_month %} · Harvest M{{ cal.harvest_start_month }}–M{{ cal.harvest_end_month }}{% endif %}</div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-calendar3"></i><p style="margin: 0;">No calendar entries</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .lbl { color: var(--ink-500); font-weight: 500; width: 40%; }
+    .list-row { display: flex; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .list-row:last-child { border-bottom: 0; }
+    .list-title { font-size: 13px; font-weight: 600; color: var(--ink-900); }
+    .list-meta { font-size: 11px; color: var(--ink-500); margin-top: 2px; }
+</style>
+
+{% endblock %}

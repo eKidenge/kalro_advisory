@@ -1,0 +1,94 @@
+{% extends "soil/base_soil.html" %}
+{% load static %}
+
+{% block title %}Market Prices — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Market Prices</h1>
+        <div class="page-header-sub">Crop and input prices from AgData Hub</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'soil:marketprice_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Price</a>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field">
+        <label class="form-label">Commodity</label>
+        <select name="commodity" class="form-select">
+            <option value="">All commodities</option>
+            {% for val, label in commodities %}
+            <option value="{{ val }}" {% if current.commodity == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <label class="form-label">County</label>
+        <select name="county" class="form-select">
+            <option value="">All counties</option>
+            {% for c in counties %}
+            <option value="{{ c.pk }}" {% if current.county == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+    </div>
+    <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'soil:marketprice_list' %}" class="btn btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if prices %}
+        <div class="table-wrap">
+            <table class="table-kalro">
+                <thead>
+                    <tr><th>Commodity</th><th>Market</th><th>County</th><th>Price</th><th>Unit</th><th>Observed</th><th>Source</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for p in prices %}
+                    <tr>
+                        <td><strong>{{ p.get_commodity_display }}</strong>{% if p.commodity_label %} <span class="user-meta" style="display:inline;">({{ p.commodity_label }})</span>{% endif %}</td>
+                        <td>{{ p.market_name|default:"—" }}</td>
+                        <td>{{ p.county.name|default:"—" }}</td>
+                        <td><strong>KES {{ p.price_ksh }}</strong></td>
+                        <td><span class="pill pill-grey">{{ p.unit }}</span></td>
+                        <td><span class="font-mono fs-12">{{ p.observed_on|date:"d M Y" }}</span></td>
+                        <td><span class="user-meta" style="display:inline;">{{ p.source }}</span></td>
+                        <td class="text-end">
+                            <a href="{% url 'soil:marketprice_update' p.pk %}" class="row-action" title="Edit"><i class="bi bi-pencil"></i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-currency-exchange"></i>
+            <h5>No market prices</h5>
+            <p>Record crop or input prices to help farmers plan.</p>
+            <a href="{% url 'soil:marketprice_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Price</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_pagination.html" %}
+
+<style>
+    .row-action { width: 30px; height: 30px; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); text-decoration: none; font-size: 14px; }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+    .text-end { text-align: right; }
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+    .user-meta { font-size: 11px; color: var(--ink-500); }
+</style>
+
+{% endblock %}

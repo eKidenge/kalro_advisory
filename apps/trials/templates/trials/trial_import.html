@@ -1,0 +1,249 @@
+{% extends "trials/base_trials.html" %}
+{% load static %}
+
+{% block title %}Import Trial Results — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Import Trial Results</h1>
+        <div class="page-header-sub">Bulk-load observations from a CSV file</div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'trials:trial_list' %}" class="btn btn-outline">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert-kalro alert-danger">
+                <i class="bi bi-exclamation-octagon"></i>
+                <div>{% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}</div>
+            </div>
+            {% endif %}
+
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-upload me-2"></i> Upload CSV</h5>
+                </div>
+                <div class="card-body">
+                    <div class="field">
+                        <label class="form-label" for="{{ form.file.id_for_label }}">
+                            CSV file <span class="req">*</span>
+                        </label>
+                        {{ form.file }}
+                        <div class="form-text">
+                            Max 10 MB. Required columns: <code>trial_code</code> (unless a trial is selected below),
+                            <code>treatment_code</code>, <code>observed_on</code>.
+                        </div>
+                        {% if form.file.errors %}
+                        <div class="field-error">{{ form.file.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="field" style="margin-top: 16px;">
+                        <label class="form-label" for="{{ form.trial.id_for_label }}">
+                            Optional — assign to a specific trial
+                        </label>
+                        {{ form.trial }}
+                        <div class="form-text">
+                            Leave blank if the CSV specifies <code>trial_code</code> per row.
+                        </div>
+                        {% if form.trial.errors %}
+                        <div class="field-error">{{ form.trial.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <a href="{% url 'trials:trial_list' %}" class="btn btn-outline">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Import
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        {% if recent %}
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-clock-history me-2"></i> Recent Imports</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-wrap">
+                    <table class="table-kalro">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Trial</th>
+                                <th>Total</th>
+                                <th>Imported</th>
+                                <th>Failed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for batch in recent %}
+                            <tr>
+                                <td><span class="font-mono fs-12">{{ batch.created_at|date:"d M Y H:i" }}</span></td>
+                                <td>
+                                    {% if batch.status == 'SUCCESS' %}<span class="pill pill-green">Success</span>
+                                    {% elif batch.status == 'PARTIAL' %}<span class="pill pill-gold">Partial</span>
+                                    {% elif batch.status == 'FAILED' %}<span class="pill pill-red">Failed</span>
+                                    {% elif batch.status == 'RUNNING' %}<span class="pill pill-blue">Running</span>
+                                    {% else %}<span class="pill pill-grey">{{ batch.get_status_display }}</span>{% endif %}
+                                </td>
+                                <td>{{ batch.trial.code|default:"—" }}</td>
+                                <td>{{ batch.total_rows }}</td>
+                                <td><span class="pill pill-green">{{ batch.imported_count }}</span></td>
+                                <td>
+                                    {% if batch.failed_count %}
+                                    <span class="pill pill-red">{{ batch.failed_count }}</span>
+                                    {% else %}—{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-info-circle me-2"></i> Expected Columns</h5>
+            </div>
+            <div class="card-body">
+                <ul class="col-list">
+                    <li><code>trial_code</code> <span class="col-req">required if no trial selected</span></li>
+                    <li><code>treatment_code</code> <span class="col-req">required</span></li>
+                    <li><code>treatment_name</code> <span class="col-opt">optional</span></li>
+                    <li><code>plot_number</code> <span class="col-opt">optional</span></li>
+                    <li><code>replication</code> <span class="col-opt">optional</span></li>
+                    <li><code>observed_on</code> <span class="col-req">required · YYYY-MM-DD</span></li>
+                    <li><code>plant_height_cm</code></li>
+                    <li><code>biomass_kg_ha</code></li>
+                    <li><code>grain_yield_kg_ha</code></li>
+                    <li><code>total_yield_kg_ha</code></li>
+                    <li><code>soil_ph</code></li>
+                    <li><code>soil_n_pct</code></li>
+                    <li><code>soil_p_ppm</code></li>
+                    <li><code>soil_k_ppm</code></li>
+                    <li><code>nitrogen_use_efficiency</code></li>
+                    <li><code>rainfall_mm</code></li>
+                </ul>
+
+                <a href="data:text/csv;charset=utf-8,trial_code,treatment_code,treatment_name,plot_number,replication,observed_on,plant_height_cm,biomass_kg_ha,grain_yield_kg_ha,total_yield_kg_ha,soil_ph,soil_n_pct,soil_p_ppm,soil_k_ppm,nitrogen_use_efficiency,rainfall_mm%0A"
+                   download="trial_results_template.csv"
+                   class="btn btn-outline btn-block"
+                   style="margin-top: 14px;">
+                    <i class="bi bi-download"></i> Download Template
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-lightbulb me-2"></i> Tips</h5>
+            </div>
+            <div class="card-body">
+                <ul class="tips-list">
+                    <li><i class="bi bi-check2"></i> Rows with the same <code>treatment_code</code> and different <code>plot_number</code> are treated as separate plot observations.</li>
+                    <li><i class="bi bi-check2"></i> If a treatment code doesn't exist, it's created automatically.</li>
+                    <li><i class="bi bi-check2"></i> Invalid rows are skipped and reported in the error log.</li>
+                    <li><i class="bi bi-check2"></i> For large files (100K+ rows), the import runs in the background.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .req { color: var(--kalro-red); margin-left: 2px; }
+    .field-error {
+        font-size: 12px;
+        color: var(--kalro-red);
+        margin-top: 6px;
+        display: flex;
+        gap: 5px;
+    }
+    .field-error::before {
+        content: '\F33A';
+        font-family: 'bootstrap-icons';
+        font-size: 11px;
+        padding-top: 2px;
+    }
+    .col-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 12.5px;
+    }
+    .col-list li {
+        padding: 6px 0;
+        border-bottom: 1px solid var(--border);
+        color: var(--ink-700);
+        line-height: 1.5;
+    }
+    .col-list li:last-child { border-bottom: 0; }
+    .col-list code {
+        background: var(--ink-100);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 11.5px;
+        color: var(--kalro-green);
+        font-family: var(--font-mono);
+    }
+    .col-req {
+        font-size: 10.5px;
+        color: var(--kalro-red);
+        margin-left: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .col-opt {
+        font-size: 10.5px;
+        color: var(--ink-400);
+        margin-left: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .btn-block { width: 100%; justify-content: center; }
+    .table-wrap { overflow-x: auto; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+    .pill-blue { background: #dbeafe; color: #1e40af; }
+
+    .tips-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 12.5px;
+        line-height: 1.6;
+        color: var(--ink-600);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .tips-list li { display: flex; gap: 9px; align-items: flex-start; }
+    .tips-list i { color: var(--kalro-green); font-size: 14px; flex-shrink: 0; padding-top: 3px; }
+    .tips-list code {
+        background: var(--ink-100);
+        padding: 1px 5px;
+        border-radius: 3px;
+        font-size: 11.5px;
+        color: var(--kalro-green);
+        font-family: var(--font-mono);
+    }
+</style>
+
+{% endblock %}

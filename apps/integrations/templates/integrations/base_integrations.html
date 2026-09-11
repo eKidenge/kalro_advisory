@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block subheader_actions %}
+    <a href="{% url 'integrations:integrationconfig_list' %}"
+       class="btn btn-sm {% if 'config' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-plug"></i> Config
+    </a>
+    <a href="{% url 'integrations:synclog_list' %}"
+       class="btn btn-sm {% if 'synclog' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-arrow-repeat"></i> Syncs
+    </a>
+    <a href="{% url 'integrations:webhookevent_list' %}"
+       class="btn btn-sm {% if 'webhook' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-broadcast"></i> Webhooks
+    </a>
+    <a href="{% url 'integrations:kaop_dashboard' %}"
+       class="btn btn-sm {% if 'kaop' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-cloud-sun"></i> KAOP
+    </a>
+    <a href="{% url 'integrations:agdata_dashboard' %}"
+       class="btn btn-sm {% if 'agdata' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-database"></i> AgData
+    </a>
+    <a href="{% url 'integrations:selector_dashboard' %}"
+       class="btn btn-sm {% if 'selector' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-diagram-3"></i> Selector
+    </a>
+    <a href="{% url 'integrations:ishamba_dashboard' %}"
+       class="btn btn-sm {% if 'ishamba' in request.resolver_match.url_name %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-chat-dots"></i> iShamba
+    </a>
+{% endblock %}
+
+{% block content %}{% endblock %}

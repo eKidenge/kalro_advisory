@@ -1,0 +1,86 @@
+{% extends "integrations/base_integrations.html" %}
+{% load static %}
+
+{% block title %}Webhook #{{ event.pk }} — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>Webhook #{{ event.pk }}</h1>
+        <div class="page-header-sub">
+            {{ event.get_provider_display }} ·
+            {{ event.event_type|default:"—" }} ·
+            <span class="pill pill-grey">{{ event.get_status_display }}</span>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'integrations:webhookevent_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-info-circle me-2"></i> Event Info</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Provider</td><td>{{ event.get_provider_display }}</td></tr>
+                        <tr><td class="lbl">Event type</td><td>{{ event.event_type|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Status</td><td>{{ event.get_status_display }}</td></tr>
+                        <tr><td class="lbl">External ID</td><td><span class="font-mono fs-12">{{ event.external_id|default:"—" }}</span></td></tr>
+                        <tr><td class="lbl">Signature verified</td><td>{% if event.signature_verified %}<span class="pill pill-green">Yes</span>{% else %}<span class="pill pill-gold">No</span>{% endif %}</td></tr>
+                        <tr><td class="lbl">Remote IP</td><td><span class="font-mono fs-12">{{ event.remote_ip|default:"—" }}</span></td></tr>
+                        <tr><td class="lbl">Received</td><td>{{ event.received_at|date:"d M Y H:i:s" }}</td></tr>
+                        <tr><td class="lbl">Processed</td><td>{{ event.processed_at|date:"d M Y H:i:s"|default:"—" }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% if event.error_text %}
+        <div class="card" style="border-left: 4px solid var(--kalro-red);">
+            <div class="card-header"><h5><i class="bi bi-exclamation-octagon me-2"></i> Error</h5></div>
+            <div class="card-body"><pre style="margin: 0; font-size: 12px; white-space: pre-wrap; color: var(--kalro-red);">{{ event.error_text }}</pre></div>
+        </div>
+        {% endif %}
+
+        {% if event.related_sync_log %}
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-link me-2"></i> Related Sync</h5></div>
+            <div class="card-body">
+                <a href="{% url 'integrations:synclog_detail' event.related_sync_log.pk %}" class="btn btn-outline btn-sm btn-block">
+                    <i class="bi bi-arrow-repeat"></i> Sync #{{ event.related_sync_log.pk }}
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-7">
+        {% if event.headers %}
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-list-ul me-2"></i> Headers</h5></div>
+            <div class="card-body"><pre class="json-block">{{ event.headers|pprint }}</pre></div>
+        </div>
+        {% endif %}
+
+        {% if event.payload %}
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-code-square me-2"></i> Payload</h5></div>
+            <div class="card-body"><pre class="json-block">{{ event.payload|pprint }}</pre></div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .lbl { color: var(--ink-500); font-weight: 500; width: 42%; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+    .btn-block { width: 100%; justify-content: center; }
+    .json-block { margin: 0; font-family: var(--font-mono); font-size: 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; background: #0f1a14; color: #d1fae5; padding: 16px; border-radius: 8px; max-height: 400px; overflow-y: auto; }
+</style>
+
+{% endblock %}

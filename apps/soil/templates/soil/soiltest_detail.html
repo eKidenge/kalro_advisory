@@ -1,0 +1,137 @@
+{% extends "soil/base_soil.html" %}
+{% load static %}
+
+{% block title %}{{ test.sample_id }} — Soil Test{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>{{ test.sample_id }}</h1>
+        <div class="page-header-sub">
+            {{ test.farm.name|default:"—" }} ·
+            Sampled {{ test.sampled_on|date:"d M Y" }} ·
+            {{ test.get_lab_display }}
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'soil:soiltest_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Back</a>
+        <a href="{% url 'soil:soiltest_update' test.pk %}" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-droplet-half me-2"></i> Macronutrients</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr>
+                            <td class="lbl">pH</td>
+                            <td>
+                                <strong>{{ test.ph|default:"—" }}</strong>
+                                {% if test.ph_status == 'optimal' %}<span class="pill pill-green" style="margin-left:8px;">Optimal</span>
+                                {% elif test.ph_status == 'acidic' %}<span class="pill pill-red" style="margin-left:8px;">Acidic</span>
+                                {% elif test.ph_status == 'alkaline' %}<span class="pill pill-gold" style="margin-left:8px;">Alkaline</span>{% endif %}
+                            </td>
+                        </tr>
+                        <tr><td class="lbl">Organic carbon</td><td>{{ test.organic_carbon_pct|default:"—" }} %</td></tr>
+                        <tr>
+                            <td class="lbl">Nitrogen</td>
+                            <td>
+                                <strong>{{ test.nitrogen_pct|default:"—" }}</strong> %
+                                {% if test.nitrogen_status == 'adequate' %}<span class="pill pill-green" style="margin-left:8px;">Adequate</span>
+                                {% elif test.nitrogen_status == 'low' %}<span class="pill pill-red" style="margin-left:8px;">Low</span>
+                                {% elif test.nitrogen_status == 'high' %}<span class="pill pill-gold" style="margin-left:8px;">High</span>{% endif %}
+                            </td>
+                        </tr>
+                        <tr><td class="lbl">Phosphorus</td><td>{{ test.phosphorus_ppm|default:"—" }} ppm</td></tr>
+                        <tr><td class="lbl">Potassium</td><td>{{ test.potassium_ppm|default:"—" }} ppm</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-minecart me-2"></i> Secondary &amp; Micronutrients</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Calcium</td><td>{{ test.calcium_ppm|default:"—" }} ppm</td></tr>
+                        <tr><td class="lbl">Magnesium</td><td>{{ test.magnesium_ppm|default:"—" }} ppm</td></tr>
+                        <tr><td class="lbl">Sulfur</td><td>{{ test.sulfur_ppm|default:"—" }} ppm</td></tr>
+                        <tr><td class="lbl">Zinc</td><td>{{ test.zinc_ppm|default:"—" }} ppm</td></tr>
+                        <tr><td class="lbl">Boron</td><td>{{ test.boron_ppm|default:"—" }} ppm</td></tr>
+                        <tr><td class="lbl">Iron</td><td>{{ test.iron_ppm|default:"—" }} ppm</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-layers me-2"></i> Physical Properties</h5></div>
+            <div class="card-body p-0">
+                <table class="table-kalro">
+                    <tbody>
+                        <tr><td class="lbl">Texture</td><td>{{ test.texture|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Bulk density</td><td>{{ test.bulk_density|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Moisture</td><td>{{ test.moisture_pct|default:"—" }} %</td></tr>
+                        <tr><td class="lbl">CEC</td><td>{{ test.cec_meq|default:"—" }} meq/100g</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-sliders me-2"></i> Matching Nutrient Profiles</h5></div>
+            <div class="card-body p-0">
+                {% if profiles %}
+                {% for p in profiles %}
+                <div class="list-row">
+                    <div>
+                        <div class="list-title">{{ p.name }}</div>
+                        <div class="list-meta">{{ p.crop.name|default:"General" }}{% if p.soil_texture %} · {{ p.soil_texture }}{% endif %}</div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-sliders"></i><p style="margin: 0;">No matching profiles</p></div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h5><i class="bi bi-clock-history me-2"></i> History — Same Farm</h5></div>
+            <div class="card-body p-0">
+                {% if history %}
+                {% for h in history %}
+                <div class="list-row">
+                    <div>
+                        <div class="list-title">{{ h.sample_id }}</div>
+                        <div class="list-meta">{{ h.sampled_on|date:"d M Y" }} · pH {{ h.ph|default:"—" }}</div>
+                    </div>
+                    <a href="{% url 'soil:soiltest_detail' h.pk %}" class="row-action"><i class="bi bi-arrow-right"></i></a>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-clock-history"></i><p style="margin: 0;">No previous tests</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .lbl { color: var(--ink-500); font-weight: 500; width: 40%; }
+    .list-row { display: flex; gap: 12px; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .list-row:last-child { border-bottom: 0; }
+    .list-title { font-size: 13px; font-weight: 600; color: var(--ink-900); }
+    .list-meta { font-size: 11px; color: var(--ink-500); margin-top: 2px; }
+    .row-action { width: 30px; height: 30px; border-radius: 5px; display: grid; place-items: center; color: var(--ink-500); text-decoration: none; font-size: 14px; }
+    .row-action:hover { background: var(--kalro-green-100); color: var(--kalro-green); }
+</style>
+
+{% endblock %}
