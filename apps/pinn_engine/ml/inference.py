@@ -103,4 +103,50 @@ def run_inference(
             f"Run a training job first."
         )
 
-    feature
+    feature_names = list(pinn_model.input_features or [])
+    output_names  = list(pinn_model.output_targets or [])
+
+    if not feature_names or not output_names:
+        raise ValueError("PINNModel missing feature/output configuration.")
+
+    # ---- 1. Load network ----
+    net = load_network(pinn_model.artifact_path)
+    net.eval()
+
+    # ---- 2. Extract + vectorize features ----
+    feats = extract_features(
+        farm=farm, crop=crop,
+        soil_test=soil_test, weather_record=weather_record,
+    )
+    x = to_tensor(feats, feature_names)
+
+    # ---- 3. Forward pass ----
+    with torch.no_grad():
+        preds = net(x)
+
+    # ---- 4. Denormalize ----
+    raw = preds.squeeze(0).cpu().numpy()
+    outputs = {
+        name: denormalize(float(raw[i]), name)
+        for i, name in enumerate(output_names)
+    }
+
+    # ---- 5. Attributions ----
+    try:
+        attributions = compute_attributions(net, x, feature_names)
+    except Exception as e:
+        logger.warning("Attribution failed: %s", e)
+        attributions = {}
+
+    # ---- 6. Physics residuals ----
+    try:
+        residuals = compute_residuals(preds, x, feature_names, output_names)
+    except Exception as e:
+        logger.warning("Residual computation failed: %s", e)
+        residuals = {}
+
+    return {
+        'outputs': outputs,
+        'attributions': attributions,
+        'residuals': residuals,
+    }
