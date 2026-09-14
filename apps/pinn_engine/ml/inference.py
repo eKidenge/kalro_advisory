@@ -8,10 +8,14 @@ residuals for auditing.
 from __future__ import annotations
 
 import logging
+import os
 
 import torch
 
-from apps.pinn_engine.ml.network import load_network
+from apps.pinn_engine.ml.network import (
+    load_network,
+    load_network_from_db,
+)
 from apps.pinn_engine.ml.features import (
     extract_features,
     to_tensor,
@@ -60,6 +64,40 @@ def compute_attributions(
     return {name: float(grads[i]) for i, name in enumerate(feature_names)}
 
 
+def _load_trained_network(pinn_model):
+    """
+    Load the trained network, preferring the DB-stored artifact
+    (survives container restarts) and falling back to the file on
+    disk (legacy path, wiped on Render when the service idles out).
+    """
+    # Preferred: DB JSON. Survives /tmp wipes on Render free tier.
+    if pinn_model.artifact_json:
+        try:
+            return load_network_from_db(pinn_model)
+        except Exception as e:
+            logger.warning(
+                "DB artifact load failed for PINNModel pk=%s (%s); "
+                "falling back to file.",
+                pinn_model.pk, e,
+            )
+
+    # Fallback: file on disk (legacy).
+    if pinn_model.artifact_path:
+        if os.path.exists(pinn_model.artifact_path):
+            return load_network(pinn_model.artifact_path)
+        logger.warning(
+            "Artifact file '%s' does not exist for PINNModel pk=%s; "
+            "file may have been wiped. Retrain or check DB artifact.",
+            pinn_model.artifact_path, pinn_model.pk,
+        )
+
+    # Nothing to load
+    raise ValueError(
+        f"PINNModel '{pinn_model.name}' has no trained artifact. "
+        f"Run a training job first."
+    )
+
+
 def run_inference(
     pinn_model,
     farm,
@@ -67,19 +105,15 @@ def run_inference(
     soil_test=None,
     weather_record=None,
 ) -> dict:
-    if not pinn_model.artifact_path:
-        raise ValueError(
-            f"PINNModel '{pinn_model.name}' has no trained artifact. "
-            f"Run a training job first."
-        )
-
     feature_names = list(pinn_model.input_features or [])
     output_names  = list(pinn_model.output_targets or [])
 
     if not feature_names or not output_names:
         raise ValueError("PINNModel missing feature/output configuration.")
 
-    net = load_network(pinn_model.artifact_path)
+    # Raises ValueError with a user-friendly message if no artifact
+    # is available in either the DB or on disk.
+    net = _load_trained_network(pinn_model)
     net.eval()
 
     feats = extract_features(
