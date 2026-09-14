@@ -1,3 +1,6 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.4.0+cpu
+
 # Core
 Django>=6.0,<6.1
 python-decouple>=3.8
@@ -25,6 +28,6 @@ psycopg2-binary>=2.9.10    # only installs when you switch to Postgres on Render
 # redis>=6.4.0
 # django-celery-results>=2.6.0
 
-torch>=2.4.0
+#torch>=2.4.0
 numpy>=1.26.0
 scikit-learn>=1.5.0
