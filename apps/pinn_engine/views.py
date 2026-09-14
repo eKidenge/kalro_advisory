@@ -416,3 +416,75 @@ def csv_import_view(request):
         'supported_models': supported,
         'recent_metrics': recent_metrics,
     })
+
+# ==================================================================
+# DIAGNOSTIC
+# ==================================================================
+@researcher_required
+def pinn_diagnostics_view(request):
+    """
+    Shows the current state of PINN models, artifacts, and torch
+    availability. Used for debugging on Render.
+    """
+    import os
+    import sys
+
+    # --- Torch check ---
+    torch_status = {'available': False, 'error': None, 'version': None}
+    try:
+        import torch
+        torch_status['available'] = True
+        torch_status['version'] = torch.__version__
+    except Exception as e:
+        torch_status['error'] = f"{type(e).__name__}: {e}"
+
+    # --- Model inventory ---
+    models = []
+    for m in PINNModel.objects.all():
+        artifact_exists = False
+        artifact_size = None
+        if m.artifact_path:
+            try:
+                artifact_exists = os.path.exists(m.artifact_path)
+                if artifact_exists:
+                    artifact_size = os.path.getsize(m.artifact_path)
+            except Exception:
+                artifact_exists = False
+        models.append({
+            'obj': m,
+            'status': m.status,
+            'artifact_path': m.artifact_path or '—',
+            'artifact_exists': artifact_exists,
+            'artifact_size': artifact_size,
+            'n_inputs': len(m.input_features or []),
+            'n_outputs': len(m.output_targets or []),
+            'n_constraints': m.physics_constraints.count(),
+        })
+
+    # --- Inference inventory ---
+    inferences = InferenceRun.objects.select_related('model').order_by('-created_at')[:10]
+
+    # --- Environment ---
+    env = {
+        'DEBUG': os.environ.get('DEBUG', 'not set'),
+        'PYTHON_VERSION': sys.version.split()[0],
+        'PLATFORM': sys.platform,
+        'WORKING_DIR': os.getcwd(),
+        'TMP_EXISTS': os.path.exists('/tmp'),
+        'TMP_WRITABLE': False,
+    }
+    if env['TMP_EXISTS']:
+        try:
+            with open('/tmp/kalro_test.txt', 'w') as f:
+                f.write('test')
+            os.unlink('/tmp/kalro_test.txt')
+            env['TMP_WRITABLE'] = True
+        except Exception:
+            pass
+
+    return render(request, 'pinn_engine/diagnostics.html', {
+        'torch_status': torch_status,
+        'models': models,
+        'inferences': inferences,
+        'env': env,
+    })
