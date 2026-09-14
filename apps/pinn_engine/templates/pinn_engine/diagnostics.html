@@ -1,0 +1,151 @@
+{% extends "pinn_engine/base_pinn.html" %}
+{% load static %}
+
+{% block title %}PINN Diagnostics{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>PINN Diagnostics</h1>
+        <div class="page-header-sub">Current state of the PINN engine on this instance</div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ENVIRONMENT                                                   -->
+<!-- ============================================================ -->
+<div class="card">
+    <div class="card-header"><h5><i class="bi bi-cpu me-2"></i> Environment</h5></div>
+    <div class="card-body p-0">
+        <table class="table-kalro">
+            <tbody>
+                <tr><td class="lbl">DEBUG</td><td><span class="font-mono">{{ env.DEBUG }}</span></td></tr>
+                <tr><td class="lbl">Python version</td><td><span class="font-mono">{{ env.PYTHON_VERSION }}</span></td></tr>
+                <tr><td class="lbl">Platform</td><td><span class="font-mono">{{ env.PLATFORM }}</span></td></tr>
+                <tr><td class="lbl">Working dir</td><td><span class="font-mono">{{ env.WORKING_DIR }}</span></td></tr>
+                <tr><td class="lbl">/tmp exists</td><td><span class="font-mono">{{ env.TMP_EXISTS }}</span></td></tr>
+                <tr><td class="lbl">/tmp writable</td><td><span class="font-mono">{{ env.TMP_WRITABLE }}</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TORCH STATUS                                                  -->
+<!-- ============================================================ -->
+<div class="card">
+    <div class="card-header"><h5><i class="bi bi-lightning-charge me-2"></i> Torch Status</h5></div>
+    <div class="card-body">
+        {% if torch_status.available %}
+            <div class="alert-kalro alert-success">
+                <i class="bi bi-check-circle"></i>
+                <div><strong>Torch is installed.</strong> Version: <span class="font-mono">{{ torch_status.version }}</span></div>
+            </div>
+        {% else %}
+            <div class="alert-kalro alert-danger">
+                <i class="bi bi-x-octagon"></i>
+                <div>
+                    <strong>Torch NOT available.</strong><br>
+                    <span class="font-mono">{{ torch_status.error }}</span>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODELS                                                        -->
+<!-- ============================================================ -->
+<div class="card">
+    <div class="card-header"><h5><i class="bi bi-cpu me-2"></i> PINN Models ({{ models|length }})</h5></div>
+    <div class="card-body p-0">
+        {% if models %}
+        <table class="table-kalro">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Inputs</th>
+                    <th>Outputs</th>
+                    <th>Constraints</th>
+                    <th>Artifact path</th>
+                    <th>Exists</th>
+                    <th>Size</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in models %}
+                <tr>
+                    <td><strong>{{ m.obj.name }}</strong></td>
+                    <td><span class="pill pill-grey">{{ m.status }}</span></td>
+                    <td>{{ m.n_inputs }}</td>
+                    <td>{{ m.n_outputs }}</td>
+                    <td>{{ m.n_constraints }}</td>
+                    <td><span class="font-mono fs-12">{{ m.artifact_path }}</span></td>
+                    <td>
+                        {% if m.artifact_exists %}
+                            <span class="pill pill-green">Yes</span>
+                        {% else %}
+                            <span class="pill pill-red">No</span>
+                        {% endif %}
+                    </td>
+                    <td>{% if m.artifact_size %}{{ m.artifact_size }} bytes{% else %}—{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-cpu"></i><h5>No models configured</h5></div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- RECENT INFERENCES                                             -->
+<!-- ============================================================ -->
+<div class="card">
+    <div class="card-header"><h5><i class="bi bi-lightning me-2"></i> Recent Inferences</h5></div>
+    <div class="card-body p-0">
+        {% if inferences %}
+        <table class="table-kalro">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Model</th>
+                    <th>Status</th>
+                    <th>Duration</th>
+                    <th>Error</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in inferences %}
+                <tr>
+                    <td>#{{ i.pk }}</td>
+                    <td>{{ i.model.name|default:"—" }}</td>
+                    <td>
+                        {% if i.status == 'SUCCESS' %}<span class="pill pill-green">Success</span>
+                        {% elif i.status == 'FAILED' %}<span class="pill pill-red">Failed</span>
+                        {% else %}<span class="pill pill-gold">{{ i.status }}</span>{% endif %}
+                    </td>
+                    <td>{{ i.duration_ms|default:"—" }}ms</td>
+                    <td><span class="font-mono fs-12">{{ i.error_text|truncatechars:100|default:"—" }}</span></td>
+                    <td>{{ i.created_at|date:"d M H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-lightning"></i><h5>No inferences yet</h5></div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .lbl { color: var(--ink-500); font-weight: 500; width: 30%; }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+</style>
+
+{% endblock %}
