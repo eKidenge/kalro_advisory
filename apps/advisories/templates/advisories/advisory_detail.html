@@ -131,9 +131,9 @@
             <div class="card-body p-0">
                 <table class="table-kalro">
                     <tbody>
-                        <tr><td class="lbl">Created by</td><td>{{ advisory.created_by.get_full_name|default:advisory.created_by.username|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Created by</td><td>{% if advisory.created_by %}{{ advisory.created_by.get_full_name|default:advisory.created_by.username }}{% else %}—{% endif %}</td></tr>
                         <tr><td class="lbl">Created</td><td>{{ advisory.created_at|date:"d M Y H:i" }}</td></tr>
-                        <tr><td class="lbl">Approved by</td><td>{{ advisory.approved_by.get_full_name|default:advisory.approved_by.username|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Approved by</td><td>{% if advisory.approved_by %}{{ advisory.approved_by.get_full_name|default:advisory.approved_by.username }}{% else %}—{% endif %}</td></tr>
                         <tr><td class="lbl">Approved at</td><td>{{ advisory.approved_at|date:"d M Y H:i"|default:"—" }}</td></tr>
                     </tbody>
                 </table>
@@ -148,7 +148,7 @@
                 <div class="list-row">
                     <div style="flex: 1;">
                         <div class="list-title">{{ f.get_rating_display|default:"—" }} · {{ f.get_outcome_display }}</div>
-                        <div class="list-meta">{{ f.reported_by.username|default:"Anonymous" }} · {{ f.reported_at|date:"d M Y" }}</div>
+                        <div class="list-meta">{% if f.reported_by %}{{ f.reported_by.username }}{% else %}Anonymous{% endif %} · {{ f.reported_at|date:"d M Y" }}</div>
                         {% if f.comment %}<div style="font-size: 12.5px; color: var(--ink-600); margin-top: 4px;">{{ f.comment }}</div>{% endif %}
                     </div>
                 </div>
