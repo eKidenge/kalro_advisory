@@ -32,4 +32,5 @@ urlpatterns = [
 
     # CSV import
     path('import/', views.csv_import_view, name='csv_import'),
+    path('diagnostics/', views.pinn_diagnostics_view, name='diagnostics'),
 ]
