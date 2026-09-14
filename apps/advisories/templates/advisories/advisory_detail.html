@@ -3,183 +3,164 @@
 
 {% block title %}{{ advisory.title|truncatechars:50 }} — Advisory{% endblock %}
 
-{% block content %}
-
-<div class="page-header">
-    <div class="page-header-text">
-        <h1>{{ advisory.title }}</h1>
-        <div class="page-header-sub">
-            {{ advisory.get_kind_display }} ·
-            {{ advisory.get_priority_display }} priority ·
-            <span class="pill {% if advisory.status == 'DRAFT' %}pill-status-draft{% elif advisory.status == 'APPROVED' %}pill-status-approved{% elif advisory.status == 'SENT' %}pill-status-sent{% elif advisory.status == 'FAILED' %}pill-status-failed{% else %}pill-grey{% endif %}">{{ advisory.get_status_display }}</span>
-        </div>
-    </div>
-    <div class="page-header-actions">
-        <a href="{% url 'advisories:advisory_list' %}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Back</a>
-        <a href="{% url 'advisories:advisory_explanation' advisory.pk %}" class="btn btn-outline"><i class="bi bi-lightbulb"></i> Explanation</a>
-        {% if can_approve and advisory.status == 'DRAFT' %}
-        <a href="{% url 'advisories:advisory_approve' advisory.pk %}" class="btn btn-gold" onclick="event.preventDefault(); document.getElementById('approveForm').submit();">
-            <i class="bi bi-check2-circle"></i> Approve
-        </a>
-        <form id="approveForm" method="post" action="{% url 'advisories:advisory_approve' advisory.pk %}" style="display: none;">{% csrf_token %}</form>
-        {% endif %}
-        <a href="{% url 'advisories:advisory_update' advisory.pk %}" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
-    </div>
-</div>
-
-<div class="row g-3">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header"><h5><i class="bi bi-chat-quote me-2"></i> Message</h5></div>
-            <div class="card-body">
-                <p style="font-size: 15px; line-height: 1.75; color: var(--ink-800); margin: 0;">{{ advisory.body|linebreaksbr }}</p>
-            </div>
-        </div>
-
-        {% if advisory.short_message %}
-        <div class="card">
-            <div class="card-header"><h5><i class="bi bi-phone me-2"></i> SMS Version</h5></div>
-            <div class="card-body">
-                <div class="sms-preview">{{ advisory.short_message }}</div>
-                <div class="user-meta" style="margin-top: 8px;">{{ advisory.short_message|length }} / 320 characters</div>
-            </div>
-        </div>
-        {% endif %}
-
-        {% if advisory.explanation %}
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="bi bi-lightbulb me-2"></i> Reasoning</h5>
-                <div class="card-header-actions">
-                    <a href="{% url 'advisories:advisory_explanation' advisory.pk %}" class="btn btn-ghost btn-sm">Full explanation <i class="bi bi-arrow-right"></i></a>
-                </div>
-            </div>
-            <div class="card-body">
-                <p style="font-size: 13.5px; line-height: 1.7; color: var(--ink-700); margin: 0;">{{ advisory.explanation }}</p>
-            </div>
-        </div>
-        {% endif %}
-
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="bi bi-send me-2"></i> Delivery Log ({{ deliveries|length }})</h5>
-                <div class="card-header-actions">
-                    <a href="{% url 'advisories:advisory_delivery_log' %}?advisory={{ advisory.pk }}" class="btn btn-ghost btn-sm">View all <i class="bi bi-arrow-right"></i></a>
-                </div>
-            </div>
-            <div class="card-body p-0">
-                {% if deliveries %}
-                <table class="table-kalro">
-                    <thead><tr><th>Channel</th><th>Status</th><th>Recipient</th><th>Queued</th><th>Sent</th></tr></thead>
-                    <tbody>
-                        {% for d in deliveries %}
-                        <tr>
-                            <td><span class="pill pill-grey">{{ d.get_channel_display }}</span></td>
-                            <td>
-                                {% if d.status == 'DELIVERED' %}<span class="pill pill-green">Delivered</span>
-                                {% elif d.status == 'SENT' %}<span class="pill pill-green">Sent</span>
-                                {% elif d.status == 'QUEUED' %}<span class="pill pill-gold">Queued</span>
-                                {% elif d.status == 'FAILED' %}<span class="pill pill-red">Failed</span>
-                                {% else %}<span class="pill pill-grey">{{ d.get_status_display }}</span>{% endif %}
-                            </td>
-                            <td><span class="font-mono fs-12">{{ d.recipient_phone|default:"—" }}</span></td>
-                            <td><span class="font-mono fs-12">{{ d.queued_at|date:"d M H:i" }}</span></td>
-                            <td>{% if d.sent_at %}<span class="font-mono fs-12">{{ d.sent_at|date:"d M H:i" }}</span>{% else %}—{% endif %}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <div class="empty-state" style="padding: 40px 20px;"><i class="bi bi-send"></i><p style="margin: 0;">Not yet dispatched</p></div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header"><h5><i class="bi bi-info-circle me-2"></i> Context</h5></div>
-            <div class="card-body p-0">
-                <table class="table-kalro">
-                    <tbody>
-                        <tr><td class="lbl">Farmer</td><td>{% if advisory.farmer %}<a href="{% url 'farmers:farmer_detail' advisory.farmer.pk %}">{{ advisory.farmer.full_name }}</a>{% else %}—{% endif %}</td></tr>
-                        <tr><td class="lbl">Farm</td><td>{{ advisory.farm.name|default:"—" }}</td></tr>
-                        <tr><td class="lbl">Crop</td><td>{{ advisory.crop.name|default:"—" }}</td></tr>
-                        <tr><td class="lbl">Growth stage</td><td>{{ advisory.growth_stage.name|default:"—" }}</td></tr>
-                        <tr><td class="lbl">Source</td><td>{{ advisory.get_source_display }}</td></tr>
-                        <tr><td class="lbl">Valid from</td><td>{{ advisory.valid_from|date:"d M Y"|default:"—" }}</td></tr>
-                        <tr><td class="lbl">Valid until</td><td>{{ advisory.valid_until|date:"d M Y"|default:"—" }}</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        {% if advisory.inference_run %}
-        <div class="card">
-            <div class="card-header"><h5><i class="bi bi-cpu me-2"></i> Inference</h5></div>
-            <div class="card-body">
-                <div class="user-meta" style="margin-bottom: 8px;">#{{ advisory.inference_run.pk }} · {{ advisory.inference_run.created_at|date:"d M Y H:i" }}</div>
-                <a href="{% url 'pinn_engine:inference_detail' advisory.inference_run.pk %}" class="btn btn-outline btn-sm btn-block">
-                    <i class="bi bi-eye"></i> View Inference
-                </a>
-            </div>
-        </div>
-        {% endif %}
-
-        <div class="card">
-            <div class="card-header"><h5><i class="bi bi-person-badge me-2"></i> Authorship</h5></div>
-            <div class="card-body p-0">
-                <table class="table-kalro">
-                    <tbody>
-                        <tr><td class="lbl">Created by</td><td>{% if advisory.created_by %}{{ advisory.created_by.get_full_name|default:advisory.created_by.username }}{% else %}—{% endif %}</td></tr>
-                        <tr><td class="lbl">Created</td><td>{{ advisory.created_at|date:"d M Y H:i" }}</td></tr>
-                        <tr><td class="lbl">Approved by</td><td>{% if advisory.approved_by %}{{ advisory.approved_by.get_full_name|default:advisory.approved_by.username }}{% else %}—{% endif %}</td></tr>
-                        <tr><td class="lbl">Approved at</td><td>{{ advisory.approved_at|date:"d M Y H:i"|default:"—" }}</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        {% if feedback %}
-        <div class="card">
-            <div class="card-header"><h5><i class="bi bi-chat-square-text me-2"></i> Feedback</h5></div>
-            <div class="card-body p-0">
-                {% for f in feedback %}
-                <div class="list-row">
-                    <div style="flex: 1;">
-                        <div class="list-title">{{ f.get_rating_display|default:"—" }} · {{ f.get_outcome_display }}</div>
-                        <div class="list-meta">{% if f.reported_by %}{{ f.reported_by.username }}{% else %}Anonymous{% endif %} · {{ f.reported_at|date:"d M Y" }}</div>
-                        {% if f.comment %}<div style="font-size: 12.5px; color: var(--ink-600); margin-top: 4px;">{{ f.comment }}</div>{% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-    </div>
-</div>
-
+{% block extra_css %}
 <style>
-    .lbl { color: var(--ink-500); font-weight: 500; width: 42%; }
-    .font-mono { font-family: var(--font-mono); }
-    .fs-12 { font-size: 12px; }
-    .user-meta { font-size: 11px; color: var(--ink-500); }
-    .list-row { display: flex; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
-    .list-row:last-child { border-bottom: 0; }
-    .list-title { font-size: 13px; font-weight: 600; color: var(--ink-900); }
-    .list-meta { font-size: 11px; color: var(--ink-500); margin-top: 2px; }
-    .btn-block { width: 100%; justify-content: center; }
+    /* ============================================================ */
+    /* Advisory detail — government editorial typography             */
+    /* ============================================================ */
+
+    /* Page header block */
+    .adv-header {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--kalro-green);
+        border-radius: 10px;
+        padding: 24px 28px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    .adv-header-text { flex: 1; min-width: 240px; }
+    .adv-header-title {
+        font-family: var(--font-serif);
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--ink-900);
+        letter-spacing: -0.015em;
+        line-height: 1.2;
+        margin: 0 0 10px;
+    }
+    .adv-header-meta {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        font-family: var(--font-serif);
+        font-size: 13.5px;
+        color: var(--ink-600);
+        font-weight: 500;
+    }
+    .adv-header-meta .sep { color: var(--ink-300); }
+    .adv-header-actions {
+        display: flex; gap: 8px; flex-wrap: wrap;
+    }
+
+    /* Government-grade buttons — serif labels */
+    .btn-gov {
+        font-family: var(--font-serif);
+        font-size: 12.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 9px 16px;
+        border-radius: 6px;
+        border: 1px solid var(--border-strong);
+        background: transparent;
+        color: var(--ink-700);
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all .12s;
+    }
+    .btn-gov:hover {
+        border-color: var(--kalro-green);
+        color: var(--kalro-green);
+        background: var(--kalro-green-50);
+        text-decoration: none;
+    }
+    .btn-gov.btn-gov-primary {
+        background: var(--kalro-green);
+        color: #fff;
+        border-color: var(--kalro-green);
+    }
+    .btn-gov.btn-gov-primary:hover {
+        background: var(--kalro-green-700);
+        color: #fff;
+        border-color: var(--kalro-green-700);
+    }
+    .btn-gov.btn-gov-gold {
+        background: var(--kalro-gold);
+        color: var(--ink-900);
+        border-color: var(--kalro-gold);
+    }
+    .btn-gov.btn-gov-gold:hover {
+        background: var(--kalro-gold-700);
+        color: var(--ink-900);
+    }
+    .btn-gov.btn-gov-sm {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+    .btn-gov.btn-gov-block {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Cards — with serif headers */
+    .adv-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        margin-bottom: 16px;
+        overflow: hidden;
+    }
+    .adv-card-head {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+        background: var(--ink-50);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .adv-card-head i {
+        color: var(--kalro-green);
+        font-size: 16px;
+    }
+    .adv-card-head h5 {
+        font-family: var(--font-serif);
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--ink-900);
+        margin: 0;
+        letter-spacing: -0.005em;
+    }
+    .adv-card-head .head-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 6px;
+    }
+    .adv-card-body {
+        padding: 20px 22px;
+    }
+    .adv-card-body.no-pad { padding: 0; }
+
+    /* Message body — editorial serif */
+    .adv-message {
+        font-family: var(--font-serif);
+        font-size: 16px;
+        line-height: 1.75;
+        color: var(--ink-800);
+        margin: 0;
+        letter-spacing: -0.003em;
+    }
+    .adv-message br { display: block; content: ""; margin-bottom: 8px; }
+
+    /* SMS preview */
     .sms-preview {
         background: #e6f2ec;
-        border-radius: 12px;
+        border-left: 4px solid var(--kalro-green);
+        border-radius: 10px;
         padding: 14px 18px;
+        max-width: 400px;
+        position: relative;
+        font-family: var(--font-sans);
         font-size: 13.5px;
         line-height: 1.6;
         color: var(--ink-800);
-        border-left: 4px solid var(--kalro-green);
-        position: relative;
-        font-family: var(--font-sans);
-        max-width: 340px;
     }
     .sms-preview::before {
         content: '';
@@ -190,6 +171,414 @@
         border-bottom: 8px solid transparent;
         border-top: 8px solid transparent;
     }
+    .sms-meta {
+        font-family: var(--font-serif);
+        font-size: 12px;
+        color: var(--ink-500);
+        margin-top: 8px;
+        font-style: italic;
+    }
+
+    /* Reasoning */
+    .adv-reasoning {
+        font-family: var(--font-serif);
+        font-size: 14.5px;
+        line-height: 1.75;
+        color: var(--ink-700);
+        margin: 0;
+    }
+
+    /* Context table — government ledger style */
+    .gov-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--font-serif);
+        font-size: 13.5px;
+    }
+    .gov-table th {
+        background: var(--ink-50);
+        padding: 10px 14px;
+        text-align: left;
+        font-family: var(--font-serif);
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--ink-600);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-bottom: 2px solid var(--border-strong);
+    }
+    .gov-table td {
+        padding: 11px 14px;
+        border-bottom: 1px solid var(--border);
+        color: var(--ink-800);
+        vertical-align: top;
+    }
+    .gov-table tbody tr:last-child td { border-bottom: 0; }
+    .gov-table tbody tr:hover { background: var(--kalro-green-50); }
+
+    /* Field label cell */
+    .gov-table .lbl {
+        font-family: var(--font-serif);
+        font-weight: 600;
+        color: var(--ink-600);
+        width: 42%;
+        font-size: 12.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .gov-table .val {
+        font-family: var(--font-sans);
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--ink-900);
+    }
+    .gov-table .val a {
+        color: var(--kalro-green);
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .gov-table .val a:hover { text-decoration: underline; }
+
+    /* Delivery log table */
+    .delivery-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+    .delivery-table th {
+        background: var(--ink-50);
+        padding: 10px 14px;
+        text-align: left;
+        font-family: var(--font-serif);
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--ink-600);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid var(--border-strong);
+    }
+    .delivery-table td {
+        padding: 11px 14px;
+        border-bottom: 1px solid var(--border);
+    }
+    .delivery-table tbody tr:last-child td { border-bottom: 0; }
+    .delivery-table tbody tr:hover { background: var(--kalro-green-50); }
+
+    /* Pill — serif variant */
+    .gov-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-family: var(--font-serif);
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        line-height: 1.6;
+        white-space: nowrap;
+    }
+    .gov-pill.green { background: var(--kalro-green-100); color: var(--kalro-green-700); }
+    .gov-pill.gold  { background: var(--kalro-gold-100);  color: var(--kalro-gold-700); }
+    .gov-pill.red   { background: var(--kalro-red-100);   color: var(--kalro-red); }
+    .gov-pill.grey  { background: var(--ink-100);         color: var(--ink-600); }
+
+    /* Meta text */
+    .gov-meta {
+        font-family: var(--font-serif);
+        font-size: 12px;
+        color: var(--ink-500);
+        font-style: italic;
+    }
+    .font-mono { font-family: var(--font-mono); }
+    .fs-12 { font-size: 12px; }
+
+    /* Feedback rows */
+    .fb-row {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+    }
+    .fb-row:last-child { border-bottom: 0; }
+    .fb-title {
+        font-family: var(--font-serif);
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--ink-900);
+        margin-bottom: 4px;
+    }
+    .fb-meta {
+        font-family: var(--font-serif);
+        font-size: 11.5px;
+        color: var(--ink-500);
+        font-style: italic;
+    }
+    .fb-comment {
+        font-family: var(--font-serif);
+        font-size: 13px;
+        color: var(--ink-700);
+        line-height: 1.6;
+        margin-top: 6px;
+    }
 </style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================ -->
+<!-- HEADER                                                        -->
+<!-- ============================================================ -->
+<div class="adv-header">
+    <div class="adv-header-text">
+        <h1 class="adv-header-title">{{ advisory.title }}</h1>
+        <div class="adv-header-meta">
+            <span>{{ advisory.get_kind_display }}</span>
+            <span class="sep">·</span>
+            <span>{{ advisory.get_priority_display }} priority</span>
+            <span class="sep">·</span>
+            <span class="gov-pill
+                {% if advisory.status == 'DRAFT' %}grey
+                {% elif advisory.status == 'APPROVED' %}gold
+                {% elif advisory.status == 'SENT' %}green
+                {% elif advisory.status == 'FAILED' %}red
+                {% else %}grey{% endif %}">
+                {{ advisory.get_status_display }}
+            </span>
+        </div>
+    </div>
+    <div class="adv-header-actions">
+        <a href="{% url 'advisories:advisory_list' %}" class="btn-gov">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <a href="{% url 'advisories:advisory_explanation' advisory.pk %}" class="btn-gov">
+            <i class="bi bi-lightbulb"></i> Explanation
+        </a>
+        {% if can_approve and advisory.status == 'DRAFT' %}
+        <a href="{% url 'advisories:advisory_approve' advisory.pk %}" class="btn-gov btn-gov-gold"
+           onclick="event.preventDefault(); document.getElementById('approveForm').submit();">
+            <i class="bi bi-check2-circle"></i> Approve
+        </a>
+        <form id="approveForm" method="post" action="{% url 'advisories:advisory_approve' advisory.pk %}" style="display: none;">{% csrf_token %}</form>
+        {% endif %}
+        <a href="{% url 'advisories:advisory_update' advisory.pk %}" class="btn-gov btn-gov-primary">
+            <i class="bi bi-pencil"></i> Edit
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- ====================================================== -->
+    <!-- LEFT COLUMN                                             -->
+    <!-- ====================================================== -->
+    <div class="col-lg-8">
+
+        <!-- Message -->
+        <div class="adv-card">
+            <div class="adv-card-head">
+                <i class="bi bi-chat-quote"></i>
+                <h5>Message</h5>
+            </div>
+            <div class="adv-card-body">
+                <p class="adv-message">{{ advisory.body|linebreaksbr }}</p>
+            </div>
+        </div>
+
+        <!-- SMS -->
+        {% if advisory.short_message %}
+        <div class="adv-card">
+            <div class="adv-card-head">
+                <i class="bi bi-phone"></i>
+                <h5>SMS Version</h5>
+            </div>
+            <div class="adv-card-body">
+                <div class="sms-preview">{{ advisory.short_message }}</div>
+                <div class="sms-meta">{{ advisory.short_message|length }} / 320 characters</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Reasoning -->
+        {% if advisory.explanation %}
+        <div class="adv-card">
+            <div class="adv-card-head">
+                <i class="bi bi-lightbulb"></i>
+                <h5>Reasoning</h5>
+                <div class="head-actions">
+                    <a href="{% url 'advisories:advisory_explanation' advisory.pk %}" class="btn-gov btn-gov-sm">
+                        Full explanation <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="adv-card-body">
+                <p class="adv-reasoning">{{ advisory.explanation }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Delivery log -->
+        <div class="adv-card">
+            <div class="adv-card-head">
+                <i class="bi bi-send"></i>
+                <h5>Delivery Log ({{ deliveries|length }})</h5>
+                <div class="head-actions">
+                    <a href="{% url 'advisories:advisory_delivery_log' %}?advisory={{ advisory.pk }}" class="btn-gov btn-gov-sm">
+                        View all <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="adv-card-body no-pad">
+                {% if deliveries %}
+                <table class="delivery-table">
+                    <thead>
+                        <tr>
+                            <th>Channel</th>
+                            <th>Status</th>
+                            <th>Recipient</th>
+                            <th>Queued</th>
+                            <th>Sent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in deliveries %}
+                        <tr>
+                            <td><span class="gov-pill grey">{{ d.get_channel_display }}</span></td>
+                            <td>
+                                {% if d.status == 'DELIVERED' %}<span class="gov-pill green">Delivered</span>
+                                {% elif d.status == 'SENT' %}<span class="gov-pill green">Sent</span>
+                                {% elif d.status == 'QUEUED' %}<span class="gov-pill gold">Queued</span>
+                                {% elif d.status == 'FAILED' %}<span class="gov-pill red">Failed</span>
+                                {% else %}<span class="gov-pill grey">{{ d.get_status_display }}</span>{% endif %}
+                            </td>
+                            <td><span class="font-mono fs-12">{{ d.recipient_phone|default:"—" }}</span></td>
+                            <td><span class="font-mono fs-12">{{ d.queued_at|date:"d M H:i" }}</span></td>
+                            <td>{% if d.sent_at %}<span class="font-mono fs-12">{{ d.sent_at|date:"d M H:i" }}</span>{% else %}—{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state" style="padding: 48px 20px;">
+                    <i class="bi bi-send"></i>
+                    <h5>Not yet dispatched</h5>
+                    <p>No delivery attempts recorded for this advisory.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- RIGHT COLUMN                                            -->
+    <!-- ====================================================== -->
+    <div class="col-lg-4">
+
+        <!-- Context -->
+        <div class="adv-card">
+            <div class="adv-card-head">
+                <i class="bi bi-info-circle"></i>
+                <h5>Context</h5>
+            </div>
+            <div class="adv-card-body no-pad">
+                <table class="gov-table">
+                    <tbody>
+                        <tr>
+                            <td class="lbl">Farmer</td>
+                            <td class="val">
+                                {% if advisory.farmer %}
+                                    <a href="{% url 'farmers:farmer_detail' advisory.farmer.pk %}">{{ advisory.farmer.full_name }}</a>
+                                {% else %}—{% endif %}
+                            </td>
+                        </tr>
+                        <tr><td class="lbl">Farm</td><td class="val">{{ advisory.farm.name|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Crop</td><td class="val">{{ advisory.crop.name|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Growth stage</td><td class="val">{{ advisory.growth_stage.name|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Source</td><td class="val">{{ advisory.get_source_display }}</td></tr>
+                        <tr><td class="lbl">Valid from</td><td class="val">{{ advisory.valid_from|date:"d M Y"|default:"—" }}</td></tr>
+                        <tr><td class="lbl">Valid until</td><td class="val">{{ advisory.valid_until|date:"d M Y"|default:"—" }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Inference -->
+        {% if advisory.inference_run %}
+        <div class="adv-card">
+            <div class="adv-card-head">
+                <i class="bi bi-cpu"></i>
+                <h5>Inference</h5>
+            </div>
+            <div class="adv-card-body">
+                <div class="gov-meta" style="margin-bottom: 10px;">
+                    Run #{{ advisory.inference_run.pk }} · {{ advisory.inference_run.created_at|date:"d M Y H:i" }}
+                </div>
+                <a href="{% url 'pinn_engine:inference_detail' advisory.inference_run.pk %}" class="btn-gov btn-gov-block">
+                    <i class="bi bi-eye"></i> View Inference
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Authorship -->
+        <div class="adv-card">
+            <div class="adv-card-head">
+                <i class="bi bi-person-badge"></i>
+                <h5>Authorship</h5>
+            </div>
+            <div class="adv-card-body no-pad">
+                <table class="gov-table">
+                    <tbody>
+                        <tr>
+                            <td class="lbl">Created by</td>
+                            <td class="val">
+                                {% if advisory.created_by %}
+                                    {{ advisory.created_by.get_full_name|default:advisory.created_by.username }}
+                                {% else %}—{% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="lbl">Created</td>
+                            <td class="val">{{ advisory.created_at|date:"d M Y H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="lbl">Approved by</td>
+                            <td class="val">
+                                {% if advisory.approved_by %}
+                                    {{ advisory.approved_by.get_full_name|default:advisory.approved_by.username }}
+                                {% else %}—{% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="lbl">Approved at</td>
+                            <td class="val">{{ advisory.approved_at|date:"d M Y H:i"|default:"—" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Feedback -->
+        {% if feedback %}
+        <div class="adv-card">
+            <div class="adv-card-head">
+                <i class="bi bi-chat-square-text"></i>
+                <h5>Feedback</h5>
+            </div>
+            <div class="adv-card-body no-pad">
+                {% for f in feedback %}
+                <div class="fb-row">
+                    <div class="fb-title">{{ f.get_rating_display|default:"—" }} · {{ f.get_outcome_display }}</div>
+                    <div class="fb-meta">
+                        {% if f.reported_by %}{{ f.reported_by.username }}{% else %}Anonymous{% endif %}
+                        · {{ f.reported_at|date:"d M Y" }}
+                    </div>
+                    {% if f.comment %}<div class="fb-comment">{{ f.comment }}</div>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
 
 {% endblock %}
