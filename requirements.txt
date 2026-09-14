@@ -24,3 +24,7 @@ psycopg2-binary>=2.9.10    # only installs when you switch to Postgres on Render
 # celery>=5.5.3
 # redis>=6.4.0
 # django-celery-results>=2.6.0
+
+torch>=2.4.0
+numpy>=1.26.0
+scikit-learn>=1.5.0
