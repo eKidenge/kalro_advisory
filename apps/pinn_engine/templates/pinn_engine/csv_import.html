@@ -1,0 +1,83 @@
+{% extends "pinn_engine/base_pinn.html" %}
+{% load static %}
+
+{% block title %}CSV Import — KALRO Advisory{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header-text">
+        <h1>CSV Bulk Import</h1>
+        <div class="page-header-sub">
+            Upload a CSV file to import records into a supported model.
+            Rows with matching keys are updated; new rows are created.
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'pinn_engine:model_list' %}" class="btn btn-outline">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-8">
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-upload me-2"></i> Upload CSV</h5>
+                </div>
+                <div class="card-body">
+
+                    <div class="field">
+                        <label class="form-label">
+                            Target model <span class="required-mark">*</span>
+                        </label>
+                        <select name="model_name" class="form-select" required>
+                            <option value="">— Select a model —</option>
+                            {% for m in supported_models %}
+                                <option value="{{ m }}">{{ m }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            Choose which model the CSV rows should be imported into.
+                        </div>
+                    </div>
+
+                    <div class="field" style="margin-top: 18px;">
+                        <label class="form-label">
+                            CSV file <span class="required-mark">*</span>
+                        </label>
+                        <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+                        <div class="form-text">
+                            Max 10 MB. UTF-8 encoded. First row must be the header.
+                        </div>
+                    </div>
+
+                    <div class="alert-kalro alert-info" style="margin-top: 20px;">
+                        <i class="bi bi-info-circle"></i>
+                        <div>
+                            <strong>Expected columns</strong> are auto-detected from the
+                            CSV header. Required columns are listed in the table below.
+                            Unknown columns are ignored.
+                        </div>
+                    </div>
+
+                </div>
+                <div class="card-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <a href="{% url 'pinn_engine:model_list' %}" class="btn btn-outline">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Import
+                    </button>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

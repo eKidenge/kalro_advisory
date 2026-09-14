@@ -29,4 +29,7 @@ urlpatterns = [
 
     # Metrics dashboard
     path('metrics/', views.metrics_dashboard_view, name='metrics_dashboard'),
+
+    # CSV import
+    path('import/', views.csv_import_view, name='csv_import'),
 ]

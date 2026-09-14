@@ -1,8 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Count, Max, Min, Q
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
+from django.utils import timezone
+from django.views.decorators.http import require_POST
 from django.views.generic import (
     ListView, DetailView, CreateView, UpdateView,
 )
@@ -344,4 +346,73 @@ def metrics_dashboard_view(request):
         'r2': r2,
         'aggregate': aggregate,
         'total_snapshots': snapshots.count(),
+    })
+
+
+# ==================================================================
+# CSV BULK IMPORT
+# ==================================================================
+@researcher_required
+def csv_import_view(request):
+    """
+    Upload a CSV file and import it into one of the supported models.
+    Delegates to integrations.tasks.import_csv_batch.
+    """
+    import os
+    import tempfile
+
+    if request.method == 'POST':
+        model_name = request.POST.get('model_name', '').strip()
+        uploaded_file = request.FILES.get('csv_file')
+
+        if not model_name:
+            messages.error(request, "Please select a target model.")
+            return redirect('pinn_engine:csv_import')
+
+        if not uploaded_file:
+            messages.error(request, "Please attach a CSV file.")
+            return redirect('pinn_engine:csv_import')
+
+        # Persist to a temp file so the async task can read it
+        tmp = tempfile.NamedTemporaryFile(
+            delete=False, suffix='.csv', prefix=f'kalro_import_{model_name}_',
+        )
+        for chunk in uploaded_file.chunks():
+            tmp.write(chunk)
+        tmp.close()
+
+        try:
+            from apps.integrations.tasks import import_csv_batch
+            result = import_csv_batch(
+                model_name=model_name,
+                file_path=tmp.name,
+                user_id=request.user.pk,
+            )
+            messages.success(
+                request,
+                f"Import complete — {result['imported']} imported, "
+                f"{result['failed']} failed of {result['total_rows']} rows.",
+            )
+            if result['failed']:
+                # Show the first 5 errors as warnings
+                for err in result['errors'][:5]:
+                    messages.warning(request, err)
+        except Exception as e:
+            messages.error(request, f"Import failed: {e}")
+        finally:
+            try:
+                os.unlink(tmp.name)
+            except OSError:
+                pass
+
+        return redirect('pinn_engine:csv_import')
+
+    # GET — show the upload form
+    from apps.integrations.tasks import csv_import_mappings
+    supported = list(csv_import_mappings().keys())
+    recent_metrics = ModelMetric.objects.select_related('model').order_by('-recorded_at')[:10]
+
+    return render(request, 'pinn_engine/csv_import.html', {
+        'supported_models': supported,
+        'recent_metrics': recent_metrics,
     })
