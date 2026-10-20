@@ -77,12 +77,22 @@ WSGI_APPLICATION = 'kalro_advisory.wsgi.application'
 # ------------------------------------------------------------------
 # Database — SQLite locally, Postgres on Render via DATABASE_URL
 # ------------------------------------------------------------------
+
+# PostgreSQL (Render) — commented out, kept for reference
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+#         conn_max_age=600,
+#         conn_health_checks=True,
+#     )
+# }
+
+# SQLite (local development)
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 
